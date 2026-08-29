@@ -508,6 +508,13 @@ async function initApp() {
     const { data } = await recipeSupabase.from('recipes').select('id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy,created_at').order('created_at', { ascending: false }).limit(10);
     renderRecentRecipes((data || []).map(normalizeRecipe));
     loadDashboard();
+
+    const closeButton = document.getElementById('closeModal');
+    closeButton?.addEventListener('click', closeRecipeModal);
+    const recipeModal = document.getElementById('recipeModal');
+    recipeModal?.addEventListener('click', (event) => {
+      if (event.target.id === 'recipeModal') closeRecipeModal();
+    });
     return;
   }
 

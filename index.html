@@ -48,6 +48,36 @@
     </main>
   </div>
 
+  <div id="recipeModal" class="modal-backdrop" aria-hidden="true">
+    <div class="recipe-detail" role="dialog" aria-modal="true">
+      <div class="detail-header">
+        <h3 id="modalTitle">Recipe</h3>
+        <div class="detail-meta" id="modalMeta"></div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-panel">
+          <h4>Ingredients</h4>
+          <ul id="modalIngredients"></ul>
+        </div>
+        <div class="detail-panel">
+          <h4>Steps</h4>
+          <ol id="modalSteps"></ol>
+        </div>
+        <div class="detail-panel">
+          <h4>Nutrition</h4>
+          <p id="modalNutrition"></p>
+        </div>
+        <div class="detail-panel">
+          <h4>Notes</h4>
+          <p id="modalNotes"></p>
+        </div>
+      </div>
+      <div style="margin-top: 20px; text-align: right;">
+        <button type="button" class="primary-button" id="closeModal">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=20260829"></script>
   <script src="js/app.js?v=20260829"></script>
