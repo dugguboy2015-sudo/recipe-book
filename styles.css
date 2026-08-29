@@ -487,18 +487,41 @@ button:disabled {
   margin-top: 14px;
 }
 
+.selected-recipe-summary {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f3eee9;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.selected-recipe-summary.has-selection {
+  background: #e8f1ed;
+  color: var(--sage-deep);
+  border-style: solid;
+  border-color: var(--sage);
+}
+
 .browser-item {
   background: #fffaf5;
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .browser-item:hover {
   border-color: var(--sage);
   transform: translateY(-1px);
+}
+
+.browser-item.active {
+  background: #eaf4f2;
+  border-color: var(--sage-deep);
+  box-shadow: 0 0 0 3px rgba(77, 154, 139, 0.15);
 }
 
 .browser-item strong {
@@ -513,7 +536,7 @@ button:disabled {
 
 .planner-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 16px;
 }
 
@@ -530,53 +553,84 @@ button:disabled {
   margin-bottom: 12px;
 }
 
-.day-slot {
-  border: 1px dashed var(--line);
+.day-slot-group {
+  display: grid;
+  gap: 10px;
+}
+
+.meal-slot {
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px;
   background: #fff;
-  min-height: 118px;
   display: grid;
   gap: 8px;
-  margin-bottom: 10px;
+  min-height: 102px;
 }
 
-.day-slot strong {
-  color: var(--ink);
-  font-size: 0.76rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.meal-slot.filled {
+  border-color: var(--sage);
+  background: #f4faf8;
 }
 
-.day-slot .slot-name {
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-.day-slot .slot-recipe {
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.day-slot .slot-actions {
+.meal-slot-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
 }
 
-.day-slot button {
+.meal-slot-header strong {
+  color: var(--ink);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.small-button {
+  border: 0;
   background: var(--sage-deep);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 6px 8px;
+  line-height: 1.2;
+}
+
+.small-button:hover {
+  background: var(--berry);
+}
+
+.slot-card {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+  display: grid;
+  gap: 8px;
+}
+
+.slot-empty {
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 6px 0;
+}
+
+.slot-recipe {
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.remove-slot {
+  background: var(--berry);
   color: #fff;
   border: 0;
   padding: 7px 8px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.8rem;
-}
-
-.day-slot .remove-slot {
-  background: var(--berry);
+  font-size: 0.76rem;
 }
 
 .notice {

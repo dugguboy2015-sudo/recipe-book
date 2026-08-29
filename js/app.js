@@ -2,6 +2,7 @@ const pageType = document.body.dataset.page || 'dashboard';
 const recipeSupabase = window.recipeBookSupabase;
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const MEAL_SLOTS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Dessert', 'Other'];
 const plannerKey = 'recipeBookPlanner';
 const defaultPlanner = Object.fromEntries(DAYS.map(day => [day, []]));
 
@@ -394,14 +395,13 @@ function closeRecipeModal() {
   modal.setAttribute('aria-hidden', 'true');
 }
 
-function assignRecipeToDay(day, recipe) {
-  if (!day || !recipe) return;
+function assignRecipeToDay(day, slot, recipe) {
+  if (!day || !slot || !recipe) return;
   const current = Array.isArray(state.planner[day]) ? state.planner[day] : [];
-  const exists = current.some(item => item.id === recipe.id);
-  if (!exists) {
-    state.planner[day] = [...current, { id: recipe.id, name: recipe.name, slot: 'Dinner' }];
-    persistPlanner();
-  }
+  const updated = [...current.filter(item => !(item.id === recipe.id && (item.slot || 'Dinner') === slot))];
+  updated.push({ id: recipe.id, name: recipe.name, slot });
+  state.planner[day] = updated;
+  persistPlanner();
 }
 
 function initPlanner() {
@@ -409,37 +409,48 @@ function initPlanner() {
   const plannerList = document.getElementById('plannerList');
   const plannerSearch = document.getElementById('plannerSearch');
   const resetWeek = document.getElementById('resetWeek');
+  const selectedRecipeSummary = document.getElementById('selectedRecipeSummary');
 
-  if (!plannerGrid || !plannerList || !plannerSearch || !resetWeek) return;
+  if (!plannerGrid || !plannerList || !plannerSearch || !resetWeek || !selectedRecipeSummary) return;
 
   function renderPlannerBoard() {
-    plannerGrid.innerHTML = DAYS.map(day => `
-      <div class="planner-day" data-day="${day}">
-        <h3>${day}</h3>
-        <div class="day-slot" data-day="${day}">
-          <strong>Plan</strong>
-          ${state.planner[day].length ? state.planner[day].map(item => `
-            <div>
-              <div class="slot-recipe">${escapeHtml(item.name)}</div>
-              <div class="slot-actions">
-                <span class="slot-name">${escapeHtml(item.slot || 'Meal')}</span>
-                <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-id="${item.id}">Remove</button>
-              </div>
+    plannerGrid.innerHTML = DAYS.map(day => {
+      const slotsMarkup = MEAL_SLOTS.map(slot => {
+        const slotItems = (state.planner[day] || []).filter(item => (item.slot || 'Dinner') === slot);
+
+        return `
+          <div class="meal-slot ${slotItems.length ? 'filled' : ''}" data-day="${day}" data-slot="${slot}">
+            <div class="meal-slot-header">
+              <strong>${slot}</strong>
+              <button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}">Add</button>
             </div>
-          `).join('') : '<div class="slot-name">No recipe planned</div>'}
+            ${slotItems.length ? slotItems.map(item => `
+              <div class="slot-card">
+                <div class="slot-recipe">${escapeHtml(item.name)}</div>
+                <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-id="${item.id}" data-remove-slot="${slot}">Remove</button>
+              </div>
+            `).join('') : '<div class="slot-empty">No recipe planned</div>'}
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="planner-day" data-day="${day}">
+          <h3>${day}</h3>
+          <div class="day-slot-group">${slotsMarkup}</div>
         </div>
-        <button type="button" class="primary-button" data-day-add="${day}" style="margin-top:12px; width:100%;">Add selected recipe</button>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     plannerGrid.querySelectorAll('[data-day-add]').forEach(button => {
       button.addEventListener('click', () => {
         const day = button.dataset.dayAdd;
+        const slot = button.dataset.slot;
         if (!state.selectedRecipe) {
           window.alert('Select a recipe first from the list on the left.');
           return;
         }
-        assignRecipeToDay(day, state.selectedRecipe);
+        assignRecipeToDay(day, slot, state.selectedRecipe);
         renderPlannerBoard();
       });
     });
@@ -447,8 +458,9 @@ function initPlanner() {
     plannerGrid.querySelectorAll('.remove-slot').forEach(button => {
       button.addEventListener('click', () => {
         const day = button.dataset.removeDay;
+        const slot = button.dataset.removeSlot;
         const id = Number(button.dataset.removeId);
-        state.planner[day] = (state.planner[day] || []).filter(item => item.id !== id);
+        state.planner[day] = (state.planner[day] || []).filter(item => !(item.id === id && (item.slot || 'Dinner') === slot));
         persistPlanner();
         renderPlannerBoard();
       });
@@ -461,6 +473,11 @@ function initPlanner() {
       const text = `${recipe.name} ${recipe.description || ''}`.toLowerCase();
       return !searchTerm || text.includes(searchTerm);
     }).slice(0, 12);
+
+    selectedRecipeSummary.textContent = state.selectedRecipe
+      ? `Selected: ${state.selectedRecipe.name}`
+      : 'No recipe selected';
+    selectedRecipeSummary.classList.toggle('has-selection', Boolean(state.selectedRecipe));
 
     if (!list.length) {
       plannerList.innerHTML = '<div class="empty-state">No matching recipes.</div>';
@@ -490,8 +507,10 @@ function initPlanner() {
 
   resetWeek.addEventListener('click', () => {
     state.planner = structuredClone(defaultPlanner);
+    state.selectedRecipe = null;
     persistPlanner();
     renderPlannerBoard();
+    renderPlannerRecipes();
   });
 
   renderPlannerBoard();
