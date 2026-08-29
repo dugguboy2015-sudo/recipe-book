@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Book</title>
+  <link rel="stylesheet" href="styles.css?v=20260829" />
+</head>
+<body data-page="dashboard">
+  <div class="wrap">
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html" aria-current="page">Dashboard</a>
+      <a href="recipes.html">Recipes</a>
+      <a href="planner.html">Weekly Planner</a>
+    </nav>
+
+    <header>
+      <span class="eyebrow">Recipe Book</span>
+      <h1>Kitchen joy,<br><em>one menu</em> at a time</h1>
+      <p>Browse favourite dishes, plan the week, and keep the family mealtimes light and easy.</p>
+    </header>
+
+    <main class="page-shell">
+      <section class="card-grid stats-grid" id="statsGrid"></section>
+
+      <section>
+        <div class="content-head">
+          <h2>Quick links</h2>
+        </div>
+        <div class="quick-links">
+          <a class="quick-link" href="recipes.html">
+            <h3>Browse recipes</h3>
+            <p>Search the full collection by cuisine, tag, and dietary fit.</p>
+          </a>
+          <a class="quick-link" href="planner.html">
+            <h3>Weekly planner</h3>
+            <p>Build a simple kitchen plan for the week and keep it saved locally.</p>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <div class="content-head">
+          <h2>Recently added</h2>
+        </div>
+        <div class="card-grid recent-grid" id="recentGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js?v=20260829"></script>
+  <script src="js/app.js?v=20260829"></script>
+</body>
+</html>

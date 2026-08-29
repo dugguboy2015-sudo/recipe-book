@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Book | Recipes</title>
+  <link rel="stylesheet" href="styles.css?v=20260829" />
+</head>
+<body data-page="recipes">
+  <div class="wrap">
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html">Dashboard</a>
+      <a href="recipes.html" aria-current="page">Recipes</a>
+      <a href="planner.html">Weekly Planner</a>
+    </nav>
+
+    <header>
+      <span class="eyebrow">Recipe library</span>
+      <h1>Find the right dish<br><em>for the moment</em></h1>
+    </header>
+
+    <main class="page-shell">
+      <section class="filter-panel">
+        <div class="filter-row">
+          <label>
+            Search
+            <input class="search-box" id="searchInput" type="search" placeholder="Search recipe name or description" />
+          </label>
+
+          <label>
+            Cuisine
+            <select id="cuisineFilter">
+              <option value="">All cuisines</option>
+            </select>
+          </label>
+        </div>
+
+        <div>
+          <div class="chip-group" id="tagFilters"></div>
+        </div>
+
+        <div>
+          <div class="chip-group" id="dietaryFilters">
+            <button class="chip" data-dietary="vegetarian" type="button">Vegetarian</button>
+            <button class="chip" data-dietary="egg-free" type="button">Egg-free</button>
+            <button class="chip" data-dietary="dairy-free" type="button">Dairy-free</button>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button type="button" class="primary-button" id="applyFilters">Apply filters</button>
+          <button type="button" class="ghost-button" id="clearFilters">Clear</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="content-head">
+          <h2>Recipe collection</h2>
+          <div class="toolbar">
+            <span id="resultCount" class="notice">0 recipes</span>
+          </div>
+        </div>
+
+        <div id="recipeGrid" class="recipe-grid"></div>
+        <div class="pagination">
+          <button type="button" class="ghost-button" id="prevPage">Previous</button>
+          <span id="pageStatus">Page 1</span>
+          <button type="button" class="ghost-button" id="nextPage">Next</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="recipeModal" class="modal-backdrop" aria-hidden="true">
+    <div class="recipe-detail" role="dialog" aria-modal="true">
+      <div class="detail-header">
+        <h3 id="modalTitle">Recipe</h3>
+        <div class="detail-meta" id="modalMeta"></div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-panel">
+          <h4>Ingredients</h4>
+          <ul id="modalIngredients"></ul>
+        </div>
+        <div class="detail-panel">
+          <h4>Steps</h4>
+          <ol id="modalSteps"></ol>
+        </div>
+        <div class="detail-panel">
+          <h4>Nutrition</h4>
+          <p id="modalNutrition"></p>
+        </div>
+        <div class="detail-panel">
+          <h4>Notes</h4>
+          <p id="modalNotes"></p>
+        </div>
+      </div>
+      <div style="margin-top: 20px; text-align: right;">
+        <button type="button" class="primary-button" id="closeModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js?v=20260829"></script>
+  <script src="js/app.js?v=20260829"></script>
+</body>
+</html>

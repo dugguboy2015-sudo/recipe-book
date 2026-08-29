@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Book | Weekly Planner</title>
+  <link rel="stylesheet" href="styles.css?v=20260829" />
+</head>
+<body data-page="planner">
+  <div class="wrap">
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html">Dashboard</a>
+      <a href="recipes.html">Recipes</a>
+      <a href="planner.html" aria-current="page">Weekly Planner</a>
+    </nav>
+
+    <header>
+      <span class="eyebrow">Weekly Kitchen Planner</span>
+      <h1>Plan the week,<br><em>without the chaos</em></h1>
+    </header>
+
+    <main class="planner-shell">
+      <aside class="planner-browser">
+        <div class="content-head">
+          <h2>Recipe browse</h2>
+        </div>
+        <input id="plannerSearch" class="search-box" type="search" placeholder="Search recipes to add" />
+        <div id="plannerList" class="browser-list"></div>
+      </aside>
+
+      <section class="planner-board">
+        <div class="content-head">
+          <h2>Week plan</h2>
+          <div class="actions-row">
+            <button type="button" class="secondary-button" id="resetWeek">Reset week</button>
+          </div>
+        </div>
+        <div id="plannerGrid" class="planner-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js?v=20260829"></script>
+  <script src="js/app.js?v=20260829"></script>
+</body>
+</html>
