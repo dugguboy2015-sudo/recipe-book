@@ -9,6 +9,7 @@ const state = {
   recipes: [],
   page: 1,
   pageSize: 12,
+  totalFilteredCount: 0,
   filters: {
     search: '',
     cuisine: '',
@@ -64,32 +65,52 @@ function escapeHtml(value) {
 
 async function fetchRecipes() {
   const selectCols = 'id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy';
+
+  let countQuery = recipeSupabase.from('recipes').select('id', { count: 'exact', head: true });
   let query = recipeSupabase.from('recipes').select(selectCols);
 
   if (state.filters.search) {
-    query = query.or(`name.ilike.%${state.filters.search}%,description.ilike.%${state.filters.search}%`);
+    const searchTerm = state.filters.search.trim();
+    countQuery = countQuery.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+    query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
   }
 
   if (state.filters.cuisine) {
+    countQuery = countQuery.eq('cuisine', state.filters.cuisine);
     query = query.eq('cuisine', state.filters.cuisine);
   }
 
   if (state.filters.tags.length) {
     state.filters.tags.forEach(tag => {
+      countQuery = countQuery.contains('tags', [tag]);
       query = query.contains('tags', [tag]);
     });
   }
 
   if (state.filters.vegetarian) {
+    countQuery = countQuery.eq('is_vegetarian', true);
     query = query.eq('is_vegetarian', true);
   }
 
   if (state.filters.eggFree) {
+    countQuery = countQuery.eq('is_egg_free', true);
     query = query.eq('is_egg_free', true);
   }
 
   if (state.filters.dairyFree) {
+    countQuery = countQuery.eq('contains_dairy', false);
     query = query.eq('contains_dairy', false);
+  }
+
+  const { count: totalCount, error: countError } = await countQuery;
+  if (countError) {
+    console.error(countError);
+  }
+
+  state.totalFilteredCount = Number(totalCount || 0);
+  const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
+  if (state.page > totalPages) {
+    state.page = totalPages;
   }
 
   const from = (state.page - 1) * state.pageSize;
@@ -207,9 +228,14 @@ async function loadRecipesPage() {
   }
 
   function updateStatus(count) {
+    const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
+    const hasPrevPage = state.page > 1;
+    const hasNextPage = state.page < totalPages;
+
     resultCount.textContent = `${count} recipes`;
-    pageStatus.textContent = `Page ${state.page}`;
-    prevPage.disabled = state.page <= 1;
+    pageStatus.textContent = `Page ${state.page} of ${totalPages}`;
+    prevPage.disabled = !hasPrevPage;
+    nextPage.disabled = !hasNextPage;
   }
 
   function renderCards(recipes) {
