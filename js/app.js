@@ -275,10 +275,184 @@ async function loadRecipesPage() {
     updateStatus(recipes.length);
   }
 
+  function showSnackbar(message, type = 'success') {
+    const snackbar = document.getElementById('snackbar');
+    if (!snackbar) return;
+    snackbar.textContent = message;
+    snackbar.className = `snackbar show ${type}`;
+    clearTimeout(showSnackbar.timeoutId);
+    showSnackbar.timeoutId = setTimeout(() => {
+      snackbar.classList.remove('show');
+    }, 3000);
+  }
+
+  function clearFieldErrors(form) {
+    form.querySelectorAll('.field-error').forEach(node => {
+      node.textContent = '';
+    });
+    form.querySelectorAll('input, textarea').forEach(node => {
+      node.classList.remove('input-error');
+    });
+  }
+
+  function setFieldError(form, fieldName, message) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    const error = form.querySelector(`[data-error-for="${fieldName}"]`);
+    if (input) input.classList.toggle('input-error', Boolean(message));
+    if (error) error.textContent = message || '';
+  }
+
+  function parseNumberValue(rawValue) {
+    if (rawValue === null || rawValue === undefined || rawValue === '') return null;
+    const value = Number(rawValue);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  function buildRecipePayload(form) {
+    const formData = new FormData(form);
+    const fields = Object.fromEntries(formData.entries());
+
+    const name = String(fields.name || '').trim();
+    const cuisine = String(fields.cuisine || '').trim();
+    const description = String(fields.description || '').trim();
+    const serves = parseNumberValue(fields.serves);
+    const totalTime = parseNumberValue(fields.total_time_minutes);
+    const calories = parseNumberValue(fields.calories_kcal);
+    const protein = parseNumberValue(fields.protein_g);
+    const carbs = parseNumberValue(fields.carbs_g);
+    const fat = parseNumberValue(fields.fat_g);
+    const fibre = parseNumberValue(fields.fibre_g);
+
+    const ingredientsText = String(fields.ingredients || '').trim();
+    const stepsText = String(fields.steps || '').trim();
+    const tagsText = String(fields.tags || '').trim();
+
+    const ingredientItems = ingredientsText
+      .split(/\n+/)
+      .map(item => item.trim())
+      .filter(Boolean)
+      .map(item => ({ name: item }));
+
+    const stepItems = stepsText
+      .split(/\n+/)
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    const tags = tagsText
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    return {
+      name,
+      description,
+      cuisine,
+      serves,
+      total_time_minutes: totalTime,
+      tags,
+      ingredients: ingredientItems.length ? [{ group: 'Ingredients', items: ingredientItems }] : [],
+      steps: stepItems.length ? [{ group: 'Method', steps: stepItems }] : [],
+      is_vegetarian: Boolean(fields.is_vegetarian),
+      is_egg_free: Boolean(fields.is_egg_free),
+      contains_dairy: Boolean(fields.contains_dairy),
+      calories_kcal: calories,
+      protein_g: protein,
+      carbs_g: carbs,
+      fat_g: fat,
+      fibre_g: fibre
+    };
+  }
+
+  function validateNewRecipeForm(form) {
+    const errors = {};
+    const values = buildRecipePayload(form);
+
+    if (!values.name) errors.name = 'Recipe name is required.';
+    if (!values.cuisine) errors.cuisine = 'Cuisine is required.';
+    if (!values.description) errors.description = 'Description is required.';
+    if (!values.serves || values.serves <= 0) errors.serves = 'Serves must be greater than 0.';
+    if (!values.total_time_minutes || values.total_time_minutes <= 0) errors.total_time_minutes = 'Time must be greater than 0 minutes.';
+    if (!values.ingredients.length) errors.ingredients = 'Add at least one ingredient.';
+    if (!values.steps.length) errors.steps = 'Add at least one cooking step.';
+    if (values.calories_kcal !== null && values.calories_kcal < 0) errors.calories_kcal = 'Calories must be 0 or more.';
+    if (values.protein_g !== null && values.protein_g < 0) errors.protein_g = 'Protein must be 0 or more.';
+    if (values.carbs_g !== null && values.carbs_g < 0) errors.carbs_g = 'Carbs must be 0 or more.';
+    if (values.fat_g !== null && values.fat_g < 0) errors.fat_g = 'Fat must be 0 or more.';
+    if (values.fibre_g !== null && values.fibre_g < 0) errors.fibre_g = 'Fibre must be 0 or more.';
+
+    return { valid: Object.keys(errors).length === 0, errors, values };
+  }
+
+  function openAddRecipeModal() {
+    const modal = document.getElementById('addRecipeModal');
+    if (!modal) return;
+    modal.classList.add('visible');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeAddRecipeModal() {
+    const modal = document.getElementById('addRecipeModal');
+    const form = document.getElementById('addRecipeForm');
+    if (!modal) return;
+    if (form) {
+      form.reset();
+      clearFieldErrors(form);
+    }
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  async function saveNewRecipe(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    clearFieldErrors(form);
+
+    const validation = validateNewRecipeForm(form);
+    if (!validation.valid) {
+      Object.entries(validation.errors).forEach(([fieldName, message]) => setFieldError(form, fieldName, message));
+      showSnackbar('Please fix the highlighted fields before saving.', 'error');
+      const firstInvalid = form.querySelector('.input-error');
+      firstInvalid?.focus();
+      return;
+    }
+
+    try {
+      const { data, error } = await recipeSupabase.from('recipes').insert([validation.values]).select().single();
+      if (error) throw error;
+
+      showSnackbar('Recipe added successfully!', 'success');
+      closeAddRecipeModal();
+      state.page = 1;
+      const recipes = await fetchRecipes();
+      renderCards(recipes);
+      if (data) {
+        const created = normalizeRecipe(data);
+        if (!state.recipes.some(recipe => recipe.id === created.id)) {
+          state.recipes = [created, ...state.recipes];
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      showSnackbar(error.message || 'Unable to save recipe. Please try again.', 'error');
+    }
+  }
+
   async function refreshRecipes() {
     const recipes = await fetchRecipes();
     renderCards(recipes);
   }
+
+  const addRecipeButton = document.getElementById('addRecipeButton');
+  const addRecipeModal = document.getElementById('addRecipeModal');
+  const addRecipeForm = document.getElementById('addRecipeForm');
+  const cancelAddRecipe = document.getElementById('cancelAddRecipe');
+
+  addRecipeButton?.addEventListener('click', openAddRecipeModal);
+  cancelAddRecipe?.addEventListener('click', closeAddRecipeModal);
+  addRecipeModal?.addEventListener('click', (event) => {
+    if (event.target.id === 'addRecipeModal') closeAddRecipeModal();
+  });
+  addRecipeForm?.addEventListener('submit', saveNewRecipe);
 
   searchInput.addEventListener('input', (event) => {
     state.filters.search = event.target.value.trim();

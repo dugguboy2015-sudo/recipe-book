@@ -101,6 +101,119 @@
     </div>
   </div>
 
+  <div id="addRecipeModal" class="modal-backdrop" aria-hidden="true">
+    <div class="recipe-detail add-recipe-panel" role="dialog" aria-modal="true" aria-labelledby="addRecipeTitle">
+      <div class="detail-header">
+        <h3 id="addRecipeTitle">Add a new recipe</h3>
+      </div>
+
+      <form id="addRecipeForm" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            <span>Recipe name</span>
+            <input type="text" name="name" placeholder="e.g. Chicken Pasta" />
+            <small class="field-error" data-error-for="name"></small>
+          </label>
+
+          <label class="field">
+            <span>Cuisine</span>
+            <input type="text" name="cuisine" placeholder="e.g. Italian" />
+            <small class="field-error" data-error-for="cuisine"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Description</span>
+            <textarea name="description" rows="3" placeholder="Short description of the dish"></textarea>
+            <small class="field-error" data-error-for="description"></small>
+          </label>
+
+          <label class="field">
+            <span>Serves</span>
+            <input type="number" name="serves" min="1" step="1" placeholder="4" />
+            <small class="field-error" data-error-for="serves"></small>
+          </label>
+
+          <label class="field">
+            <span>Total time (minutes)</span>
+            <input type="number" name="total_time_minutes" min="1" step="1" placeholder="30" />
+            <small class="field-error" data-error-for="total_time_minutes"></small>
+          </label>
+
+          <label class="field">
+            <span>Tags</span>
+            <input type="text" name="tags" placeholder="easy, family, quick" />
+            <small class="field-error" data-error-for="tags"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Ingredients (one per line)</span>
+            <textarea name="ingredients" rows="5" placeholder="Chicken breast&#10;Pasta&#10;Garlic"></textarea>
+            <small class="field-error" data-error-for="ingredients"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Steps (one per line)</span>
+            <textarea name="steps" rows="5" placeholder="Boil pasta&#10;Cook chicken with garlic&#10;Combine and serve"></textarea>
+            <small class="field-error" data-error-for="steps"></small>
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" name="is_vegetarian" />
+            <span>Vegetarian</span>
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" name="is_egg_free" />
+            <span>Egg-free</span>
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" name="contains_dairy" />
+            <span>Contains dairy</span>
+          </label>
+
+          <label class="field">
+            <span>Calories (kcal)</span>
+            <input type="number" name="calories_kcal" min="0" step="1" placeholder="420" />
+            <small class="field-error" data-error-for="calories_kcal"></small>
+          </label>
+
+          <label class="field">
+            <span>Protein (g)</span>
+            <input type="number" name="protein_g" min="0" step="0.1" placeholder="25" />
+            <small class="field-error" data-error-for="protein_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Carbs (g)</span>
+            <input type="number" name="carbs_g" min="0" step="0.1" placeholder="40" />
+            <small class="field-error" data-error-for="carbs_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Fat (g)</span>
+            <input type="number" name="fat_g" min="0" step="0.1" placeholder="18" />
+            <small class="field-error" data-error-for="fat_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Fibre (g)</span>
+            <input type="number" name="fibre_g" min="0" step="0.1" placeholder="6" />
+            <small class="field-error" data-error-for="fibre_g"></small>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="ghost-button" id="cancelAddRecipe">Cancel</button>
+          <button type="submit" class="primary-button">Save recipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <button id="addRecipeButton" class="floating-add-button" type="button" title="Add recipe" aria-label="Add recipe">+</button>
+  <div id="snackbar" class="snackbar" aria-live="polite"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=20260829"></script>
   <script src="js/app.js?v=20260829"></script>
