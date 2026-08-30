@@ -205,9 +205,22 @@
 
         <div class="form-actions">
           <button type="button" class="ghost-button" id="cancelAddRecipe">Cancel</button>
-          <button type="submit" class="primary-button">Save recipe</button>
+          <button type="submit" class="primary-button" id="submitRecipeButton">Save recipe</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div id="deleteConfirmModal" class="modal-backdrop" aria-hidden="true">
+    <div class="recipe-detail confirmation-panel" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+      <div class="detail-header">
+        <h3 id="deleteConfirmTitle">Delete recipe</h3>
+      </div>
+      <p class="delete-confirm-copy">This recipe will be hidden from the app but kept in the database for record tracking.</p>
+      <div class="form-actions">
+        <button type="button" class="ghost-button" id="cancelDeleteRecipe">Cancel</button>
+        <button type="button" class="secondary-button" id="confirmDeleteRecipe">Delete</button>
+      </div>
     </div>
   </div>
 

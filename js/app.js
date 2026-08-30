@@ -24,6 +24,34 @@ const state = {
   planner: loadPlanner()
 };
 
+const recipeFormState = {
+  mode: 'add',
+  currentRecipeId: null
+};
+
+let pendingDeleteRecipeId = null;
+const softDeleteSupport = { checked: false, enabled: false };
+
+async function checkSoftDeleteSupport() {
+  if (softDeleteSupport.checked) {
+    return softDeleteSupport.enabled;
+  }
+
+  try {
+    const { error } = await recipeSupabase
+      .from('recipes')
+      .select('id,is_deleted,deleted_at')
+      .limit(1);
+
+    softDeleteSupport.enabled = !error;
+  } catch {
+    softDeleteSupport.enabled = false;
+  }
+
+  softDeleteSupport.checked = true;
+  return softDeleteSupport.enabled;
+}
+
 function loadPlanner() {
   try {
     const saved = JSON.parse(localStorage.getItem(plannerKey) || 'null');
@@ -69,6 +97,12 @@ async function fetchRecipes() {
 
   let countQuery = recipeSupabase.from('recipes').select('id', { count: 'exact', head: true });
   let query = recipeSupabase.from('recipes').select(selectCols);
+
+  const supportsSoftDelete = await checkSoftDeleteSupport();
+  if (supportsSoftDelete) {
+    countQuery = countQuery.eq('is_deleted', false);
+    query = query.eq('is_deleted', false);
+  }
 
   if (state.filters.search) {
     const searchTerm = state.filters.search.trim();
@@ -165,7 +199,12 @@ async function loadDashboard() {
   const statsGrid = document.getElementById('statsGrid');
   if (!statsGrid) return;
 
-  const { data, error } = await recipeSupabase.from('recipes').select('id,cuisine,is_vegetarian,is_egg_free,contains_dairy,name,created_at');
+  let query = recipeSupabase.from('recipes').select('id,cuisine,is_vegetarian,is_egg_free,contains_dairy,name,created_at');
+  if (await checkSoftDeleteSupport()) {
+    query = query.eq('is_deleted', false);
+  }
+
+  const { data, error } = await query;
   if (error) {
     console.error(error);
     statsGrid.innerHTML = '<div class="empty-state">Unable to load dashboard stats.</div>';
@@ -208,13 +247,21 @@ async function loadRecipesPage() {
 
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
-  const { data: cuisineData, error: cuisineError } = await recipeSupabase.from('recipes').select('cuisine').not('cuisine', 'is', null).order('cuisine');
+  let cuisineQuery = recipeSupabase.from('recipes').select('cuisine').not('cuisine', 'is', null).order('cuisine');
+  let tagQuery = recipeSupabase.from('recipes').select('tags');
+
+  if (await checkSoftDeleteSupport()) {
+    cuisineQuery = cuisineQuery.eq('is_deleted', false);
+    tagQuery = tagQuery.eq('is_deleted', false);
+  }
+
+  const { data: cuisineData, error: cuisineError } = await cuisineQuery;
   if (!cuisineError) {
     const distinct = [...new Set((cuisineData || []).map(item => item.cuisine).filter(Boolean))];
     cuisineFilter.innerHTML = '<option value="">All cuisines</option>' + distinct.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   }
 
-  const { data: tagData, error: tagError } = await recipeSupabase.from('recipes').select('tags');
+  const { data: tagData, error: tagError } = await tagQuery;
   if (!tagError) {
     const allTags = [...new Set((tagData || []).flatMap(item => Array.isArray(item.tags) ? item.tags : []).filter(Boolean))].sort();
     tagFilters.innerHTML = allTags.map(tag => `<button type="button" class="chip" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('');
@@ -249,8 +296,12 @@ async function loadRecipesPage() {
 
     recipeGrid.innerHTML = recipes.map(recipe => `
       <article class="recipe-card" data-id="${recipe.id}">
-        <div>
+        <div class="recipe-card-header">
           <h3>${escapeHtml(recipe.name)}</h3>
+          <div class="recipe-card-actions">
+            <button type="button" class="icon-button edit-button" data-action="edit" data-id="${recipe.id}" aria-label="Edit recipe">✎</button>
+            <button type="button" class="icon-button delete-button" data-action="delete" data-id="${recipe.id}" aria-label="Delete recipe">🗑</button>
+          </div>
         </div>
         <div class="recipe-meta">
           <span>${escapeHtml(recipe.cuisine || 'General')}</span>
@@ -269,7 +320,30 @@ async function loadRecipesPage() {
     `).join('');
 
     recipeGrid.querySelectorAll('.recipe-card').forEach(card => {
-      card.addEventListener('click', () => openRecipeModal(Number(card.dataset.id)));
+      card.addEventListener('click', (event) => {
+        if (event.target.closest('[data-action]')) return;
+        openRecipeModal(Number(card.dataset.id));
+      });
+    });
+
+    recipeGrid.querySelectorAll('[data-action]').forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const action = button.dataset.action;
+        const id = Number(button.dataset.id);
+
+        if (action === 'edit') {
+          const recipe = state.recipes.find(item => item.id === id);
+          if (recipe) {
+            openRecipeFormModal('edit', recipe);
+          }
+          return;
+        }
+
+        if (action === 'delete') {
+          openDeleteConfirm(id);
+        }
+      });
     });
 
     updateStatus(recipes.length);
@@ -383,11 +457,68 @@ async function loadRecipesPage() {
     return { valid: Object.keys(errors).length === 0, errors, values };
   }
 
-  function openAddRecipeModal() {
+  const fillRecipeForm = (form, recipe) => {
+    const ingredientLines = [];
+    if (Array.isArray(recipe.ingredients)) {
+      recipe.ingredients.forEach(group => {
+        if (Array.isArray(group.items)) {
+          group.items.forEach(item => ingredientLines.push(item.name || item));
+        }
+      });
+    }
+
+    const stepLines = [];
+    if (Array.isArray(recipe.steps)) {
+      recipe.steps.forEach(group => {
+        if (Array.isArray(group.steps)) {
+          group.steps.forEach(step => stepLines.push(step));
+        }
+      });
+    }
+
+    form.elements.name.value = recipe.name || '';
+    form.elements.cuisine.value = recipe.cuisine || '';
+    form.elements.description.value = recipe.description || '';
+    form.elements.serves.value = recipe.serves || '';
+    form.elements.total_time_minutes.value = recipe.total_time_minutes || '';
+    form.elements.tags.value = Array.isArray(recipe.tags) ? recipe.tags.join(', ') : '';
+    form.elements.ingredients.value = ingredientLines.join('\n');
+    form.elements.steps.value = stepLines.join('\n');
+    form.elements.is_vegetarian.checked = Boolean(recipe.is_vegetarian);
+    form.elements.is_egg_free.checked = Boolean(recipe.is_egg_free);
+    form.elements.contains_dairy.checked = Boolean(recipe.contains_dairy);
+    form.elements.calories_kcal.value = recipe.calories_kcal ?? '';
+    form.elements.protein_g.value = recipe.protein_g ?? '';
+    form.elements.carbs_g.value = recipe.carbs_g ?? '';
+    form.elements.fat_g.value = recipe.fat_g ?? '';
+    form.elements.fibre_g.value = recipe.fibre_g ?? '';
+  };
+
+  function openRecipeFormModal(mode = 'add', recipe = null) {
     const modal = document.getElementById('addRecipeModal');
-    if (!modal) return;
+    const form = document.getElementById('addRecipeForm');
+    const title = document.getElementById('addRecipeTitle');
+    const submitButton = document.getElementById('submitRecipeButton');
+    if (!modal || !form || !title || !submitButton) return;
+
+    recipeFormState.mode = mode;
+    recipeFormState.currentRecipeId = recipe ? Number(recipe.id) : null;
+    title.textContent = mode === 'edit' ? 'Edit recipe' : 'Add a new recipe';
+    submitButton.textContent = mode === 'edit' ? 'Update recipe' : 'Save recipe';
+
+    form.reset();
+    clearFieldErrors(form);
+
+    if (mode === 'edit' && recipe) {
+      fillRecipeForm(form, recipe);
+    }
+
     modal.classList.add('visible');
     modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function openAddRecipeModal() {
+    openRecipeFormModal('add', null);
   }
 
   function closeAddRecipeModal() {
@@ -400,6 +531,8 @@ async function loadRecipesPage() {
     }
     modal.classList.remove('visible');
     modal.setAttribute('aria-hidden', 'true');
+    recipeFormState.mode = 'add';
+    recipeFormState.currentRecipeId = null;
   }
 
   async function saveNewRecipe(event) {
@@ -417,6 +550,33 @@ async function loadRecipesPage() {
     }
 
     try {
+      if (recipeFormState.mode === 'edit' && recipeFormState.currentRecipeId) {
+        const { data, error } = await recipeSupabase
+          .from('recipes')
+          .update(validation.values)
+          .eq('id', recipeFormState.currentRecipeId)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        showSnackbar('Recipe updated successfully!', 'success');
+        closeAddRecipeModal();
+        state.page = 1;
+        const recipes = await fetchRecipes();
+        renderCards(recipes);
+
+        if (data) {
+          const updated = normalizeRecipe(data);
+          state.recipes = state.recipes.map(recipe => recipe.id === updated.id ? updated : recipe);
+          const index = state.recipes.findIndex(recipe => recipe.id === updated.id);
+          if (index >= 0) {
+            state.recipes[index] = updated;
+          }
+        }
+        return;
+      }
+
       const { data, error } = await recipeSupabase.from('recipes').insert([validation.values]).select().single();
       if (error) throw error;
 
@@ -446,11 +606,65 @@ async function loadRecipesPage() {
   const addRecipeModal = document.getElementById('addRecipeModal');
   const addRecipeForm = document.getElementById('addRecipeForm');
   const cancelAddRecipe = document.getElementById('cancelAddRecipe');
+  const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+  const cancelDeleteRecipe = document.getElementById('cancelDeleteRecipe');
+  const confirmDeleteRecipe = document.getElementById('confirmDeleteRecipe');
+
+  function openDeleteConfirm(recipeId) {
+    pendingDeleteRecipeId = recipeId;
+    if (!deleteConfirmModal) return;
+    deleteConfirmModal.classList.add('visible');
+    deleteConfirmModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeDeleteConfirm() {
+    pendingDeleteRecipeId = null;
+    if (!deleteConfirmModal) return;
+    deleteConfirmModal.classList.remove('visible');
+    deleteConfirmModal.setAttribute('aria-hidden', 'true');
+  }
+
+  async function confirmSoftDelete() {
+    if (!pendingDeleteRecipeId) return;
+    const recipeId = pendingDeleteRecipeId;
+    closeDeleteConfirm();
+
+    const supportsSoftDelete = await checkSoftDeleteSupport();
+    if (!supportsSoftDelete) {
+      showSnackbar('Soft delete is not enabled in Supabase yet. Add is_deleted and deleted_at columns to the recipes table first.', 'error');
+      return;
+    }
+
+    try {
+      const deletionTimestamp = new Date().toISOString();
+      const softDeletePayload = { is_deleted: true, deleted_at: deletionTimestamp };
+
+      const { error } = await recipeSupabase
+        .from('recipes')
+        .update(softDeletePayload)
+        .eq('id', recipeId);
+
+      if (error) throw error;
+
+      showSnackbar('Recipe deleted successfully.', 'success');
+      state.page = 1;
+      const recipes = await fetchRecipes();
+      renderCards(recipes);
+    } catch (error) {
+      console.error(error);
+      showSnackbar(error.message || 'Unable to delete recipe. Please try again.', 'error');
+    }
+  }
 
   addRecipeButton?.addEventListener('click', openAddRecipeModal);
   cancelAddRecipe?.addEventListener('click', closeAddRecipeModal);
+  cancelDeleteRecipe?.addEventListener('click', closeDeleteConfirm);
+  confirmDeleteRecipe?.addEventListener('click', confirmSoftDelete);
   addRecipeModal?.addEventListener('click', (event) => {
     if (event.target.id === 'addRecipeModal') closeAddRecipeModal();
+  });
+  deleteConfirmModal?.addEventListener('click', (event) => {
+    if (event.target.id === 'deleteConfirmModal') closeDeleteConfirm();
   });
   addRecipeForm?.addEventListener('submit', saveNewRecipe);
 
@@ -512,7 +726,12 @@ async function loadRecipesPage() {
 }
 
 async function openRecipeModal(id) {
-  const { data, error } = await recipeSupabase.from('recipes').select('*').eq('id', id).single();
+  let query = recipeSupabase.from('recipes').select('*').eq('id', id);
+  if (await checkSoftDeleteSupport()) {
+    query = query.eq('is_deleted', false);
+  }
+
+  const { data, error } = await query.single();
   if (error) {
     console.error(error);
     return;
@@ -698,7 +917,12 @@ async function initApp() {
   }
 
   if (pageType === 'dashboard') {
-    const { data } = await recipeSupabase.from('recipes').select('id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy,created_at').order('created_at', { ascending: false }).limit(10);
+    let query = recipeSupabase.from('recipes').select('id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy,created_at').order('created_at', { ascending: false }).limit(10);
+    if (await checkSoftDeleteSupport()) {
+      query = query.eq('is_deleted', false);
+    }
+
+    const { data } = await query;
     renderRecentRecipes((data || []).map(normalizeRecipe));
     loadDashboard();
 
@@ -723,7 +947,12 @@ async function initApp() {
   }
 
   if (pageType === 'planner') {
-    const { data } = await recipeSupabase.from('recipes').select('id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy').order('name', { ascending: true }).limit(50);
+    let query = recipeSupabase.from('recipes').select('id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy').order('name', { ascending: true }).limit(50);
+    if (await checkSoftDeleteSupport()) {
+      query = query.eq('is_deleted', false);
+    }
+
+    const { data } = await query;
     state.recipes = (data || []).map(normalizeRecipe);
     initPlanner();
   }

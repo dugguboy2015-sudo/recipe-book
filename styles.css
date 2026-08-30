@@ -332,9 +332,54 @@ button:disabled {
   box-shadow: 0 18px 30px rgba(40, 48, 68, 0.12);
 }
 
+.recipe-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+}
+
 .recipe-card h3 {
   color: var(--sage-deep);
   font-size: 1.55rem;
+}
+
+.recipe-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--sage-deep);
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--sage);
+}
+
+.icon-button.edit-button:hover {
+  background: #eaf4f2;
+}
+
+.icon-button.delete-button {
+  color: var(--berry);
+}
+
+.icon-button.delete-button:hover {
+  background: #fff1ee;
 }
 
 .recipe-meta {
@@ -640,6 +685,16 @@ button:disabled {
 
 .add-recipe-panel {
   width: min(760px, 100%);
+}
+
+.confirmation-panel {
+  width: min(460px, 100%);
+}
+
+.delete-confirm-copy {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 12px 0 0;
 }
 
 .form-grid {
