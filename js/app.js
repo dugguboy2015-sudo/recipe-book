@@ -815,7 +815,7 @@ function initPlanner() {
           <div class="meal-slot ${slotItems.length ? 'filled' : ''}" data-day="${day}" data-slot="${slot}">
             <div class="meal-slot-header">
               <strong>${slot}</strong>
-              <button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}">Add</button>
+              <button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}" aria-label="Add recipe to ${slot} on ${day}">+</button>
             </div>
             ${slotItems.length ? slotItems.map(item => `
               <div class="slot-card">
