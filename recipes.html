@@ -22,9 +22,10 @@
     <main class="page-shell">
       <section class="filter-panel">
         <div class="filter-row">
-          <label>
-            Search
-            <input class="search-box" id="searchInput" type="search" placeholder="Search recipe name or description" />
+          <label class="search-field">
+            <span>Recipe name or description</span>
+            <input class="search-box" id="searchInput" type="search" list="recipeSuggestions" placeholder="Start typing to search" autocomplete="off" />
+            <datalist id="recipeSuggestions"></datalist>
           </label>
 
           <label>
@@ -35,17 +36,19 @@
           </label>
         </div>
 
-        <div>
+        <details class="filter-disclosure">
+          <summary>Tags <span class="filter-hint">Optional</span></summary>
           <div class="chip-group" id="tagFilters"></div>
-        </div>
+        </details>
 
-        <div>
+        <details class="filter-disclosure">
+          <summary>Dietary preferences <span class="filter-hint">Optional</span></summary>
           <div class="chip-group" id="dietaryFilters">
             <button class="chip" data-dietary="vegetarian" type="button">Vegetarian</button>
             <button class="chip" data-dietary="egg-free" type="button">Egg-free</button>
             <button class="chip" data-dietary="dairy-free" type="button">Dairy-free</button>
           </div>
-        </div>
+        </details>
 
         <div class="actions-row">
           <button type="button" class="primary-button" id="applyFilters">Apply filters</button>

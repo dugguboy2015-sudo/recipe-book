@@ -233,9 +233,9 @@ select {
 }
 
 .filter-panel {
-  padding: 18px;
+  padding: 16px;
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .filter-row {
@@ -249,6 +249,33 @@ select {
   gap: 8px;
   font-weight: 600;
   color: var(--sage-deep);
+}
+
+.search-field {
+  min-width: 0;
+}
+
+.filter-disclosure {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.filter-disclosure summary {
+  color: var(--sage-deep);
+  cursor: pointer;
+  font-weight: 600;
+  list-style-position: inside;
+}
+
+.filter-disclosure[open] summary {
+  margin-bottom: 10px;
+}
+
+.filter-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+  margin-left: 6px;
 }
 
 .chip-group {
@@ -278,6 +305,7 @@ select {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .primary-button, .secondary-button, .ghost-button {

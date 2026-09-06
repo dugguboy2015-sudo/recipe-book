@@ -242,6 +242,7 @@ async function loadRecipesPage() {
   const nextPage = document.getElementById('nextPage');
   const pageStatus = document.getElementById('pageStatus');
   const searchInput = document.getElementById('searchInput');
+  const recipeSuggestions = document.getElementById('recipeSuggestions');
   const applyFilters = document.getElementById('applyFilters');
   const clearFilters = document.getElementById('clearFilters');
 
@@ -249,16 +250,26 @@ async function loadRecipesPage() {
 
   let cuisineQuery = recipeSupabase.from('recipes').select('cuisine').not('cuisine', 'is', null).order('cuisine');
   let tagQuery = recipeSupabase.from('recipes').select('tags');
+  let suggestionQuery = recipeSupabase.from('recipes').select('name,description').order('name');
 
   if (await checkSoftDeleteSupport()) {
     cuisineQuery = cuisineQuery.eq('is_deleted', false);
     tagQuery = tagQuery.eq('is_deleted', false);
+    suggestionQuery = suggestionQuery.eq('is_deleted', false);
   }
 
-  const { data: cuisineData, error: cuisineError } = await cuisineQuery;
+  const [{ data: cuisineData, error: cuisineError }, { data: suggestionData, error: suggestionError }] = await Promise.all([cuisineQuery, suggestionQuery]);
   if (!cuisineError) {
     const distinct = [...new Set((cuisineData || []).map(item => item.cuisine).filter(Boolean))];
     cuisineFilter.innerHTML = '<option value="">All cuisines</option>' + distinct.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  }
+
+  if (!suggestionError && recipeSuggestions) {
+    const suggestions = (suggestionData || []).flatMap(recipe => {
+      const values = [recipe.name, recipe.description].map(value => String(value || '').trim()).filter(Boolean);
+      return [...new Set(values)];
+    });
+    recipeSuggestions.innerHTML = [...new Set(suggestions)].map(value => `<option value="${escapeHtml(value)}"></option>`).join('');
   }
 
   const { data: tagData, error: tagError } = await tagQuery;
@@ -668,8 +679,20 @@ async function loadRecipesPage() {
   });
   addRecipeForm?.addEventListener('submit', saveNewRecipe);
 
-  searchInput.addEventListener('input', (event) => {
-    state.filters.search = event.target.value.trim();
+  function commitSearch() {
+    const nextSearch = searchInput.value.trim();
+    if (nextSearch === state.filters.search) return;
+    state.filters.search = nextSearch;
+    state.page = 1;
+    refreshRecipes();
+  }
+
+  searchInput.addEventListener('change', commitSearch);
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitSearch();
+    }
   });
 
   cuisineFilter.addEventListener('change', (event) => {
