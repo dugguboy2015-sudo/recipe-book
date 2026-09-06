@@ -92,6 +92,14 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+function createSearchFilter(value) {
+  const escapedValue = String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"');
+  const pattern = `*${escapedValue}*`;
+  return `name.ilike."${pattern}",description.ilike."${pattern}"`;
+}
+
 async function fetchRecipes() {
   const selectCols = 'id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy';
 
@@ -105,9 +113,9 @@ async function fetchRecipes() {
   }
 
   if (state.filters.search) {
-    const searchTerm = state.filters.search.trim();
-    countQuery = countQuery.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
-    query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+    const searchFilter = createSearchFilter(state.filters.search.trim());
+    countQuery = countQuery.or(searchFilter);
+    query = query.or(searchFilter);
   }
 
   if (state.filters.cuisine) {
