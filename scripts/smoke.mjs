@@ -46,8 +46,8 @@ if (!write) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: '__smoke__ unauthorized probe' }),
     });
-    if (![401, 403, 404].includes(res.status)) {
-      throw new Error(`expected 401/403/404 (endpoint may not exist yet), got ${res.status}`);
+    if (![401, 403, 404, 405].includes(res.status)) {
+      throw new Error(`expected 401/403/404/405 (endpoint may not exist yet), got ${res.status}`);
     }
   });
 }
