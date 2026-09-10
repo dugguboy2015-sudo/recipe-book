@@ -1,0 +1,19 @@
+# secrets — never commit
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# tooling
+node_modules/
+.wrangler/
+coverage/
+
+# data exports (contain full DB snapshots)
+backups/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
