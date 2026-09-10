@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "country": "United Kingdom",
+  "diet": {
+    "vegetarian": true,
+    "egg_free": true,
+    "dairy_ok": true,
+    "never": ["meat", "poultry", "fish", "seafood", "egg", "gelatine", "fish sauce", "oyster sauce", "animal rennet"]
+  },
+  "default_servings": 4,
+  "favourite_cuisines": ["South Indian", "North Indian", "Maharashtrian", "Rajasthani", "Chaat", "Indo-Chinese"],
+  "exploring_cuisines": ["British", "Continental", "Fusion"],
+  "spice": { "preference": "hot", "default_level": 4, "scale": "1 mild … 5 very hot" },
+  "measurements": { "style": "cups_spoons", "cup_ml": 240, "tbsp_ml": 15, "tsp_ml": 5 },
+  "health_goals": {
+    "protein_smart_share": 0.60,
+    "protein_smart_rule": {
+      "protein_min_g_per_serving": 15,
+      "protein_min_share_of_kcal": 0.20,
+      "sugar_max_g_per_serving": 8,
+      "refined_carb_heavy": false
+    },
+    "prefer": ["dal and pulses", "chana, rajma, moong, sprouts", "paneer", "tofu", "soya chunks", "Greek or hung yoghurt",
+               "whole wheat, millets (jowar, bajra, ragi), oats, brown rice", "vegetables in every dish"],
+    "limit": ["maida / plain flour", "white bread", "added sugar, jaggery, honey, syrups", "deep frying", "large portions of white rice or potato"]
+  },
+  "packed_lunch": {
+    "for": "son at secondary school",
+    "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "requirements": [
+      "tastes good cold or at room temperature",
+      "no strong smell and not messy to eat at school",
+      "keeps about 5 hours in an insulated lunchbox with an ice pack",
+      "filling enough for a teenager, protein-forward",
+      "nut-free by default (many UK schools restrict nuts)"
+    ]
+  }
+}

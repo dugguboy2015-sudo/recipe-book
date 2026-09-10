@@ -18,13 +18,20 @@ await sql(env, BOOTSTRAP, { readOnly: false });
 const applied = await sql(env, `select filename, checksum from public.schema_migrations order by filename`, { readOnly: true });
 const appliedByFile = new Map(applied.map((r) => [r.filename, r.checksum]));
 
+// Windows checks out files with CRLF line endings (core.autocrlf=true) even though they were
+// authored and first hashed as LF. Normalize before hashing/sending so the checksum recorded in
+// schema_migrations is stable across platforms and across a branch switch re-checking out the file.
+function normalizeLineEndings(text) {
+  return text.replace(/\r\n/g, '\n');
+}
+
 const files = readdirSync('migrations')
   .filter((f) => f.endsWith('.sql'))
   .sort();
 
 const pending = [];
 for (const file of files) {
-  const contents = readFileSync(`migrations/${file}`, 'utf8');
+  const contents = normalizeLineEndings(readFileSync(`migrations/${file}`, 'utf8'));
   const checksum = createHash('sha256').update(contents).digest('hex');
   if (appliedByFile.has(file)) {
     if (appliedByFile.get(file) !== checksum) {

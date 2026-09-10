@@ -1,0 +1,4515 @@
+[
+  {
+    "id": 1,
+    "name": "Aloo Paratha with Curd (North Indian)",
+    "description": "Whole wheat flatbread stuffed with a spiced mashed potato filling, pan-fried until golden and flaky, served with a cooling side of plain curd (yoghurt).",
+    "cuisine": "",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Lunch",
+      "Dinner",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 25,
+    "total_time_minutes": 65,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the dough",
+        "items": [
+          {
+            "name": "whole wheat flour (atta), plus extra for dusting",
+            "unit": "tbsp",
+            "amount": 24
+          },
+          {
+            "name": "salt",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "oil",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Water, as needed to knead (add gradually, roughly 2 tbsp at a time, until a soft, pliable dough forms)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the potato filling",
+        "items": [
+          {
+            "name": "potatoes, boiled, peeled, and mashed",
+            "unit": "medium",
+            "amount": 4
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "chilli, finely chopped",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "grated ginger",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "cumin seeds (or ½ tsp roasted cumin powder)",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder (adjust to taste)",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "turmeric powder (optional, for colour)",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "dried mango powder (amchur) or 1 tsp lemon juice",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For cooking",
+        "items": [
+          {
+            "name": "ghee or oil (roughly ½ tbsp per paratha)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "To serve:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "plain curd (yoghurt), i.e. about 4 tbsp per person",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "Pickle (achaar) or extra butter, optional",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Making the dough",
+          "Knead: In a large bowl, combine the flour and salt. Add the oil and rub it in lightly. Gradually add water, mixing and kneading until a soft, smooth dough forms (it should be slightly softer than roti dough, as this makes rolling stuffed parathas easier).",
+          "Rest: Cover the dough with a damp cloth and let it rest for at least 15 minutes.",
+          "Making the filling",
+          "Combine: In a separate bowl, mix the mashed potato with coriander, green chilli, ginger, cumin seeds, red chilli powder, turmeric (if using), garam masala, amchur or lemon juice, and salt. Mix well, mashing any large lumps so the filling is smooth enough to stuff easily — but don't add any water, it should stay dry and crumbly-soft.",
+          "Portion: Divide the filling into 8 equal portions and roll each into a smooth ball.",
+          "Assembling and rolling",
+          "Divide the dough: Divide the rested dough into 8 equal portions and roll into smooth balls.",
+          "Stuff: Take one dough ball, dust with a little flour, and roll it out into a small disc about the width of your palm. Place one portion of the potato filling in the centre. Bring the edges of the dough up and over the filling, pinching them together at the top to seal completely, then gently flatten into a ball again.",
+          "Roll out: Dust with flour and gently roll the stuffed ball into a flat, round paratha about the size of a small side plate — roll evenly and gently to avoid the filling bursting through. Don't worry if a little filling peeks out; that's normal.",
+          "Cooking",
+          "Heat the pan: Heat a flat griddle (tawa) on medium heat.",
+          "Cook the first side: Place the rolled paratha on the hot griddle. Cook for about 1 minute, until small bubbles start to appear on the surface.",
+          "Flip and add fat: Flip it over, spread about ½ tsp of ghee or oil over the top, and cook for another minute.",
+          "Flip again and finish: Flip once more, spread ½ tsp of ghee or oil on the other side too, and press gently with a spatula all over the surface. Cook, flipping once or twice more, until both sides are golden brown with crisp, slightly charred spots (about 3–4 minutes total).",
+          "Repeat: Remove and keep warm, wrapped in a clean cloth. Repeat with the remaining dough and filling portions.",
+          "Serving",
+          "Serve hot: Serve each paratha with a generous side of plain curd, and pickle or a dollop of butter if desired."
+        ]
+      }
+    ],
+    "calories_kcal": 430,
+    "protein_g": 11,
+    "carbs_g": 65,
+    "fat_g": 14,
+    "fibre_g": 8,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 2 parathas with curd per serving.",
+    "egg_check_notes": "This recipe is naturally egg-free — atta, potatoes, spices, ghee, and curd contain no eggs. The only thing worth double-checking is if you ever buy ready-made atta blends or \"instant paratha\" mixes, as some multigrain or \"enriched\" varieties occasionally include additives — always check the pack, though plain wholemeal atta from an Indian grocer or the Tesco/Sainsbury's world foods aisle is reliably egg-free.",
+    "common_mistakes": "Overfilling the paratha or rolling too aggressively causes the filling to burst through — roll gently and evenly, applying light pressure. Not resting the dough leads to parathas that shrink back and are harder to roll thin. Skipping the ghee/oil on both sides during cooking results in a drier, less flaky paratha.",
+    "uk_sourcing_notes": "Whole wheat atta (often labelled \"chapati flour\") is widely available at Indian grocers and in the world foods aisle of larger UK supermarkets. Amchur (dried mango powder) is a specialty item best found at an Indian grocer — lemon juice is a fine substitute if unavailable.",
+    "storage_notes": "The potato filling can be made a day ahead and refrigerated. Rolled, uncooked parathas can be layered with baking paper between them and frozen for up to a month — cook from frozen, adding an extra minute or two per side. Cooked parathas keep in the fridge for 2 days; reheat on a dry tawa or in a pan, not the microwave, to keep them from turning rubbery.",
+    "kid_friendly_notes": "Omit the green chilli and reduce red chilli powder for a milder version — kids often enjoy these plain with just a bit of butter, w",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 2,
+    "name": "Aloo Paratha Roll with Ketchup",
+    "description": "A convenient roll-up take on classic aloo paratha, spiced potato filling wrapped inside a soft whole wheat flatbread with a simple ketchup drizzle — great for lunchboxes.",
+    "cuisine": "North Indian/Fusion",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Lunch",
+      "Snack",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 10,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "total_time_minutes": 55,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "Ingredients",
+        "items": [
+          {
+            "name": "asDfasdf"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "asdfasdf"
+        ]
+      }
+    ],
+    "calories_kcal": 234,
+    "protein_g": 234,
+    "carbs_g": 2345,
+    "fat_g": 234,
+    "fibre_g": 345,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Fully egg-free — atta, potato, and spices carry no hidden egg risk. Standard supermarket tomato ketchup is reliably egg-free too.",
+    "common_mistakes": "Overfilling makes the roll hard to seal — a moderate amount of filling works best. Not resting the dough leads to shrinking and difficulty rolling thin.",
+    "uk_sourcing_notes": "Atta (\"chapati flour\") and all spices are easily found at Indian grocers or larger UK supermarkets.",
+    "storage_notes": "The filling can be made a day ahead. Parathas keep 2 days refrigerated and reheat well on a dry tawa. Great for packed lunches — wrap while still slightly warm for the best texture later.",
+    "kid_friendly_notes": "Omit the green chilli and reduce chilli powder — the ketchup adds enough flavour appeal for kids on its own.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 3,
+    "name": "Baingan Bharta with Bajra Roti",
+    "description": "Smoky, fire-roasted mashed aubergine cooked down with onions, tomatoes, and spices, paired with a rustic, hand-patted pearl millet flatbread.",
+    "cuisine": "North Indian/Rajasthani",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 45,
+    "total_time_minutes": 60,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the baingan bharta",
+        "items": [
+          {
+            "name": "aubergines",
+            "unit": "large",
+            "amount": 2
+          },
+          {
+            "name": "oil (mustard oil is traditional, but any vegetable oil works)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "chillies, finely chopped",
+            "unit": "green",
+            "amount": 2
+          },
+          {
+            "name": "tomatoes, finely chopped",
+            "unit": "medium",
+            "amount": 2
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "coriander powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the bajra roti",
+        "items": [
+          {
+            "name": "bajra flour (pearl millet flour), plus extra for dusting",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Hot (just-boiled) water, as needed to bind",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "For the bajra roti",
+        "steps": [
+          "8. Bind the dough: In a bowl, combine the bajra flour and salt. Gradually pour in hot water, mixing first with a spoon (it's too hot to knead by hand at this stage), then knead into a soft dough once cool enough to handle — bajra has no gluten, so work it while still slightly warm for the best texture.",
+          "9. Divide: Divide the dough into 6–8 balls.",
+          "10. Pat out: Pat or gently roll each ball between two sheets of cling film (or on a floured surface) into a roti about ¼ inch thick. It may crack at the edges — this is normal; just patch with your fingers.",
+          "11. Cook: Cook on a hot, dry tawa on medium heat with no oil. Flip once bubbles appear, then cook both sides, pressing gently with a folded cloth, until light brown spots form, about 2–3 minutes per side."
+        ]
+      }
+    ],
+    "calories_kcal": 290,
+    "protein_g": 7,
+    "carbs_g": 42,
+    "fat_g": 11,
+    "fibre_g": 9,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on bharta with 2 bajra roti per serving.",
+    "egg_check_notes": "Fully egg-free.",
+    "common_mistakes": "Under-charring the aubergine loses the signature smoky flavour — don't rush this step. Rolling the bajra dough once it's gone cold makes it crack apart — pat it out while still slightly warm.",
+    "uk_sourcing_notes": "Aubergine is in every UK supermarket. Bajra flour (sometimes labelled \"pearl millet flour\") is available at Indian grocers and some larger world foods aisles.",
+    "storage_notes": "Bharta keeps 2 days refrigerated and tastes even better the next day. Bajra roti is best eaten fresh — the dough doesn't keep well, so make it the same day.",
+    "kid_friendly_notes": "Omit the green chillies and reduce the red chilli powder for a milder version.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 4,
+    "name": "Basundi",
+    "description": "A rich, slow-simmered sweetened milk dessert flavoured with saffron and cardamom, thickened naturally by reduction — a traditional festive treat, similar to rabri but thinner and pourable.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Dessert"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 5,
+    "cook_time_minutes": 45,
+    "total_time_minutes": 55,
+    "time_note": "Cooking Time:",
+    "ingredients": [],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Simmer the milk: Pour the milk into a heavy-bottomed, wide pan and bring to a gentle boil on medium heat. Once boiling, reduce the heat to low-medium and let it simmer, stirring frequently and scraping down the sides, for about 35–40 minutes, until it reduces to roughly half its original volume and thickens slightly.",
+          "Prevent sticking: Continue scraping the cream (malai) that forms on the sides back into the milk periodically — this is what gives basundi its characteristic rich texture, so don't skip it, but be gentle to avoid scorching the bottom.",
+          "Sweeten: Once thickened to a pourable, creamy consistency, stir in the sugar and cook for another 5 minutes until fully dissolved.",
+          "Flavour: Add the saffron-soaked milk and cardamom powder, and stir well to combine.",
+          "Add nuts: Stir in the chopped pistachios, almonds, and cashews (if using), reserving a little for garnish.",
+          "Cool and chill: Remove from heat and let it cool to room temperature (it will thicken further as it cools), then refrigerate for at least 2 hours.",
+          "Serve: Serve chilled, garnished with the reserved chopped nuts."
+        ]
+      }
+    ],
+    "calories_kcal": 280,
+    "protein_g": 9,
+    "carbs_g": 30,
+    "fat_g": 13,
+    "fibre_g": 0.5,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Fully egg-free — milk, sugar, and nuts carry no hidden egg risk.",
+    "common_mistakes": "Using medium-high heat to rush the reduction is the most common mistake — it causes scorching on the bottom, which taints the whole batch with a burnt flavour. Low and slow, with frequent stirring, is essential. Also, adding sugar too early can slow down the reduction process, so add it once the milk has already thickened.",
+    "uk_sourcing_notes": "Use whole/full-fat milk from any UK supermarket for the best richness — semi-skimmed will work but gives a noticeably lighter result. Saffron, pistachios, and cardamom are all at any Indian grocer.",
+    "storage_notes": "Basundi keeps well refrigerated for 3–4 days in an airtight container, and the flavour actually improves after a day. Not suitable for freezing, as the texture separates.",
+    "kid_friendly_notes": "No heat in this dish — naturally kid-friendly. Reduce sugar slightly if serving to very young children, as it's traditionally quite sweet.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 5,
+    "name": "Bhel Puri",
+    "description": "A crunchy, tangy-sweet puffed rice snack tossed with vegetables, tamarind and mint chutneys, and crispy sev — a classic Mumbai beach-side favourite.",
+    "cuisine": "Maharashtrian/Mumbai Street",
+    "origin_note": "",
+    "tags": [
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 10,
+    "total_time_minutes": 30,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the bhel",
+        "items": [
+          {
+            "name": "puffed rice (murmura/kurmura)",
+            "unit": "tbsp",
+            "amount": 20
+          },
+          {
+            "name": "sev (thin gram flour noodles — check label, see egg-check note)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "–8 puri (small round crisp puris — check label, see egg-check note), crushed roughly",
+            "unit": "",
+            "amount": 6
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "tomato, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "potato, boiled and diced",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "roasted peanuts (optional)",
+            "unit": "tbsp",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the tamarind (khajur-imli) chutney",
+        "items": [
+          {
+            "name": "tamarind pulp (or tamarind concentrate)",
+            "unit": "tbsp",
+            "amount": 3
+          },
+          {
+            "name": "jaggery, grated",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "water",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "group": "For the mint-coriander chutney",
+        "items": [
+          {
+            "name": "fresh mint leaves",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "fresh coriander leaves",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "chilli",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–3 tbsp water, for blending",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "To finish:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the tamarind chutney: Combine the tamarind pulp, jaggery, red chilli powder, cumin powder, salt, and water in a small pan. Simmer on low heat for 5–6 minutes until slightly thickened and glossy. Cool before using.",
+          "Make the mint chutney: Blend the mint, coriander, green chilli, lemon juice, salt, and water into a smooth, bright green paste.",
+          "Combine the base: In a large bowl, mix the puffed rice, chopped onion, tomato, and boiled potato.",
+          "Add chutneys: Add 3–4 tbsp of tamarind chutney and 2–3 tbsp of mint chutney (adjust to taste). Toss well and quickly — bhel goes soggy fast once mixed.",
+          "Add crunch: Add the crushed puris, sev, chaat masala, and lemon juice. Toss everything together lightly.",
+          "Serve immediately: Garnish with coriander and extra sev on top. Serve at once — bhel must be eaten right after mixing to stay crisp."
+        ]
+      }
+    ],
+    "calories_kcal": 220,
+    "protein_g": 5,
+    "carbs_g": 40,
+    "fat_g": 5,
+    "fibre_g": 4,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "",
+    "common_mistakes": "Mixing the bhel too far ahead of eating is the single biggest mistake — the puffed rice turns soggy within minutes. Prep all components ahead, but only toss together just before serving.",
+    "uk_sourcing_notes": "Puffed rice, sev, and small puris are sold at any Indian grocer, usually in the snacks/namkeen aisle. Tamarind pulp/concentrate is also widely available there or in larger supermarket world foods aisles.",
+    "storage_notes": "Both chutneys keep well refrigerated for up to a week. All dry components (puffed rice, sev, puris) can be prepped ahead, but only combine everything right before serving.",
+    "kid_friendly_notes": "Reduce or omit the green chilli in the mint chutney and go lighter on chaat masala for a milder, kid-friendly version — the tamarind chutney's sweetness usually appeals to kids regardless.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 6,
+    "name": "Bhindi Masala with Phulka",
+    "description": "Okra stir-fried until lightly crisp with onions, tomatoes, and warming spices, served with soft, puffed whole wheat flatbreads.",
+    "cuisine": "North Indian",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 50,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the bhindi",
+        "items": [
+          {
+            "name": "okra (bhindi), washed, thoroughly dried, trimmed and sliced into rounds or lengthways",
+            "unit": "medium",
+            "amount": 20
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "group": "For the masala",
+        "items": [
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "tomatoes, finely chopped",
+            "unit": "medium",
+            "amount": 2
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "coriander powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "amchur (dried mango powder), optional, for tang",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the phulka",
+        "items": [
+          {
+            "name": "whole wheat flour (atta), plus extra for dusting",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed to knead",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Ghee, for smearing (optional)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "For the phulka",
+        "steps": [
+          "7. Knead: Combine the flour and salt, then gradually add water, kneading into a smooth, soft dough. Rest for 15 minutes.",
+          "8. Roll: Divide into 8 balls. Roll each into a thin, even round on a lightly floured surface.",
+          "9. Cook: Place on a hot tawa. Cook briefly until small bubbles appear, then flip.",
+          "10. Puff: Cook the second side briefly, then transfer directly onto an open flame (or press firmly with a folded cloth on the tawa) — it should puff up like a balloon within seconds. Remove, smear lightly with ghee if desired, and keep wrapped in a cloth."
+        ]
+      }
+    ],
+    "calories_kcal": 320,
+    "protein_g": 8,
+    "carbs_g": 45,
+    "fat_g": 12,
+    "fibre_g": 7,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on bhindi masala with 2 phulka per serving.",
+    "egg_check_notes": "Fully egg-free — okra, spices, atta, and ghee carry no hidden egg risk.",
+    "common_mistakes": "Not drying the okra thoroughly before cooking is the #1 cause of slimy bhindi. Overcrowding the pan while searing it causes steaming rather than browning — use a wide pan. Cooking phulka on too low a heat prevents it from puffing.",
+    "uk_sourcing_notes": "Okra is sold as \"okra\" or \"ladies' fingers\" at most larger Tesco/Sainsbury's and any Indian or Caribbean grocer. Atta as usual from the world foods aisle or Indian grocer.",
+    "storage_notes": "Bhindi masala keeps 1–2 days refrigerated, though the okra softens further. Phulka dough can be made ahead and refrigerated, but roll and cook fresh for best puffing.",
+    "kid_friendly_notes": "Reduce the chilli powder and omit the amchur if a tangier note isn't preferred.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 7,
+    "name": "Dahi Puri",
+    "description": "Crisp hollow puris filled with spiced potato, topped with cooling yoghurt, tangy-sweet chutneys, and crunchy sev — a favourite creamy variation on Mumbai chaat.",
+    "cuisine": "Maharashtrian/Mumbai Street",
+    "origin_note": "",
+    "tags": [
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 5,
+    "total_time_minutes": 30,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the tamarind chutney",
+        "items": [
+          {
+            "name": "tamarind pulp (or concentrate)",
+            "unit": "tbsp",
+            "amount": 3
+          },
+          {
+            "name": "jaggery, grated",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "water",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "group": "For the mint-coriander chutney",
+        "items": [
+          {
+            "name": "fresh mint leaves",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "fresh coriander leaves",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "chilli",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–3 tbsp water, for blending",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "To finish:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder (optional, for garnish)",
+            "unit": "tsp",
+            "amount": 0.25
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the tamarind chutney: Simmer tamarind pulp, jaggery, chilli powder, cumin powder, salt, and water for 5–6 minutes until slightly thickened. Cool.",
+          "Make the mint chutney: Blend mint, coriander, green chilli, lemon juice, salt, and water into a smooth paste.",
+          "Prep the yoghurt: Whisk the yoghurt with a pinch of salt and sugar until smooth and slightly loosened (add a splash of water if it's very thick — it should be pourable but still creamy).",
+          "Fill the puris: Gently tap a small hole into the top of each hollow puri (or use the pre-made opening) and fill each with a little diced potato and a few chickpeas or sprouts, if using.",
+          "Top with yoghurt: Spoon a little whisked yoghurt over the filling in each puri.",
+          "Add chutneys: Drizzle a little tamarind chutney and mint chutney over each.",
+          "Finish: Sprinkle chaat masala, roasted cumin powder, and a touch of red chilli powder over the top. Scatter with sev and coriander leaves.",
+          "Serve immediately: Dahi puri must be eaten right away — the puris will turn soggy quickly once filled."
+        ]
+      }
+    ],
+    "calories_kcal": 260,
+    "protein_g": 7,
+    "carbs_g": 35,
+    "fat_g": 9,
+    "fibre_g": 3,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 6 puris per serving.",
+    "egg_check_notes": "",
+    "common_mistakes": "Overfilling the puris makes them prone to breaking apart — a small amount of filling goes a long way. Using thin, watery yoghurt makes the dish messy — it should be thick enough to hold its place on top of the filling.",
+    "uk_sourcing_notes": "Hollow puris (sometimes labelled \"golgappa\" or \"puri for pani puri\") and sev are sold at any Indian grocer. Thick yoghurt — Greek-style plain yoghurt from any UK supermarket works very well here.",
+    "storage_notes": "Both chutneys and the whisked yoghurt keep for a couple of days refrigerated. Assemble the puris only right before serving.",
+    "kid_friendly_notes": "Omit the green chilli from the mint chutney and skip the chilli powder garnish — the yoghurt naturally mellows the dish, so kids often enjoy it as is.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 8,
+    "name": "Dal Fry with Jeera Rice",
+    "description": "Comforting split-pigeon-pea dal finished with a garlicky cumin tempering, served alongside fragrant cumin-flavoured rice.",
+    "cuisine": "North Indian",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 50,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the dal",
+        "items": [
+          {
+            "name": "toor dal (split pigeon peas), rinsed",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed for boiling (enough to cover dal by about 2 inches)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the tempering (tadka)",
+        "items": [
+          {
+            "name": "ghee or oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "mustard seeds (optional)",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "cloves, finely chopped",
+            "unit": "garlic",
+            "amount": 2
+          },
+          {
+            "name": "red chilli (or 1 chopped green chilli)",
+            "unit": "dried",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "tomato, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the jeera rice",
+        "items": [
+          {
+            "name": "rice",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "ghee or oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "½ tsp cumin seeds",
+            "unit": "",
+            "amount": 1
+          },
+          {
+            "name": "leaf",
+            "unit": "bay",
+            "amount": 1
+          },
+          {
+            "name": "–3 cloves and 1-inch cinnamon stick (optional whole spices)",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed to cook the rice (roughly double the volume of rice)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Dal",
+        "steps": [
+          "Boil the dal: In a pot, combine the rinsed dal, turmeric, salt, and enough water to cover by about 2 inches. Boil until soft and mushy, about 20–25 minutes (or 3–4 whistles in a pressure cooker). Mash lightly with a spoon or whisk, adding hot water if it's too thick.",
+          "Make the tempering: Heat the ghee in a small pan on medium heat. Add cumin and mustard seeds and let them sizzle.",
+          "Add aromatics: Add the garlic, dried red chilli, and hing, and sauté for 30 seconds.",
+          "Cook onion and tomato: Add the onion and cook until golden, about 4 minutes. Add the tomato and chilli powder, cooking until soft and the oil separates, about 5 minutes.",
+          "Combine: Pour the tempering into the boiled dal, mix well, and simmer for 5 minutes. Stir in the garam masala and fresh coriander."
+        ]
+      },
+      {
+        "group": "Jeera rice",
+        "steps": [
+          "6. Rinse: Wash the rice until the water runs mostly clear; soak for 15 minutes if you have time.",
+          "7. Temper: Heat the ghee in a pot on medium heat. Add cumin seeds and whole spices, letting them sizzle.",
+          "8. Add rice: Add the drained rice and sauté gently for 1–2 minutes to coat it in the ghee.",
+          "9. Cook: Add water and salt, bring to a boil, then cover and simmer on low heat for 12–15 minutes until the rice is cooked and the water is absorbed. Rest, covered, off the heat for 5 minutes, then fluff with a fork."
+        ]
+      }
+    ],
+    "calories_kcal": 380,
+    "protein_g": 12,
+    "carbs_g": 60,
+    "fat_g": 10,
+    "fibre_g": 6,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Naturally egg-free. Ready-made Malvani masala pastes/powders are traditionally a dry spice blend with no egg, but glance at the label as a precaution with any pre-made paste product.",
+    "common_mistakes": "Letting the masala paste burn in step 4 (it needs constant stirring — add a splash of water if it sticks). Not patting the bhakri thin and even enough leaves the centre undercooked.",
+    "uk_sourcing_notes": "Ready-made Malvani masala paste or powder can be found at larger Indian grocers; if your local grocer doesn't stock a Maharashtrian-specific brand, Indian grocery specialists online usually do. Rice flour is available at any Indian grocer or in the baking aisle of larger supermarkets.",
+    "storage_notes": "The curry keeps 2 days refrigerated and improves in flavour overnight. Bhakri is best fresh — it hardens once cooled and doesn't store well.",
+    "kid_friendly_notes": "Malvani masala is quite pungent and spicy — reduce the quantity significantly for children, or stir in a little extra coconut to mellow the heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 9,
+    "name": "Chilli Paneer with Fried Rice",
+    "description": "Crispy fried paneer tossed in a tangy, garlicky chilli-soy sauce, served alongside a smoky vegetable fried rice — a beloved Indo-Chinese restaurant classic, made at home.",
+    "cuisine": "Indo-Chinese",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 70,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the paneer batter",
+        "items": [
+          {
+            "name": "(about 300g block, cubed) paneer",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "cornflour",
+            "unit": "tbsp",
+            "amount": 3
+          },
+          {
+            "name": "plain flour",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "black pepper powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "salt",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "–3 tbsp water, as needed to make a thick coating batter",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "Oil, for shallow or deep frying",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the chilli sauce",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "garlic, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "chillies, slit",
+            "unit": "green",
+            "amount": 2
+          },
+          {
+            "name": "onion, cut into chunky petals",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "green pepper, cut into chunky squares",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "soy sauce (check label — see egg-check note)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "tomato ketchup",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "red chilli sauce (or sriracha, adjust to taste)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "vinegar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "sugar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "water",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "cornflour, mixed with 2 tbsp water (for thickening)",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "onions, sliced (green and white parts separated), for garnish and cooking",
+            "unit": "spring",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the rice",
+        "items": [
+          {
+            "name": "rice (raw, uncooked measure — use long-grain or basmati; cook and cool before using)",
+            "unit": "tbsp",
+            "amount": 16
+          }
+        ]
+      },
+      {
+        "group": "For the stir-fry",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "garlic, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "finely chopped mixed vegetables (carrot, French beans, sweetcorn — diced small)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "cabbage, finely shredded",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "onions, sliced (white and green parts separated)",
+            "unit": "spring",
+            "amount": 2
+          },
+          {
+            "name": "soy sauce (check label)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "vinegar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "black pepper powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste (go easy, as soy sauce is already salty)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Chilli Paneer",
+          "Make the batter: In a bowl, mix the cornflour, plain flour, ginger-garlic paste, black pepper, and salt. Gradually add water to form a thick, coating batter (not runny). Add the paneer cubes and toss gently to coat evenly. Let it sit for 15–20 minutes.",
+          "Fry the paneer: Heat oil in a pan (enough for shallow frying, about ½ inch deep). Fry the coated paneer cubes in batches for 3–4 minutes, turning occasionally, until golden and crisp on all sides. Drain on kitchen paper.",
+          "Prepare the sauce mix: In a small bowl, combine the soy sauce, ketchup, red chilli sauce, vinegar, and sugar with the 4 tbsp water. Set aside.",
+          "Start the stir-fry: Heat the 2 tbsp oil in a large pan or wok on high heat. Add the chopped garlic, ginger, and green chillies, and stir-fry for 30 seconds until fragrant.",
+          "Add vegetables: Add the onion petals, pepper squares, and the white parts of the spring onions. Stir-fry on high heat for 2–3 minutes, keeping the vegetables crunchy, not soft.",
+          "Add sauce: Pour in the prepared sauce mixture and bring to a bubble. Add the cornflour-water mixture and stir continuously for 1–2 minutes until the sauce thickens and turns glossy.",
+          "Toss in paneer: Add the fried paneer cubes and toss quickly to coat in the sauce, cooking for just 1 minute more so the paneer doesn't turn soggy. Garnish with the green parts of the spring onion. Set aside, keeping warm.",
+          "Vegetable Fried Rice",
+          "Cook the rice: If starting with raw rice, cook until just done, with grains separate (not mushy). Spread on a tray and cool completely — this is essential for good fried rice texture, so ideally cook this in advance or use leftover rice.",
+          "Start the stir-fry: Heat the oil in a large pan or wok on high heat. Add the chopped garlic and stir-fry for 20–30 seconds.",
+          "Add vegetables: Add the mixed diced vegetables and the white parts of the spring onions. Stir-fry on high heat for 2–3 minutes until just tender but still with a slight bite.",
+          "Add cabbage: Add the shredded cabbage and stir-fry for another minute.",
+          "Add rice: Add the cooled rice to the pan. Using a folding motion, toss it through the vegetables so the grains stay separate and don't get mushy.",
+          "Season: Add the soy sauce, vinegar, black pepper, and salt (if needed). Toss everything together on high heat for 2–3 minutes until well combined and evenly coated. Garnish with the green parts of the spring onion.",
+          "Serving",
+          "Serve: Plate the fried rice with the chilli paneer alongside, and serve immediately while both are hot."
+        ]
+      }
+    ],
+    "calories_kcal": 480,
+    "protein_g": 15,
+    "carbs_g": 58,
+    "fat_g": 20,
+    "fibre_g": 4,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "",
+    "common_mistakes": "Overcrowding the pan when frying paneer or stir-frying vegetables lowers the heat and causes steaming instead of a proper sear/crisp — cook in batches on high heat. Adding the cornflour-water slurry too early or without stirring constantly can cause lumps — add it in a thin stream while stirring. Using warm rice for fried rice leads to a mushy, clumped result — always cool it fully first, ideally use rice cooked a day ahead and refrigerated.",
+    "uk_sourcing_notes": "Soy sauce, rice vinegar, and chilli sauce are all easily found in the world foods aisle of any UK supermarket. Ginger-garlic paste can be bought ready-made at Indian grocers, or made fresh by blending equal parts ginger and garlic.",
+    "storage_notes": "The chilli sauce mixture (step 3) can be prepped ahead and refrigerated for up to 2 days. Cooked, cooled rice keeps well in the fridge for a day, ready for fried rice the next day. Both dishes are best eaten fresh, though leftovers reheat reasonably well in a hot pan (avoid microwaving the paneer, as it turns rubbery).",
+    "kid_friendly_notes": "Reduce or omit the green chillies and red chilli sauce for a much milder version — a little extra ketchup can round out the flavour without adding heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 10,
+    "name": "Ghevar",
+    "description": "A honeycomb-textured, deep-fried disc made from a thin batter, soaked in sugar syrup and topped with rabri (thickened sweet milk) and nuts — an intricate, festive Rajasthani sweet, traditionally made for Teej and Raksha Bandhan.",
+    "cuisine": "Rajasthani",
+    "origin_note": "",
+    "tags": [
+      "Dessert"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 40,
+    "total_time_minutes": 90,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the batter",
+        "items": [
+          {
+            "name": "plain flour",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "ghee, chilled and solid (or chilled butter)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "Ice-cold water, as needed (roughly 20–24 tbsp, added gradually)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "A few ice cubes, kept in the mixing bowl while beating the batter",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the sugar syrup",
+        "items": [
+          {
+            "name": "sugar",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "water",
+            "unit": "tbsp",
+            "amount": 6
+          },
+          {
+            "name": "cardamom powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "A few drops of lemon juice",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the topping",
+        "items": [
+          {
+            "name": "basundi or rabri (thickened sweetened milk — see Basundi recipe above for a homemade version, or use a good-quality shop-bought rabri)",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "chopped pistachios",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "chopped almonds",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "A few strands of saffron, for garnish",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For frying",
+        "items": [
+          {
+            "name": "Ghee or oil, enough for deep frying (about 2 inches deep in a narrow, deep pot)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Making the batter",
+          "Rub in the ghee: In a large bowl, rub the chilled ghee into the flour with your fingertips until it resembles coarse breadcrumbs.",
+          "Add ice water: Gradually add ice-cold water, a little at a time, whisking continuously (a hand whisk or electric beater works well) until you get a very thin, smooth, pourable batter — similar to a thin pancake batter, with no lumps. Keep a few ice cubes in the bowl while you work to keep everything cold, which helps the layered texture form.",
+          "Rest: Let the batter rest in the fridge for at least 30 minutes.",
+          "Making the sugar syrup",
+          "Make one-string syrup: Combine the sugar and water in a small pan and bring to a boil, stirring until the sugar dissolves. Simmer for 5–6 minutes until it reaches a one-string consistency (a small drop between your fingers should form a single thin thread when pulled apart gently). Stir in the cardamom powder and lemon juice, and keep warm.",
+          "Frying the ghevar",
+          "Heat the oil/ghee: Heat the ghee or oil in a deep, narrow pot on medium heat until quite hot but not smoking.",
+          "Pour the batter: Using a ladle, pour a thin stream of batter into the centre of the hot oil from a small height, letting it spread and set for a few seconds before adding more in a circular motion, building up the honeycomb structure layer by layer. This takes patience and a steady hand — go slowly.",
+          "Fry: Continue building the disc for several minutes until it's about ½–¾ inch thick and holds together, with visible small holes throughout (the \"honeycomb\" look). Fry until golden and crisp, then carefully lift out with a skewer or slotted implement and drain on kitchen paper.",
+          "Repeat: Repeat with the remaining batter to make 4–5 discs, letting the oil return to temperature between each.",
+          "Finishing",
+          "Soak in syrup: While still warm, dip each ghevar disc briefly into the warm sugar syrup, then remove and let excess drip off.",
+          "Top: Spoon a generous layer of basundi or rabri over the top of each disc. Garnish with chopped pistachios, almonds, and a few saffron strands.",
+          "Serve: Best served fresh, at room temperature or lightly chilled."
+        ]
+      }
+    ],
+    "calories_kcal": 420,
+    "protein_g": 6,
+    "carbs_g": 52,
+    "fat_g": 22,
+    "fibre_g": 1,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 1 topped ghevar disc per serving.",
+    "egg_check_notes": "Fully egg-free — flour, ghee, sugar, and milk carry no hidden egg risk.",
+    "common_mistakes": "Warm batter or warm ghee/oil temperature both prevent the signature honeycomb structure from forming — everything (batter, water, even the bowl) should stay as cold as possible until the moment of frying. Pouring the batter too quickly or in a thick stream results in a dense, solid disc rather than the airy, layered texture.",
+    "uk_sourcing_notes": "All ingredients here (flour, ghee, sugar) are standard UK supermarket items. A ghevar mould isn't essential — a narrow, deep, straight-sided pot (like a small milk pan) works as a home substitute to help the disc hold its shape while frying.",
+    "storage_notes": "Fried, un-soaked ghevar discs (without syrup or topping) keep well in an airtight container for about a week at room temperature. Soak in syrup and top with rabri only just before serving, as the topping softens the texture over time.",
+    "kid_friendly_notes": "No heat in this dish — naturally kid-friendly, though it's quite rich and sweet, so smaller portions suit younger children well.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 11,
+    "name": "Kanda Poha (Maharashtrian Style)",
+    "description": "A light, tangy breakfast of flattened rice sautéed with onions, peanuts, and a mustard-cumin tempering — soft yet fluffy, never mushy.",
+    "cuisine": "",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Snack",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 30,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For rinsing/softening",
+        "items": [
+          {
+            "name": "thick or medium poha (flattened rice)",
+            "unit": "tbsp",
+            "amount": 24
+          }
+        ]
+      },
+      {
+        "group": "For the tempering (tadka)",
+        "items": [
+          {
+            "name": "oil (sunflower or vegetable oil)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–12 curry leaves",
+            "unit": "",
+            "amount": 10
+          },
+          {
+            "name": "chillies, slit or finely chopped",
+            "unit": "green",
+            "amount": 2
+          },
+          {
+            "name": "roasted peanuts",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "Main ingredients:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "potato, finely diced (optional, but common in home-style versions)",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "sugar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "To finish:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "sev, for garnish (optional)",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Rinse the poha: Place the poha in a sieve or colander and rinse briefly under running water — just 2–3 quick passes, do not soak or leave sitting in water. Drain fully and set aside for 5–10 minutes; it should soften and turn fluffy on its own. Fluff gently with your fingers, don't compress it.",
+          "Start the tempering: Heat the oil in a wide pan or kadhai on medium heat. Add the mustard seeds and let them splutter.",
+          "Add aromatics: Add the cumin seeds, hing, curry leaves, and green chillies. Sauté for about 30 seconds until fragrant.",
+          "Add peanuts: Add the peanuts and sauté for a minute until lightly golden and toasty.",
+          "Cook onion and potato: Add the chopped onion (and potato, if using). Cook on medium heat for 5–6 minutes, stirring occasionally, until the onion turns soft and translucent and the potato is fork-tender.",
+          "Season: Add turmeric, sugar, and salt. Stir well so the oil turns a light yellow and everything is evenly coated.",
+          "Add the poha: Add the softened poha to the pan. Using a light hand (like folding, not stirring), toss it gently with the onion-potato mixture so it doesn't break or turn mushy. Cover and let it steam on low heat for 2–3 minutes.",
+          "Finish: Turn off the heat. Squeeze over the lemon juice, sprinkle with fresh coriander, and toss once more gently. Garnish with sev just before serving (it goes soggy if left sitting)."
+        ]
+      }
+    ],
+    "calories_kcal": 250,
+    "protein_g": 5,
+    "carbs_g": 38,
+    "fat_g": 8,
+    "fibre_g": 3,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Every ingredient here — poha, peanuts, oil, spices, potato, onion — is naturally egg-free. The only ingredient to double-check is shop-bought sev: it's traditionally made from gram flour and egg-free, but always glance at the pack for allergen warnings, especially with mixed \"namkeen\" brands that sometimes share lines with other products. Common mistake: Soaking poha in water (rather than a quick rinse) is the #1 cause of mushy poha — it turns to paste once cooked. A brief rinse and rest is all it needs.",
+    "common_mistakes": "",
+    "uk_sourcing_notes": "Poha (flattened rice) and sev are both easily found at any Indian grocer, or in the \"world foods\" aisle of larger Tesco/Asda stores. Regular thin poha works too, but rinse it even more briefly (1 quick pass) as it softens faster than thick poha.",
+    "storage_notes": "Best eaten fresh, but leftovers keep covered in the fridge for a day. Reheat in a pan with a small splash of water to loosen it back up — microwaving tends to dry it out. Spice level: Omit or deseed the green chillies for a kid-friendly version. Some families also add a few raisins or a spoon of grated coconut on top for a sweeter, milder finish.",
+    "kid_friendly_notes": "",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 12,
+    "name": "Kothimbir Vadi",
+    "description": "Steamed and pan-fried coriander and gram flour savoury bites, lightly spiced and crisped at the edges — a popular Maharashtrian tea-time snack.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 45,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the tempering (optional, for extra flavour after steaming)",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "sesame seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "–10 curry leaves",
+            "unit": "",
+            "amount": 8
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the batter: In a large bowl, combine the chopped coriander, gram flour, rice flour, ginger-garlic paste, green chillies, turmeric, red chilli powder, sesame seeds, carom seeds, sugar, lemon juice, and salt. Mix well, adding water gradually, until you get a thick, spoonable batter — thick enough to hold its shape, not runny.",
+          "Prepare for steaming: Grease a shallow, heatproof plate or tin (one that fits inside your steamer or a large pot with a steaming rack). Pour the batter in and spread it out evenly, about ¾ inch thick.",
+          "Steam: Steam over boiling water for 20–25 minutes, until a knife or toothpick inserted comes out clean. Let it cool completely — this makes slicing much easier.",
+          "Slice: Once cooled, cut the steamed slab into small squares or diamonds.",
+          "Add tempering (optional): Heat the 1 tbsp oil in a small pan, add mustard seeds, sesame seeds, and curry leaves, and let them sizzle. Pour this over the sliced pieces and toss gently, if you'd like extra flavour before pan-frying.",
+          "Pan-fry: Heat the 3 tbsp oil in a wide pan on medium heat. Shallow fry the pieces in batches, turning occasionally, for 4–5 minutes until golden and crisp on all sides.",
+          "Serve: Serve warm, with mint chutney or tomato ketchup on the side."
+        ]
+      }
+    ],
+    "calories_kcal": 230,
+    "protein_g": 7,
+    "carbs_g": 22,
+    "fat_g": 13,
+    "fibre_g": 5,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Fully egg-free — gram flour, coriander, and spices carry no hidden egg risk. No special sourcing concerns here.",
+    "common_mistakes": "Not letting the steamed slab cool before slicing causes it to crumble and stick to the knife — patience here really pays off. A batter that's too thin won't set properly during steaming, so keep it thick.",
+    "uk_sourcing_notes": "Gram flour, rice flour, and carom seeds (ajwain) are all easily found at any Indian grocer or larger supermarket world foods aisle. A steamer basket, idli stand, or even a heatproof plate set on a trivet inside a large lidded pot all work fine for steaming.",
+    "storage_notes": "The steamed (unfried) slab keeps well refrigerated for 2–3 days — slice and pan-fry fresh batches as needed. Once fried, best eaten the same day, though leftovers can be re-crisped in a dry pan.",
+    "kid_friendly_notes": "Reduce or omit the green chillies and red chilli powder for a milder version — the sesame and carom seeds still give plenty of flavour without heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 13,
+    "name": "Lemon Rice (Chitranna)",
+    "description": "Tangy, lightly spiced rice tempered with mustard seeds, peanuts, and curry leaves, finished with fresh lemon juice — a light, quick dish perfect for using up leftover rice.",
+    "cuisine": "South Indian",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner",
+      "Packed Lunch Friendly",
+      "Side Dish"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 25,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the rice",
+        "items": [
+          {
+            "name": "rice (raw, uncooked measure — use any regular white rice; cook and cool before using, see method)",
+            "unit": "tbsp",
+            "amount": 16
+          }
+        ]
+      },
+      {
+        "group": "For the tempering (tadka)",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "urad dal",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "chana dal",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–12 curry leaves",
+            "unit": "",
+            "amount": 10
+          },
+          {
+            "name": "red chillies, broken (or 2 green chillies, slit)",
+            "unit": "dried",
+            "amount": 2
+          },
+          {
+            "name": "roasted peanuts",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "raw cashews (optional)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "Main seasoning:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "lemon juice (about 1 large lemon, adjust to taste)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Cook the rice: If starting with raw rice, cook it as you normally would (boiling or rice cooker) until just done — not mushy, grains should stay separate. Spread it out on a wide plate or tray and let it cool completely, ideally to room temperature. This is essential, as warm rice turns clumpy and mushy when mixed. If using leftover rice, simply fluff it up gently with a fork to separate the grains.",
+          "Start the tempering: Heat the oil in a wide pan on medium heat. Add mustard seeds and let them splutter.",
+          "Add lentils and spices: Add the urad dal and chana dal, and sauté for about 30 seconds until they turn light golden. Add the cumin seeds, hing, curry leaves, and dried red chillies (or green chillies). Sauté for another 20–30 seconds until fragrant.",
+          "Add nuts: Add the peanuts and cashews (if using), and sauté for a minute until lightly golden and toasty.",
+          "Add turmeric: Add the turmeric powder and stir for a few seconds — take care not to let it burn.",
+          "Combine with rice: Reduce the heat to low. Add the cooled rice and salt to the pan. Using a light hand, gently fold the rice into the tempering (like tossing a salad, not stirring vigorously) until evenly coated and the yellow colour is well distributed.",
+          "Finish: Turn off the heat. Add the lemon juice and fresh coriander, and toss gently once more to combine. Taste and adjust salt or lemon juice as needed.",
+          "Serve: Serve warm or at room temperature, on its own or with a side of pickle or crisps (papad)."
+        ]
+      }
+    ],
+    "calories_kcal": 290,
+    "protein_g": 5,
+    "carbs_g": 48,
+    "fat_g": 9,
+    "fibre_g": 2,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "This recipe is naturally egg-free — rice, lentils, peanuts, spices, and lemon contain no eggs or hidden egg risk. No special sourcing concerns here.",
+    "common_mistakes": "Using warm or freshly cooked rice is the most common cause of clumpy, mushy lemon rice — always cool the rice fully (spreading it out on a tray speeds this up) before mixing. Also, add the lemon juice only after the heat is off, as cooking it directly can turn the flavour slightly bitter and dull the tang.",
+    "uk_sourcing_notes": "Any regular long-grain white rice from a UK supermarket works well; basmati is not traditional here but works fine as a substitute if that's what you have on hand. Urad dal, chana dal, and curry leaves are best sourced from an Indian grocer, though curry leaves can sometimes be found fresh or frozen in larger Tesco/Sainsbury's world foods sections.",
+    "storage_notes": "This dish is ideal for using up leftover rice and keeps well in the fridge for up to 2 days — great for packed lunches. Serve cold or at room temperature, or reheat gently; avoid over-microwaving as it can dry the rice out.",
+    "kid_friendly_notes": "Omit the dried red or green chillies for a milder version — the lemon and light spices still give plenty of flavour without heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 14,
+    "name": "Malvani Vegetable Curry with Rice Bhakri",
+    "description": "A spicy, coconut-based curry in the coastal Malvani style, packed with mixed vegetables, served with a hand-patted rice flour flatbread.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 50,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the curry",
+        "items": [
+          {
+            "name": "oil (coconut oil is traditional)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "–10 curry leaves",
+            "unit": "",
+            "amount": 8
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "–3 tbsp Malvani masala (shop-bought paste or powder)",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "grated fresh coconut (or desiccated coconut, soaked in 4 tbsp warm water)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "tomatoes, chopped",
+            "unit": "medium",
+            "amount": 2
+          },
+          {
+            "name": "potato, cubed",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "aubergine, cubed",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "beans, cut into pieces",
+            "unit": "green",
+            "amount": 8
+          },
+          {
+            "name": "peas",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "jaggery or sugar (optional, to balance)",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "Water, as needed to thin the gravy",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the rice bhakri",
+        "items": [
+          {
+            "name": "rice flour, plus extra for dusting",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Hot (just-boiled) water, as needed",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Curry",
+        "steps": [
+          "Temper: Heat the oil in a pan on medium heat. Add mustard seeds and curry leaves, letting them sizzle.",
+          "Cook onion: Add the onion and cook until golden, about 4–5 minutes.",
+          "Add aromatics: Add the ginger-garlic paste and cook for 1 minute.",
+          "Add masala: Add the Malvani masala and turmeric, stirring constantly for 1–2 minutes (add a splash of water if it starts to catch on the pan).",
+          "Add tomatoes: Add the tomatoes and cook until soft and the oil separates, about 5–6 minutes.",
+          "Add coconut: Stir in the coconut (and its soaking water, if using desiccated) and cook for 2–3 minutes.",
+          "Add vegetables: Add the potato, aubergine, beans, and peas, along with enough water to just cover everything, plus salt and jaggery. Bring to a boil, then cover and simmer for 15–20 minutes until the vegetables are tender.",
+          "Finish: Adjust consistency with a splash more water if needed, and stir in the fresh coriander."
+        ]
+      },
+      {
+        "group": "Rice bhakri",
+        "steps": [
+          "9. Bind the dough: Place the rice flour and salt in a bowl. Gradually add hot water, mixing with a spoon first, then knead once cool enough to handle into a smooth, soft dough.",
+          "10. Divide: Divide into 6–8 balls.",
+          "11. Pat out: Pat each ball by hand on a damp cloth or lightly greased plastic sheet into a round disc about ¼ inch thick — rice flour dough is fragile and doesn't roll well with a pin, so patting by hand is traditional.",
+          "12. Cook: Carefully transfer to a hot, dry tawa. Cook on medium heat, flipping once the underside sets, then cook both sides, pressing gently with a cloth, until light golden spots appear and it's cooked through, about 2–3 minutes per side."
+        ]
+      }
+    ],
+    "calories_kcal": 340,
+    "protein_g": 7,
+    "carbs_g": 50,
+    "fat_g": 13,
+    "fibre_g": 6,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Naturally egg-free. Ready-made Malvani masala pastes/powders are traditionally a dry spice blend with no egg, but glance at the label as a precaution with any pre-made paste product.",
+    "common_mistakes": "Letting the masala paste burn in step 4 (it needs constant stirring — add a splash of water if it sticks). Not patting the bhakri thin and even enough leaves the centre undercooked.",
+    "uk_sourcing_notes": "Ready-made Malvani masala paste or powder can be found at larger Indian grocers; if your local grocer doesn't stock a Maharashtrian-specific brand, Indian grocery specialists online usually do. Rice flour is available at any Indian grocer or in the baking aisle of larger supermarkets.",
+    "storage_notes": "The curry keeps 2 days refrigerated and improves in flavour overnight. Bhakri is best fresh — it hardens once cooled and doesn't store well.",
+    "kid_friendly_notes": "Malvani masala is quite pungent and spicy — reduce the quantity significantly for children, or stir in a little extra coconut to mellow the heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 15,
+    "name": "Masala Avocado Toast",
+    "description": "A quick fusion breakfast — creamy mashed avocado spiked with Indian spices and tempered with a mustard-cumin tadka, piled onto crisp toasted bread.",
+    "cuisine": "",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Snack",
+      "Side Dish"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 40,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the tempering (tadka)",
+        "items": [
+          {
+            "name": "oil or ghee",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–10 curry leaves (optional, but adds authentic flavour)",
+            "unit": "",
+            "amount": 8
+          },
+          {
+            "name": "chilli, finely chopped",
+            "unit": "green",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the masala avocado mash",
+        "items": [
+          {
+            "name": "ripe avocados",
+            "unit": "medium",
+            "amount": 2
+          },
+          {
+            "name": "tomato, finely chopped (deseeded if you prefer less liquid)",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "red onion, finely chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder (adjust to taste)",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "To serve:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "of bread of your choice (sourdough or granary work well)",
+            "unit": "slices",
+            "amount": 8
+          },
+          {
+            "name": "A few thin slices of red onion or radish, for garnish (optional)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "A light sprinkle of chilli flakes or extra chaat masala, for garnish (optional)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the tempering: Heat the oil or ghee in a small pan on medium heat. Add mustard seeds and let them splutter. Add cumin seeds, hing, curry leaves, and green chilli. Sauté for about 30 seconds until fragrant, then turn off the heat and let it cool slightly.",
+          "Mash the avocado: Halve and deseed the avocados, scoop the flesh into a bowl, and mash roughly with a fork — keep it a little chunky rather than completely smooth.",
+          "Combine: Add the tomato, red onion, chaat masala, red chilli powder, roasted cumin powder, lemon juice, and salt to the mashed avocado. Mix gently to combine.",
+          "Add the tempering: Pour the cooled tempering (oil and all) over the avocado mixture and fold it through. Stir in the fresh coriander.",
+          "Toast the bread: Toast the bread slices until golden and crisp, either in a toaster or on a hot griddle with a very light brushing of oil or ghee for extra flavour.",
+          "Assemble: Generously spread or pile the masala avocado mash onto each slice of toast. Garnish with thin onion or radish slices and a sprinkle of chilli flakes or chaat masala, if using.",
+          "Serve immediately while the toast is still crisp."
+        ]
+      }
+    ],
+    "calories_kcal": 320,
+    "protein_g": 7,
+    "carbs_g": 32,
+    "fat_g": 19,
+    "fibre_g": 7,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 2 slices of toast with topping.",
+    "egg_check_notes": "This recipe is naturally egg-free — gram flour (besan) or cornflour is used as the binder instead of egg, which is what many Western hash brown or patty recipes rely on. No hidden-egg risk here as long as you stick to gram flour/cornflour rather than a shop-bought binder mix (some ready-made \"hash brown mixes\" or coatings can contain egg powder, so always check if using a packet product).",
+    "common_mistakes": "Skipping the water-squeezing step is the most common cause of hash browns falling apart or turning soggy and oily rather than crisp — don't rush this part. Also avoid flipping too early; let a proper golden crust form first so the patty holds its shape.",
+    "uk_sourcing_notes": "Maris Piper or King Edward potatoes (widely available at any UK supermarket) work best due to their higher starch content, which helps crispiness. Ajwain is available at Indian grocers; if you don't have it, it can simply be left out without much impact on the dish.",
+    "storage_notes": "The shaped (uncooked) patties can be covered and refrigerated for a few hours before frying. Cooked hash browns are best eaten fresh and crisp, but leftovers can be reheated in a dry pan or air fryer to re-crisp — avoid the microwave, which makes them soggy.",
+    "kid_friendly_notes": "Omit the green chilli and reduce the red chilli powder for a milder, kid-friendly version — the cumin and garam masala still give plenty of flavour without reheating it",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 16,
+    "name": "Masala Beans on Toast Sandwich",
+    "description": "A spiced Indian twist on classic beans on toast, turned into a hearty grilled sandwich with tangy, gently spiced baked beans.",
+    "cuisine": "Fusion",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Lunch",
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 25,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the masala beans",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "tomato, finely chopped",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "tinned baked beans (about 1 standard tin)",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "Salt, to taste (go easy, as baked beans are often already salted)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the sandwich",
+        "items": [
+          {
+            "name": "of bread of your choice (check label — see egg-check note)",
+            "unit": "slices",
+            "amount": 8
+          },
+          {
+            "name": "butter or ghee, for grilling",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "grated cheese (cheddar or similar), optional",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the masala: Heat the oil in a pan on medium heat. Add cumin seeds and let them sizzle. Add the onion and cook for 3–4 minutes until softened.",
+          "Add aromatics: Add the ginger-garlic paste and cook for 30 seconds.",
+          "Add tomato and spices: Add the tomato, turmeric, and chilli powder. Cook for 3–4 minutes until the tomato softens.",
+          "Add beans: Stir in the baked beans and garam masala. Simmer for 4–5 minutes, mashing lightly with the back of a spoon to slightly thicken the mixture. Season with salt if needed and stir in coriander.",
+          "Assemble: Spread the masala beans generously over 4 slices of bread. Sprinkle with grated cheese, if using, and top with the remaining slices.",
+          "Grill: Butter the outside of each sandwich lightly, then toast in a pan or sandwich press on medium heat for 2–3 minutes per side, until golden and crisp, and the cheese has melted.",
+          "Serve: Slice in half and serve hot."
+        ]
+      }
+    ],
+    "calories_kcal": 350,
+    "protein_g": 12,
+    "carbs_g": 40,
+    "fat_g": 15,
+    "fibre_g": 6,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 1 full sandwich per serving.",
+    "egg_check_notes": "",
+    "common_mistakes": "Adding too much salt without tasting first, since tinned baked beans are already seasoned — taste before adjusting. Grilling on too high heat browns the bread before the cheese melts — medium heat works best.",
+    "uk_sourcing_notes": "Tinned baked beans (Heinz or supermarket own-brand) are in every UK supermarket and are reliably egg-free — a great pantry-friendly fusion base.",
+    "storage_notes": "The masala beans mixture keeps 2 days refrigerated and reheats well — great for making ahead and assembling fresh sandwiches as needed. Assembled sandwiches are best grilled fresh, not stored.",
+    "kid_friendly_notes": "Omit the chilli powder and use a milder garam masala quantity — kids often enjoy this as a comforting, only lightly spiced version of a familiar favourite.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 17,
+    "name": "Masala Cheese & Sweetcorn Sandwich",
+    "description": "A creamy, lightly spiced cheese and sweetcorn filling grilled between crisp bread — a popular Indian café-style toastie with a comforting, mild kick.",
+    "cuisine": "Fusion",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Lunch",
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 10,
+    "total_time_minutes": 20,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the filling",
+        "items": [
+          {
+            "name": "sweetcorn kernels (tinned or frozen, thawed)",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "grated cheese (cheddar or a mild melting cheese)",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "mayonnaise-style eggless dressing or thick yoghurt (see egg-check note)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "finely chopped red onion",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "finely chopped coriander leaves",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "chilli, finely chopped (optional)",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "black pepper powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the sandwich",
+        "items": [
+          {
+            "name": "of bread of your choice (check label — see egg-check note)",
+            "unit": "slices",
+            "amount": 8
+          },
+          {
+            "name": "butter, for grilling",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the filling: In a bowl, combine the sweetcorn, grated cheese, mayonnaise or yoghurt, red onion, coriander, green chilli (if using), chaat masala, red chilli powder, black pepper, and salt. Mix well until evenly combined.",
+          "Assemble: Spread the filling generously over 4 slices of bread, and top with the remaining slices.",
+          "Grill: Butter the outside of each sandwich lightly, then toast in a pan or sandwich press on medium heat for 2–3 minutes per side, until golden and crisp, and the cheese has melted through.",
+          "Serve: Slice in half and serve hot."
+        ]
+      }
+    ],
+    "calories_kcal": 370,
+    "protein_g": 13,
+    "carbs_g": 38,
+    "fat_g": 18,
+    "fibre_g": 4,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 1 full sandwich per serving.",
+    "egg_check_notes": "",
+    "common_mistakes": "Using cold cheese straight from the fridge without letting the sandwich grill long enough means the cheese won't melt through fully — grill on medium (not high) heat so the inside has time to warm through before the bread over-browns.",
+    "uk_sourcing_notes": "Tinned or frozen sweetcorn is in every UK supermarket. Eggless mayonnaise is increasingly common in the free-from or condiments aisle — check the label carefully, as regular mayonnaise is the more common default.",
+    "storage_notes": "The filling can be made a few hours ahead and refrigerated, covered. Assemble and grill fresh for the best texture — this sandwich doesn't reheat well once made.",
+    "kid_friendly_notes": "Omit the green chilli and red chilli powder entirely for a very mild, kid-friendly version — the natural sweetness of the corn and cheese still makes it appealing without any heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 18,
+    "name": "Masala Dosa (South Indian)",
+    "description": "A crisp, golden fermented rice-and-lentil crepe wrapped around a lightly spiced potato filling — a South Indian classic, best enjoyed with coconut chutney and sambar.",
+    "cuisine": "",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Lunch",
+      "Dinner",
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 30,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the dosa batter",
+        "items": [
+          {
+            "name": "rice (idli rice or regular white rice)",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "urad dal (split, skinned black gram)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "chana dal (optional, for extra crispness)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "poha (flattened rice, optional, for softness)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "fenugreek (methi) seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed for soaking, grinding, and thinning (see method)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Oil or ghee, for cooking the dosas (roughly ½ tsp per dosa)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the potato masala filling",
+        "items": [
+          {
+            "name": "potatoes, boiled and peeled",
+            "unit": "medium",
+            "amount": 4
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "urad dal",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "chana dal",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–10 curry leaves",
+            "unit": "",
+            "amount": 8
+          },
+          {
+            "name": "chillies, slit or chopped",
+            "unit": "green",
+            "amount": 2
+          },
+          {
+            "name": "onion, thinly sliced",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Making the batter (start a day ahead)",
+          "Soak: In one bowl, combine the rice, chana dal, and poha; in another, combine the urad dal and fenugreek seeds. Rinse each 2–3 times, then cover with water (enough to fully submerge, roughly a couple of inches above the grains) and soak separately for 4–6 hours.",
+          "Grind: Drain both. Grind the urad dal–fenugreek mixture first, adding water a little at a time (roughly 2 tbsp at a time) until you get a smooth, thick, fluffy batter. Transfer to a large bowl. Grind the rice mixture similarly until mostly smooth with a slight grain, adding water gradually as needed. Combine both batters in the large bowl and mix well with your hand (this helps fermentation) for a minute or two.",
+          "Ferment: Cover the bowl loosely and leave in a warm place for 8–14 hours (or overnight), until the batter has risen and looks bubbly and airy. In a cold UK kitchen, this can take longer — an oven with just the light on, or near a radiator, helps.",
+          "Finish the batter: Once fermented, stir in salt to taste. The batter should be of a pourable, thick-cream consistency — thin with a splash of water (a tbsp at a time) if it's too thick.",
+          "Making the potato masala filling",
+          "Temper the spices: Heat the oil in a pan on medium heat. Add mustard seeds and let them splutter. Add cumin seeds, urad dal, and chana dal, and sauté for about 30 seconds until the dals turn light golden.",
+          "Add aromatics: Add hing, curry leaves, and green chillies. Sauté for 20–30 seconds.",
+          "Cook the onion: Add the sliced onion and cook for 4–5 minutes until soft and translucent.",
+          "Add potatoes: Roughly mash the boiled potatoes by hand (keep some texture, not smooth) and add to the pan along with turmeric and salt. Mix well, mashing further into the spices, and cook for 3–4 minutes until everything is well combined and heated through. Add a splash of water (2–3 tbsp) if it looks too dry.",
+          "Finish: Turn off the heat, stir in lemon juice and coriander leaves. Set aside, keeping warm.",
+          "Making the dosas",
+          "Heat the pan: Heat a flat non-stick or cast-iron griddle (tawa) on medium-high heat. Test readiness by sprinkling a few drops of water — they should sizzle and evaporate quickly.",
+          "Pour and spread: Pour a ladleful (roughly 4 tbsp) of batter in the centre. Using the back of the ladle, spread it outward in a circular motion from the centre, working quickly to form a thin, even circle.",
+          "Cook: Drizzle ½ tsp of oil or ghee around the edges. Cook for 1–2 minutes until the base turns golden and crisp, and the edges start lifting.",
+          "Fill and fold: Place about 2–3 tbsp of the potato filling along the centre of the dosa. Fold both sides over the filling (or roll it up) and slide onto a plate. Repeat with the remaining batter and filling.",
+          "Serve: Serve immediately while crisp, ideally with coconut chutney and sambar on the side."
+        ]
+      }
+    ],
+    "calories_kcal": 320,
+    "protein_g": 8,
+    "carbs_g": 55,
+    "fat_g": 9,
+    "fibre_g": 4,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 2 dosas with filling per serving.",
+    "egg_check_notes": "Every component here — rice, lentils, potatoes, spices, oil — is naturally egg-free. No hidden-egg risk in this recipe as long as you're making the batter from scratch. (If ever buying ready-made dosa batter from a UK Indian grocer, it's almost always egg-free by tradition, but check the label if it's a newer or unfamiliar brand.)",
+    "common_mistakes": "Skipping the fenugreek seeds — they help fermentation and give the batter its slightly tangy flavour. Not spreading the dosa fast enough — the batter starts cooking the moment it hits the pan, so work quickly and confidently in one continuous spiral. Flipping too early — let the base fully crisp and lift naturally at the edges before folding. UK adaptation: Idli rice can be hard to find outside Indian grocers — parboiled/\"easy cook\" rice from a supermarket is a reasonable substitute, though texture will be slightly less airy. A blender or food processor works fine instead of a traditional wet grinder, just grind in batches so the motor doesn't strain. Fermentation in UK weather: Cold homes (especially in winter) slow fermentation significantly. If your batter hasn't risen after 14 hours, leave it longer — it can take up to 24 hours in a cold kitchen. Don't discard it; South Indian batters are forgiving.",
+    "uk_sourcing_notes": "",
+    "storage_notes": "The batter keeps in the fridge for 3–4 days (it gets tangier with time, which some prefer). The potato filling keeps for 2 days refrigerated — reheat gently before using. Dosas themselves are best made fresh and don't reheat well.",
+    "kid_friendly_notes": "Reduce or omit green chillies in the potato filling for a milder version; you can also serve plain dosa (no filling) with a mild chutney for younger children",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 19,
+    "name": "Masala Hash Browns",
+    "description": "Crispy, golden potato hash browns given an Indian twist with warming spices, green chilli, and coriander — a fun fusion breakfast side.",
+    "cuisine": "",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Snack",
+      "Side Dish"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 40,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the hash browns",
+        "items": [
+          {
+            "name": "potatoes (starchy, like Maris Piper), peeled and coarsely grated",
+            "unit": "medium",
+            "amount": 4
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "chilli, finely chopped",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "ginger, grated",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder (adjust to taste)",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "ajwain (carom seeds, optional — helps digestion and adds flavour)",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "gram flour (besan) or cornflour, as a binder",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For shallow frying",
+        "items": [
+          {
+            "name": "oil (for shallow frying, in batches)",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Grate and drain: Coarsely grate the potatoes into a large bowl of cold water (this prevents browning and rinses off excess surface starch). Swish briefly, then drain thoroughly.",
+          "Remove moisture: Transfer the grated potato to a clean kitchen towel or muslin cloth and squeeze out as much water as possible — this step is essential for crispy hash browns rather than soggy ones. Let it sit for 10 minutes, then squeeze again.",
+          "Season the mixture: In a large bowl, combine the drained potato with the onion, green chilli, ginger, cumin seeds, turmeric, red chilli powder, garam masala, ajwain (if using), and coriander leaves. Mix well.",
+          "Bind: Sprinkle over the gram flour or cornflour and salt, then mix thoroughly until the mixture holds together when pressed — it shouldn't be wet or loose. If it still feels too wet, add another ½ tbsp of gram flour.",
+          "Shape: Divide the mixture into 8 portions. Take each portion in your palms and press firmly into a flat, compact patty about the size of your palm — the tighter you pack it, the better it holds together while frying.",
+          "Heat the oil: Heat 2 tbsp of the oil in a wide, flat pan or griddle on medium heat.",
+          "Fry the hash browns: Place 3–4 patties in the pan at a time, without overcrowding. Cook for 4–5 minutes per side, pressing down gently once with a spatula, until deep golden brown and crisp on both sides. Add the remaining oil as needed for the second batch.",
+          "Drain and serve: Transfer to a plate lined with kitchen paper to remove excess oil. Serve hot, as is or with ketchup, mint chutney, or a dollop of yoghurt."
+        ]
+      }
+    ],
+    "calories_kcal": 210,
+    "protein_g": 4,
+    "carbs_g": 30,
+    "fat_g": 9,
+    "fibre_g": 3,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 2 hash browns per serving.",
+    "egg_check_notes": "This recipe is naturally egg-free — gram flour (besan) or cornflour is used as the binder instead of egg, which is what many Western hash brown or patty recipes rely on. No hidden-egg risk here as long as you stick to gram flour/cornflour rather than a shop-bought binder mix (some ready-made \"hash brown mixes\" or coatings can contain egg powder, so always check if using a packet product).",
+    "common_mistakes": "Skipping the water-squeezing step is the most common cause of hash browns falling apart or turning soggy and oily rather than crisp — don't rush this part. Also avoid flipping too early; let a proper golden crust form first so the patty holds its shape.",
+    "uk_sourcing_notes": "Maris Piper or King Edward potatoes (widely available at any UK supermarket) work best due to their higher starch content, which helps crispiness. Ajwain is available at Indian grocers; if you don't have it, it can simply be left out without much impact on the dish.",
+    "storage_notes": "The shaped (uncooked) patties can be covered and refrigerated for a few hours before frying. Cooked hash browns are best eaten fresh and crisp, but leftovers can be reheated in a dry pan or air fryer to re-crisp — avoid the microwave, which makes them soggy.",
+    "kid_friendly_notes": "Omit the green chilli and reduce the red chilli powder for a milder, kid-friendly version — the cumin and garam masala still give plenty of flavour without heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 20,
+    "name": "Methi Thepla Roll with Pickle",
+    "description": "Soft, spiced fenugreek-leaf flatbreads rolled up with a smear of pickle — a simple, portable Gujarati favourite, popular for travel and lunchboxes.",
+    "cuisine": "Gujarati",
+    "origin_note": "",
+    "tags": [
+      "Breakfast",
+      "Lunch",
+      "Snack",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "total_time_minutes": 40,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the thepla dough",
+        "items": [
+          {
+            "name": "whole wheat flour (atta)",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "gram flour (besan)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "fresh fenugreek (methi) leaves, finely chopped (or 2 tbsp dried fenugreek/kasoori methi, soaked briefly in water)",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "thick yoghurt (curd)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "oil, plus extra for kneading",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "chilli, finely chopped",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "carom seeds (ajwain)",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "sesame seeds (optional)",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed to knead",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For cooking",
+        "items": [
+          {
+            "name": "oil (roughly ½ tbsp per thepla)",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "group": "For assembly",
+        "items": [
+          {
+            "name": "mixed pickle (achaar) of choice, e.g. mango or mixed vegetable",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the dough: In a large bowl, combine the flour, gram flour, chopped fenugreek leaves, yoghurt, oil, ginger-garlic paste, green chilli, turmeric, chilli powder, carom seeds, sesame seeds, and salt. Mix well, then gradually add water and knead into a smooth, slightly firm dough (firmer than roti dough, as thepla should be sturdy enough to roll and travel well).",
+          "Divide: Divide the dough into 8 balls.",
+          "Roll: Roll each ball out into a thin, even round on a lightly floured surface.",
+          "Cook: Heat a tawa on medium heat. Cook each thepla for about a minute, until small bubbles appear, then flip. Brush lightly with oil on both sides and cook, pressing gently, until golden-brown spots form on both sides, about 2–3 minutes total.",
+          "Assemble: Spread a small amount of pickle along the centre of each warm thepla.",
+          "Roll and serve: Roll up tightly and serve warm, or pack for travel/lunch once cooled."
+        ]
+      }
+    ],
+    "calories_kcal": 330,
+    "protein_g": 9,
+    "carbs_g": 48,
+    "fat_g": 11,
+    "fibre_g": 6,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 2 theplas per serving.",
+    "egg_check_notes": "Fully egg-free — flour, fenugreek leaves, yoghurt, and spices carry no hidden egg risk. Shop-bought pickle (achaar) is traditionally oil-and-spice based and egg-free, but always check the label if buying an unfamiliar brand.",
+    "common_mistakes": "Using too little fenugreek makes the thepla bland; too much fresh fenugreek (without adjusting the dough's moisture) can make it too soft to roll well. If using dried kasoori methi, crush it slightly between your palms first to release more flavour.",
+    "uk_sourcing_notes": "Fresh methi (fenugreek leaves) is available at Indian grocers, sometimes fresh, sometimes frozen — dried kasoori methi is a reliable pantry substitute and widely available. Ajwain and sesame seeds are also at any Indian grocer.",
+    "storage_notes": "Thepla is famous for travelling well — it keeps for 2–3 days at room temperature (wrapped in a cloth or foil) and up to a week refrigerated, making it ideal for long journeys or packed lunches.",
+    "kid_friendly_notes": "Omit the green chilli and reduce red chilli powder for a milder version — pair with a milder, sweeter pickle (like mango) for kids who prefer less heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 21,
+    "name": "Modak",
+    "description": "Soft, delicate rice flour dumplings steamed and filled with a sweet coconut-jaggery filling — the beloved festive sweet made especially for Ganesh Chaturthi.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Dessert"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "total_time_minutes": 50,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the filling",
+        "items": [
+          {
+            "name": "fresh grated coconut (or desiccated coconut, soaked in 4 tbsp warm water for 10 minutes)",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "jaggery, grated",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "cardamom powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "A pinch of nutmeg powder (optional)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "poppy seeds (khuskhus), optional, lightly roasted",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ghee",
+            "unit": "tsp",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the outer covering",
+        "items": [
+          {
+            "name": "rice flour",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "water",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "ghee",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the filling: Heat 1 tsp ghee in a pan on medium heat. Add the grated coconut and jaggery, and cook, stirring continuously, for 6–8 minutes until the mixture thickens and the jaggery is fully melted and combined — it should hold together when pressed but not be wet.",
+          "Finish the filling: Stir in the cardamom powder, nutmeg (if using), and poppy seeds. Let it cool completely before shaping.",
+          "Make the dough: In a pan, bring the water to a boil with the ghee and salt. Once boiling, reduce heat to low and add the rice flour all at once, stirring quickly and continuously to avoid lumps. Cover and let it steam-cook on the lowest heat for 2 minutes.",
+          "Knead: Turn the dough out onto a plate. Once cool enough to handle (but still warm), knead it with lightly greased hands until smooth and pliable, adding a few drops of water if it feels dry or cracks.",
+          "Shape: Divide the dough into 12 portions and keep covered with a damp cloth to prevent drying. Take one portion, grease your palms lightly, and flatten it into a small disc, either in your palm or using a modak mould.",
+          "Fill: Place a spoonful of the coconut-jaggery filling in the centre. Gently bring the edges up and pleat them together at the top, pinching to seal into the traditional pointed modak shape (or simply press together neatly if pleating feels tricky — taste matters more than shape).",
+          "Steam: Arrange the shaped modaks on a greased steamer plate or idli stand, ensuring they don't touch. Steam over boiling water for 10–12 minutes until they look glossy and slightly translucent.",
+          "Serve: Let cool slightly before serving, traditionally with a drizzle of ghee on top."
+        ]
+      }
+    ],
+    "calories_kcal": 260,
+    "protein_g": 3,
+    "carbs_g": 42,
+    "fat_g": 9,
+    "fibre_g": 3,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 3 modaks per serving.",
+    "egg_check_notes": "Fully egg-free — rice flour, coconut, and jaggery carry no hidden egg risk.",
+    "common_mistakes": "Overcooking the dough or letting it cool too much before shaping makes it crack and hard to pleat — work with it while still warm. A filling that's too wet makes the modak soggy — cook it until it properly holds together.",
+    "uk_sourcing_notes": "Rice flour is at any Indian grocer or supermarket baking aisle. Fresh coconut can be found at larger supermarkets or Indian/Caribbean grocers; desiccated coconut (soaked before use) is a reliable substitute and widely available everywhere.",
+    "storage_notes": "The filling can be made a day ahead and refrigerated. Shaped, uncooked modaks can be frozen on a tray then bagged — steam from frozen, adding a couple of extra minutes. Steamed modaks keep 1–2 days refrigerated; reheat by re-steaming briefly.",
+    "kid_friendly_notes": "No heat in this dish at all — naturally kid-friendly as is. Poppy seeds can be omitted if unavailable or not preferred.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 22,
+    "name": "Paneer Tikka Wrap",
+    "description": "Smoky, spice-marinated grilled paneer and peppers rolled up in a soft tortilla with crunchy salad and a cooling mint-yoghurt sauce — a handy fusion take on paneer tikka, perfect for lunch on the go.",
+    "cuisine": "Fusion",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner",
+      "Snack",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 65,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the paneer tikka marinade",
+        "items": [
+          {
+            "name": "(about 300g block, cut into cubes) paneer — see note on spoon-measuring below",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "thick yoghurt (curd)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "gram flour (besan)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste (or ½ tsp each grated ginger and garlic)",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Kashmiri red chilli powder (for colour and mild heat)",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Vegetables for grilling:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "onion, cut into chunky petals",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "red or green pepper, cut into chunky squares",
+            "unit": "medium",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the mint-yoghurt sauce",
+        "items": [
+          {
+            "name": "thick yoghurt (curd)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "fresh mint leaves, finely chopped (or 1 tbsp mint sauce as a substitute)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "fresh coriander leaves, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For assembly",
+        "items": [
+          {
+            "name": "tortillas or wraps (check label — see egg-check note)",
+            "unit": "plain",
+            "amount": 4
+          },
+          {
+            "name": "oil, for cooking the paneer and veg",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "shredded cabbage or lettuce",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "onion, thinly sliced (for filling, separate from grilling onion)",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "tomato, thinly sliced or deseeded and chopped",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "A squeeze of lemon juice, to finish",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Marinating",
+          "Make the marinade: In a large bowl, whisk together the yoghurt, gram flour, oil, ginger-garlic paste, Kashmiri chilli powder, turmeric, garam masala, roasted cumin powder, lemon juice, and salt until smooth.",
+          "Coat: Add the paneer cubes, onion petals, and pepper squares to the marinade. Toss gently to coat everything evenly, being careful not to break the paneer. Cover and refrigerate for at least 30 minutes (longer, up to a few hours, deepens the flavour).",
+          "Making the mint-yoghurt sauce",
+          "Combine: In a small bowl, mix the yoghurt, mint, coriander, roasted cumin powder, chaat masala, lemon juice, and salt. Stir well and refrigerate until ready to serve.",
+          "Cooking the paneer tikka",
+          "Heat the pan: Heat the oil in a wide pan or griddle on medium-high heat.",
+          "Cook: Add the marinated paneer, onion, and pepper pieces in a single layer (cook in batches if needed to avoid overcrowding). Cook for 6–8 minutes, turning occasionally, until the paneer is lightly charred at the edges and the vegetables are just softened with a bit of bite left.",
+          "Assembling the wraps",
+          "Warm the tortillas: Heat each tortilla briefly in a dry pan or directly over a low flame for a few seconds on each side, until soft and pliable with a few light char spots.",
+          "Layer: Spread a spoonful of the mint-yoghurt sauce down the centre of each tortilla. Top with a portion of the shredded cabbage, sliced onion, and tomato.",
+          "Add the tikka: Spoon over the grilled paneer, onion, and pepper mixture.",
+          "Finish and roll: Add a final squeeze of lemon juice, then fold in the sides of the tortilla and roll it up tightly, like a burrito. Slice in half if desired.",
+          "Serve immediately, with any extra mint-yoghurt sauce on the side for dipping."
+        ]
+      }
+    ],
+    "calories_kcal": 410,
+    "protein_g": 17,
+    "carbs_g": 38,
+    "fat_g": 21,
+    "fibre_g": 4,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 1 wrap per serving.",
+    "egg_check_notes": "",
+    "common_mistakes": "Overcooking the paneer makes it rubbery — cook just until lightly charred, as it firms up further off the heat. Also, don't skip patting the paneer dry-ish after marinating if it looks very wet, as excess moisture can make it steam rather than char in the pan.",
+    "uk_sourcing_notes": "Paneer is available fresh or frozen at any Indian grocer, and pre-packed at most large Tesco/Sainsbury's/Asda stores in the world foods or chilled section. Kashmiri chilli powder gives the classic red colour without too much heat — regular chilli powder works but use slightly less and expect a browner colour.",
+    "storage_notes": "The paneer can marinate up to 24 hours ahead, covered in the fridge — flavour improves the longer it sits. The mint-yoghurt sauce keeps for 2 days refrigerated. Assembled wraps are best eaten fresh; if packing for lunch, keep the sauce separate and add just before eating to avoid a soggy wrap.",
+    "kid_friendly_notes": "Use plain chilli powder in a smaller quantity, or omit entirely, for a milder version — the yoghurt marinade keeps the paneer flavourful even without heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 23,
+    "name": "Paneer Tikka Paratha Roll",
+    "description": "Spiced grilled paneer and peppers rolled up inside a flaky whole wheat paratha with crunchy salad and mint-yoghurt sauce — a handheld, portable twist on paneer tikka.",
+    "cuisine": "Fusion",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner",
+      "Snack",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 25,
+    "total_time_minutes": 75,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the paneer tikka marinade",
+        "items": [
+          {
+            "name": "(about 300g block, cubed) paneer",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "thick yoghurt (curd)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "gram flour (besan)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Kashmiri red chilli powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "garam masala",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Vegetables for grilling:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "onion, cut into chunky petals",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "pepper, cut into chunky squares",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "oil, for cooking",
+            "unit": "tbsp",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the paratha",
+        "items": [
+          {
+            "name": "whole wheat flour (atta), plus extra for dusting",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "salt",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "oil",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Water, as needed to knead",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "ghee or oil, for cooking (roughly 1 tbsp per paratha)",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "group": "For the mint-yoghurt sauce",
+        "items": [
+          {
+            "name": "thick yoghurt (curd)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "fresh mint leaves, finely chopped",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "fresh coriander leaves, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For assembly",
+        "items": [
+          {
+            "name": "shredded cabbage or lettuce",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "onion, thinly sliced",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "A squeeze of lemon juice",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Marinate: Whisk together the yoghurt, gram flour, oil, ginger-garlic paste, chilli powder, turmeric, garam masala, cumin powder, lemon juice, and salt. Add the paneer, onion, and pepper, tossing gently to coat. Refrigerate for at least 30 minutes.",
+          "Make the mint sauce: Mix yoghurt, mint, coriander, cumin powder, chaat masala, lemon juice, and salt. Refrigerate until needed.",
+          "Knead the paratha dough: Combine flour, salt, and oil, then gradually add water and knead into a soft dough. Rest for 15 minutes.",
+          "Cook the paneer: Heat 1 tbsp oil in a pan on medium-high heat. Add the marinated paneer, onion, and pepper, cooking for 6–8 minutes, turning occasionally, until lightly charred and just cooked through.",
+          "Roll the parathas: Divide the dough into 4 balls. Roll each out into a large, thin round.",
+          "Cook the parathas: Cook each on a hot tawa for about a minute per side, brushing with ghee or oil on both sides, until golden with light brown spots.",
+          "Assemble: Lay a warm paratha flat. Spread a spoonful of mint-yoghurt sauce down the centre, then layer with shredded cabbage, sliced onion, and the paneer tikka mixture.",
+          "Roll and serve: Add a squeeze of lemon juice, then roll up tightly. Slice in half and serve immediately, with extra mint sauce on the side."
+        ]
+      }
+    ],
+    "calories_kcal": 440,
+    "protein_g": 16,
+    "carbs_g": 48,
+    "fat_g": 20,
+    "fibre_g": 5,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Fully egg-free — paneer, atta, yoghurt, and spices carry no hidden egg risk, and unlike a tortilla-based wrap, homemade paratha removes the need to check a shop-bought wrap label entirely.",
+    "common_mistakes": "Overcooking the paneer makes it rubbery — cook just until lightly charred. Rolling the paratha too thick makes it difficult to fold around the filling neatly.",
+    "uk_sourcing_notes": "Paneer and atta are both at any Indian grocer or larger Tesco/Sainsbury's world foods aisle.",
+    "storage_notes": "Paneer can marinate up to 24 hours ahead. Parathas can be made ahead and reheated on a dry tawa. Assemble fresh for best texture, or pack the roll wrapped in foil for lunch.",
+    "kid_friendly_notes": "Use a smaller quantity of chilli powder for a milder version — the yoghurt marinade keeps it flavourful regardless.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 24,
+    "name": "Puran Poli (Sweet, Dessert-Style)",
+    "description": "A soft, flaky flatbread stuffed with a sweet spiced lentil filling and cooked with ghee — a festive Maharashtrian classic, best enjoyed warm with a drizzle of ghee or a side of milk.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Dessert"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 35,
+    "total_time_minutes": 90,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the puran (sweet lentil filling)",
+        "items": [
+          {
+            "name": "chana dal (split Bengal gram), rinsed",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "jaggery, grated",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "cardamom powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "A pinch of nutmeg powder (optional)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed for boiling (enough to cover dal by about 2 inches)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "ghee",
+            "unit": "tsp",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the outer dough (poli)",
+        "items": [
+          {
+            "name": "plain flour or a mix of plain flour and whole wheat flour",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "turmeric powder (traditional, for colour)",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "oil, plus more for resting the dough",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed to knead",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For cooking",
+        "items": [
+          {
+            "name": "ghee (roughly ½ tbsp per puran poli)",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Making the puran (filling)",
+          "Boil the dal: In a pot, combine the chana dal with enough water to cover by about 2 inches. Boil until very soft and mushy, about 25–30 minutes (or 3–4 whistles in a pressure cooker). Drain any excess water thoroughly (reserve it — it makes a lovely base for a simple dal soup another day, but isn't used in this recipe).",
+          "Cook with jaggery: Return the drained dal to the pan with the ghee and jaggery. Cook on low-medium heat, mashing and stirring continuously, for 8–10 minutes until the mixture thickens into a dry, mouldable paste that holds its shape — this takes patience, as the jaggery releases moisture initially.",
+          "Flavour: Stir in the cardamom and nutmeg (if using). Let the puran cool completely, then divide into 8 portions and roll into smooth balls.",
+          "Making the dough",
+          "Knead: Combine the flour, turmeric, oil, and salt. Gradually add water, kneading into a very soft, slightly sticky dough — softer than regular roti dough.",
+          "Rest: Cover with a little oil brushed on top and let it rest for at least 30 minutes.",
+          "Assembling and cooking",
+          "Divide: Divide the dough into 8 portions, slightly smaller than the puran balls, and roll into smooth balls.",
+          "Stuff: Flatten a dough ball into a small disc, place a puran ball in the centre, and bring the edges up and over to seal completely, pinching at the top. Flatten gently into a ball again.",
+          "Roll out: Dust lightly with flour and gently roll the stuffed ball into a thin, even round, about the size of a small side plate — go slowly and evenly to avoid the filling breaking through.",
+          "Cook: Heat a tawa on medium heat. Place the rolled puran poli on it and cook for about a minute until small bubbles appear.",
+          "Flip and add ghee: Flip, spread ½ tsp ghee over the top, and cook for another minute. Flip again, add ghee to the other side, and cook, pressing gently, until both sides have light golden-brown spots, 3–4 minutes total.",
+          "Repeat: Keep cooked puran poli warm, wrapped in a cloth. Repeat with the remaining portions.",
+          "Serve: Serve warm, with an extra drizzle of ghee or a glass of warm milk on the side."
+        ]
+      }
+    ],
+    "calories_kcal": 380,
+    "protein_g": 9,
+    "carbs_g": 62,
+    "fat_g": 11,
+    "fibre_g": 6,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 2 puran poli per serving.",
+    "egg_check_notes": "Fully egg-free — chana dal, jaggery, flour, and ghee carry no hidden egg risk.",
+    "common_mistakes": "Not cooking the puran filling dry enough is the most common cause of it bursting through the dough while rolling — it should hold together firmly, not be soft or wet. Rolling too aggressively or too thin also risks tearing.",
+    "uk_sourcing_notes": "Chana dal and jaggery are both at any Indian grocer. Jaggery is sometimes labelled \"gur\" — either block or granulated forms work fine here.",
+    "storage_notes": "The puran filling can be made 1–2 days ahead and refrigerated. Cooked puran poli keep for 2 days refrigerated; reheat gently on a dry tawa with a touch of ghee, not the microwave, to preserve texture.",
+    "kid_friendly_notes": "No heat in this dish — naturally kid-friendly. Cardamom can be reduced slightly if a milder flavour is preferred for younger children.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 25,
+    "name": "Schezwan Noodles",
+    "description": "Fiery, garlicky stir-fried noodles tossed in a spicy Schezwan sauce with crunchy vegetables — a fast, punchy Indo-Chinese street-food favourite.",
+    "cuisine": "Indo-Chinese",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner",
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "total_time_minutes": 40,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the noodles",
+        "items": [
+          {
+            "name": "dried noodles, uncooked measure (plain wheat \"hakka\" noodles or rice noodles — check label, see egg-check note)",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "oil (for tossing cooked noodles, to prevent sticking)",
+            "unit": "tsp",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "group": "For the Schezwan sauce (can be made ahead)",
+        "items": [
+          {
+            "name": "–12 dried red chillies, soaked in hot water for 20 minutes",
+            "unit": "",
+            "amount": 10
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "garlic, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger, finely chopped",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "tomato ketchup",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "soy sauce (check label)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "vinegar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "sugar",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–3 tbsp water, as needed to blend",
+            "unit": "",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the stir-fry",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "garlic, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger, finely chopped",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "onion, thinly sliced",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "pepper (any colour), thinly sliced",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "carrot, julienned or thinly sliced",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "cabbage, shredded",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "spring onion, sliced (white and green parts separated)",
+            "unit": "tbsp",
+            "amount": 3
+          },
+          {
+            "name": "soy sauce (check label)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "vinegar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste (go easy, as soy sauce is salty)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Making the Schezwan sauce",
+          "Blend the chillies: Drain the soaked dried red chillies and blend them with 2–3 tbsp water into a smooth, thick paste.",
+          "Cook the paste: Heat 1 tbsp oil in a small pan on medium heat. Add the chopped garlic and ginger, and sauté for 30 seconds until fragrant.",
+          "Add the chilli paste: Add the blended red chilli paste and cook for 3–4 minutes, stirring often, until the raw smell disappears and the oil starts to separate slightly at the edges.",
+          "Season: Stir in the ketchup, soy sauce, vinegar, sugar, and salt. Cook for another 1–2 minutes until well combined and glossy. Set aside (this makes a slightly larger batch than needed — extra keeps well, see storage note).",
+          "Cooking the noodles",
+          "Boil: Cook the noodles in a large pot of salted boiling water according to the packet instructions, until just tender but still with a slight bite (al dente). Drain and rinse briefly under cold water to stop the cooking and remove excess starch.",
+          "Toss with oil: Toss the drained noodles with 1 tsp oil to prevent them from sticking together while you prepare the stir-fry.",
+          "Stir-frying",
+          "Heat the wok: Heat the 2 tbsp oil in a large pan or wok on high heat until just starting to shimmer.",
+          "Add aromatics: Add the chopped garlic, ginger, and the white parts of the spring onion. Stir-fry for 30 seconds until fragrant.",
+          "Add vegetables: Add the onion, pepper, carrot, and cabbage. Stir-fry on high heat for 2–3 minutes, keeping the vegetables crunchy rather than soft.",
+          "Add sauce: Add 3–4 tbsp of the prepared Schezwan sauce (adjust to your spice preference — add more for extra heat) along with the soy sauce and vinegar. Toss to coat the vegetables evenly.",
+          "Add noodles: Add the boiled noodles to the pan. Using tongs or two spatulas, toss everything together on high heat for 2–3 minutes until the noodles are evenly coated in the sauce and heated through.",
+          "Finish: Taste and adjust salt or add a touch more Schezwan sauce if you'd like it spicier. Garnish with the green parts of the spring onion.",
+          "Serve immediately, while hot."
+        ]
+      }
+    ],
+    "calories_kcal": 350,
+    "protein_g": 9,
+    "carbs_g": 55,
+    "fat_g": 11,
+    "fibre_g": 4,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "",
+    "common_mistakes": "Overcooking the noodles before stir-frying makes them mushy and prone to breaking apart in the wok — slightly undercook them at the boiling stage since they'll cook a little further during stir-frying. Also, letting the vegetables overcook loses the signature crunch that makes this dish satisfying.",
+    "uk_sourcing_notes": "Dried red chillies, soy sauce, and vinegar are all easily found in the world foods aisle of any UK supermarket. Egg-free hakka or rice noodles are reliably found at Indian or Chinese grocers — if using a supermarket \"straight-to-wok\" noodle pack, double check the label as some brands do include egg.",
+    "storage_notes": "The Schezwan sauce keeps well refrigerated in an airtight container for up to a week, and makes a versatile base for other Indo-Chinese dishes too. The noodles themselves are best eaten fresh, though leftovers can be reheated in a hot pan with a splash of water to loosen them — avoid the microwave, which can make them clump.",
+    "kid_friendly_notes": "Reduce the number of dried red chillies in the sauce (or reduce the quantity of sauce used in the stir-fry) for a much milder version — a little extra ketchup helps balance the flavour without the heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 26,
+    "name": "Sev Puri",
+    "description": "Crisp flat puris topped with spiced potato, onion, chutneys, and a generous shower of crunchy sev — a beloved bite-sized Mumbai chaat.",
+    "cuisine": "Maharashtrian/Mumbai Street",
+    "origin_note": "",
+    "tags": [
+      "Snack"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 10,
+    "total_time_minutes": 30,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the tamarind chutney",
+        "items": [
+          {
+            "name": "tamarind pulp (or concentrate)",
+            "unit": "tbsp",
+            "amount": 3
+          },
+          {
+            "name": "jaggery, grated",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "red chilli powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "roasted cumin powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "water",
+            "unit": "tbsp",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "group": "For the mint-coriander chutney",
+        "items": [
+          {
+            "name": "fresh mint leaves",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "fresh coriander leaves",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "chilli",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of salt",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–3 tbsp water, for blending",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "To finish:",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "chaat masala",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "red chilli powder (optional, for garnish)",
+            "unit": "tsp",
+            "amount": 1
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the tamarind chutney: Simmer the tamarind pulp, jaggery, chilli powder, cumin powder, salt, and water in a small pan for 5–6 minutes until slightly thickened. Cool before using.",
+          "Make the mint chutney: Blend the mint, coriander, green chilli, lemon juice, salt, and water into a smooth paste.",
+          "Arrange the puris: Lay the flat puris out on a large serving plate or tray, indent-side up.",
+          "Top with potato and onion: Place a small spoonful of diced potato on each puri, followed by a little chopped onion and tomato.",
+          "Add chutneys: Drizzle each puri with a little tamarind chutney and mint chutney.",
+          "Finish: Sprinkle chaat masala and a light dusting of red chilli powder over the top, then generously scatter sev and coriander leaves over everything.",
+          "Serve immediately: Sev puri must be eaten right away, before the puris soften."
+        ]
+      }
+    ],
+    "calories_kcal": 250,
+    "protein_g": 5,
+    "carbs_g": 38,
+    "fat_g": 8,
+    "fibre_g": 3,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 6 puris per serving.",
+    "egg_check_notes": "",
+    "common_mistakes": "Assembling too far in advance is the main pitfall — the puris turn soft and lose their signature crunch within minutes of adding chutney. Prep everything else ahead, assemble last.",
+    "uk_sourcing_notes": "Papdi and sev are both sold at any Indian grocer in the snacks aisle. Tamarind pulp is also there or in larger supermarket world foods sections.",
+    "storage_notes": "Both chutneys and the boiled potato keep well refrigerated for a few days. Only assemble the puris just before serving.",
+    "kid_friendly_notes": "Skip the green chilli in the mint chutney and the red chilli powder garnish for a milder version.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 27,
+    "name": "Shrikhand",
+    "description": "A rich, sweetened, and lightly spiced strained yoghurt dessert, flavoured with saffron and cardamom — a Maharashtrian festive classic, best served chilled.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Dessert"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 0,
+    "total_time_minutes": 15,
+    "time_note": "Cooking Time:",
+    "ingredients": [],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Strain the yoghurt: Line a sieve with a muslin cloth or clean thin tea towel and set it over a bowl. Pour in the yoghurt, gather the edges of the cloth, and tie loosely. Refrigerate and let it strain for 6–8 hours or overnight, until thick and most of the whey has drained off — you should be left with a firm, creamy hung curd (chakka).",
+          "Sweeten: Transfer the strained yoghurt to a bowl. Add the sugar and whisk well until smooth and the sugar has fully dissolved — this can take a few minutes of steady whisking.",
+          "Flavour: Stir in the saffron-soaked milk and cardamom powder, mixing until evenly combined and the shrikhand turns a pale golden colour.",
+          "Chill: Cover and refrigerate for at least 1 hour before serving, to let the flavours settle.",
+          "Serve: Spoon into small bowls and garnish with chopped pistachios, almonds, and a few extra saffron strands."
+        ]
+      }
+    ],
+    "calories_kcal": 230,
+    "protein_g": 8,
+    "carbs_g": 28,
+    "fat_g": 9,
+    "fibre_g": 0.5,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Fully egg-free — yoghurt, sugar, and nuts carry no hidden egg risk.",
+    "common_mistakes": "Not straining the yoghurt long enough leaves the shrikhand runny rather than thick and spoonable — don't rush this step. Using low-fat yoghurt gives a much less rich, less traditional result.",
+    "uk_sourcing_notes": "Use a good full-fat plain yoghurt or Greek yoghurt from any UK supermarket — Greek yoghurt is already quite thick and can shorten straining time slightly. Saffron and pistachios are at any Indian grocer or larger supermarket.",
+    "storage_notes": "Shrikhand keeps well refrigerated for 3–4 days in an airtight container, and the flavour deepens over the first day. Freezing isn't recommended, as it affects the texture.",
+    "kid_friendly_notes": "No heat in this dish — naturally kid-friendly. Some families add a little mango pulp to make \"aamrakhand,\" a popular seasonal variation, if you'd like to try a variant.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 28,
+    "name": "Vada Pav",
+    "description": "A spiced potato fritter (batata vada) sandwiched in a soft bread roll with chutneys — Mumbai's iconic street food burger.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Snack",
+      "Lunch",
+      "Packed Lunch Friendly"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "total_time_minutes": 40,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the batata vada (potato fritters)",
+        "items": [
+          {
+            "name": "potatoes, boiled and mashed",
+            "unit": "medium",
+            "amount": 4
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "mustard seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–10 curry leaves",
+            "unit": "",
+            "amount": 8
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "chillies, finely chopped",
+            "unit": "green",
+            "amount": 2
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "lemon juice",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the batter",
+        "items": [
+          {
+            "name": "gram flour (besan)",
+            "unit": "tbsp",
+            "amount": 8
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.25
+          },
+          {
+            "name": "A pinch of asafoetida (hing)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "A pinch of baking soda (optional, for extra crispness)",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed to make a smooth, thick coating batter",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Oil, for deep or shallow frying",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For assembly",
+        "items": [
+          {
+            "name": "bread rolls or pav (check label, see egg-check note)",
+            "unit": "soft",
+            "amount": 4
+          },
+          {
+            "name": "mint-coriander chutney (blend mint, coriander, green chilli, lemon juice, salt, water)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "dry garlic chutney (garlic, dried red chilli powder, roasted peanuts or desiccated coconut, ground together with salt)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "Fried green chillies (optional, for serving)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Make the potato filling: Heat the oil in a pan on medium heat. Add mustard seeds and let them splutter. Add cumin seeds, hing, and curry leaves.",
+          "Add aromatics: Add the ginger-garlic paste and green chillies, sauté for 30 seconds.",
+          "Combine with potato: Add the mashed potato, turmeric, and salt. Mix well, mashing further into the spices, and cook for 2–3 minutes until well combined. Turn off heat, stir in lemon juice and coriander.",
+          "Shape: Once cool enough to handle, divide the mixture into 8 portions and roll into balls, then flatten slightly.",
+          "Make the batter: Whisk the gram flour, turmeric, hing, baking soda (if using), and salt with water until you get a smooth, thick, coating batter — similar to pancake batter consistency.",
+          "Fry: Heat oil for deep frying in a pan. Dip each potato ball into the batter, coating fully, and carefully lower into the hot oil. Fry in batches for 4–5 minutes, turning occasionally, until deep golden and crisp. Drain on kitchen paper.",
+          "Make the garlic chutney: Blend the garlic, dried red chilli powder, roasted peanuts (or coconut), and salt into a coarse, dry mixture.",
+          "Assemble: Slice each bread roll almost in half (not all the way through). Spread mint chutney on one side and a little dry garlic chutney on the other.",
+          "Fill: Place one vada inside each roll, pressing down gently to close.",
+          "Serve immediately, with fried green chillies on the side if desired."
+        ]
+      }
+    ],
+    "calories_kcal": 380,
+    "protein_g": 9,
+    "carbs_g": 50,
+    "fat_g": 16,
+    "fibre_g": 5,
+    "nutrition_basis": "Estimate only — not lab-tested. Based on 1 vada pav per serving.",
+    "egg_check_notes": "",
+    "common_mistakes": "Batter that's too thin won't coat the vada properly and can make it greasy — it should be thick enough to cling. Overcrowding the frying oil drops the temperature and results in soggy, oily vada rather than crisp ones.",
+    "uk_sourcing_notes": "Look for \"pav\" specifically at Indian grocers for the most authentic result and lowest egg risk. Gram flour (besan) is at any Indian grocer or larger supermarket world foods aisle.",
+    "storage_notes": "The potato filling can be made a day ahead and refrigerated. Fried vada are best eaten fresh, but can be re-crisped in an air fryer or hot oven if needed. The dry garlic chutney keeps well in an airtight container for weeks.",
+    "kid_friendly_notes": "Omit the green chillies from the filling and use less garlic chutney (which can be quite fiery) for a milder version.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 29,
+    "name": "Veg Fried Rice with Manchurian Gravy",
+    "description": "Soft vegetable-studded fried rice served with deep-fried vegetable balls smothered in a glossy, tangy-spicy Manchurian gravy — a hearty Indo-Chinese restaurant favourite, fully vegetarian and egg-free.",
+    "cuisine": "Indo-Chinese",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 35,
+    "total_time_minutes": 60,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the Vegetable Manchurian Balls",
+        "items": [
+          {
+            "name": "finely grated cabbage",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "finely grated carrot",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "finely chopped French beans",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "finely chopped spring onion (white part)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "ginger, finely grated",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "garlic, finely grated",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "chilli, finely chopped",
+            "unit": "green",
+            "amount": 1
+          },
+          {
+            "name": "cornflour",
+            "unit": "tbsp",
+            "amount": 5
+          },
+          {
+            "name": "plain flour",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "Salt and black pepper, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "–3 tbsp water, only if needed to bind (add gradually — the vegetables usually release enough moisture)",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "Oil, for deep or shallow frying",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "group": "For the Manchurian Gravy",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "garlic, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "ginger, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "chillies, slit",
+            "unit": "green",
+            "amount": 2
+          },
+          {
+            "name": "onion, cut into chunky petals",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "pepper, cut into chunky squares",
+            "unit": "small",
+            "amount": 1
+          },
+          {
+            "name": "soy sauce (check label — see egg-check note)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "tomato ketchup",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "red chilli sauce (adjust to taste)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "vinegar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "sugar",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "water (for the gravy base)",
+            "unit": "tbsp",
+            "amount": 12
+          },
+          {
+            "name": "cornflour, mixed with 2 tbsp water (for thickening)",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "onions, sliced (green part), for garnish",
+            "unit": "spring",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the Vegetable Fried Rice",
+        "items": [
+          {
+            "name": "rice (raw, uncooked measure — long-grain or basmati; cook and cool before using)",
+            "unit": "tbsp",
+            "amount": 16
+          },
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "garlic, finely chopped",
+            "unit": "tbsp",
+            "amount": 1
+          },
+          {
+            "name": "finely chopped mixed vegetables (carrot, French beans, sweetcorn — diced small)",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "cabbage, finely shredded",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "onions, sliced (white and green parts separated)",
+            "unit": "spring",
+            "amount": 2
+          },
+          {
+            "name": "soy sauce (check label)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "vinegar",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "black pepper powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "Salt, to taste (go easy, as soy sauce is already salty)",
+            "unit": "",
+            "amount": null
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Vegetable Manchurian Balls",
+          "Mix the vegetables: In a large bowl, combine the cabbage, carrot, French beans, spring onion, ginger, garlic, and green chilli.",
+          "Bind: Add the cornflour, plain flour, salt, and black pepper. Mix and press the mixture together with your hands — the vegetables should release enough moisture to bind on their own. Only add water a little at a time if the mixture feels too dry to hold together.",
+          "Shape: Take small portions of the mixture and roll firmly between your palms into balls about the size of a walnut. You should get around 16 balls.",
+          "Fry: Heat oil in a pan (enough for shallow or deep frying). Fry the balls in batches on medium heat for 4–5 minutes, turning occasionally, until deep golden brown and crisp all over. Drain on kitchen paper.",
+          "Manchurian Gravy",
+          "Prepare the sauce mix: In a small bowl, combine the soy sauce, ketchup, red chilli sauce, vinegar, and sugar with the 12 tbsp water. Set aside.",
+          "Start the stir-fry: Heat the 2 tbsp oil in a large pan or wok on high heat. Add the chopped garlic, ginger, and green chillies, and stir-fry for 30 seconds until fragrant.",
+          "Add vegetables: Add the onion petals and pepper squares. Stir-fry for 2 minutes, keeping them crunchy rather than soft.",
+          "Add sauce base: Pour in the prepared sauce mixture and bring to a gentle boil. Add the cornflour-water mixture in a thin stream, stirring continuously, and simmer for 2–3 minutes until the gravy thickens to a glossy, slightly clingy consistency. Adjust salt to taste.",
+          "Add the balls: Just before serving, add the fried Manchurian balls to the gravy and toss gently to coat — do this right before serving so the balls stay crisp rather than turning soggy from sitting in the sauce. Garnish with sliced spring onion greens.",
+          "Vegetable Fried Rice",
+          "Cook the rice: If starting with raw rice, cook until just done, with grains separate. Spread on a tray and cool completely — ideally done well ahead, as warm rice turns mushy when stir-fried.",
+          "Stir-fry the vegetables: Heat the oil in a large pan or wok on high heat. Add the garlic and stir-fry for 20–30 seconds. Add the mixed diced vegetables and white parts of the spring onion, and stir-fry for 2–3 minutes until just tender with a slight bite.",
+          "Add cabbage: Add the shredded cabbage and stir-fry for another minute.",
+          "Add rice: Add the cooled rice and, using a folding motion, toss it through the vegetables so the grains stay separate.",
+          "Season: Add the soy sauce, vinegar, black pepper, and salt (if needed). Toss on high heat for 2–3 minutes until evenly combined. Garnish with the spring onion greens.",
+          "Serving",
+          "Serve: Plate the fried rice with the Manchurian balls and gravy spooned generously over or alongside. Serve immediately while both are hot."
+        ]
+      }
+    ],
+    "calories_kcal": 470,
+    "protein_g": 11,
+    "carbs_g": 68,
+    "fat_g": 16,
+    "fibre_g": 5,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "",
+    "common_mistakes": "Adding the Manchurian balls to the gravy too early (or letting them sit in it for too long before serving) makes them go soft and soggy — combine just before serving. Overworking or adding too much water to the ball mixture makes them fall apart while frying — the vegetables' natural moisture is usually enough to bind them. Using warm rice for the fried rice leads to a mushy, clumped texture — always cool it fully first.",
+    "uk_sourcing_notes": "All vegetables, soy sauce, ketchup, and chilli sauce are easily found at any UK supermarket. Cornflour is a standard baking-aisle staple.",
+    "storage_notes": "The Manchurian balls can be fried ahead and refrigerated for a day, then re-crisped in a hot pan or air fryer before tossing in fresh gravy. The gravy base (without the balls) keeps for 2 days refrigerated. Cooked, cooled rice also keeps well for a day. Assemble everything fresh just before serving for the best texture.",
+    "kid_friendly_notes": "Reduce or omit the green chillies and red chilli sauce in the gravy for a much milder version — a little extra ketchup helps keep the flavour balanced without the heat.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 30,
+    "name": "Veg Kolhapuri",
+    "description": "A fiery, deeply spiced vegetable curry made with a roasted dried red chilli and coconut-based Kolhapuri masala — a popular vegetarian take on Kolhapur's famously bold cuisine.",
+    "cuisine": "Maharashtrian",
+    "origin_note": "",
+    "tags": [
+      "Lunch",
+      "Dinner"
+    ],
+    "serves": 4,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 35,
+    "total_time_minutes": 60,
+    "time_note": "Cooking Time:",
+    "ingredients": [
+      {
+        "group": "For the Kolhapuri masala paste",
+        "items": [
+          {
+            "name": "–8 dried Kashmiri red chillies (for colour), soaked in hot water for 15 minutes",
+            "unit": "",
+            "amount": 6
+          },
+          {
+            "name": "–3 regular dried red chillies (for heat), soaked alongside",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "grated fresh coconut (or desiccated coconut, soaked)",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "coriander seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "–5 black peppercorns",
+            "unit": "",
+            "amount": 4
+          },
+          {
+            "name": "–3 cloves",
+            "unit": "",
+            "amount": 2
+          },
+          {
+            "name": "-inch cinnamon stick",
+            "unit": "",
+            "amount": 1
+          },
+          {
+            "name": "–3 tbsp water, for grinding",
+            "unit": "",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "group": "For the curry",
+        "items": [
+          {
+            "name": "oil",
+            "unit": "tbsp",
+            "amount": 2
+          },
+          {
+            "name": "cumin seeds",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "onion, finely chopped",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "ginger-garlic paste",
+            "unit": "tsp",
+            "amount": 1
+          },
+          {
+            "name": "tomatoes, chopped",
+            "unit": "medium",
+            "amount": 2
+          },
+          {
+            "name": "turmeric powder",
+            "unit": "tsp",
+            "amount": 0.5
+          },
+          {
+            "name": "potato, cubed",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "carrot, sliced",
+            "unit": "medium",
+            "amount": 1
+          },
+          {
+            "name": "–10 green beans, cut into pieces",
+            "unit": "",
+            "amount": 8
+          },
+          {
+            "name": "cauliflower florets",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "peas",
+            "unit": "tbsp",
+            "amount": 4
+          },
+          {
+            "name": "paneer, cubed (optional but common)",
+            "unit": "tbsp",
+            "amount": 6
+          },
+          {
+            "name": "Salt, to taste",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "Water, as needed",
+            "unit": "",
+            "amount": null
+          },
+          {
+            "name": "fresh coriander leaves, chopped",
+            "unit": "tbsp",
+            "amount": 2
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Roast the whole spices: Dry roast the coriander seeds, cumin seeds, peppercorns, cloves, and cinnamon in a small pan for 1–2 minutes until fragrant. Let cool slightly.",
+          "Grind the masala: Blend the roasted spices with the soaked dried chillies and coconut, adding 2–3 tbsp water, into a smooth, thick paste.",
+          "Start the curry: Heat the oil in a pan on medium heat. Add cumin seeds and let them sizzle.",
+          "Cook onion: Add the onion and cook until golden, about 4–5 minutes.",
+          "Add aromatics: Add the ginger-garlic paste and cook for 1 minute.",
+          "Fry the masala paste: Add the ground Kolhapuri masala paste and cook for 3–4 minutes, stirring often, until the raw smell disappears and the oil begins to separate.",
+          "Add tomatoes: Add the tomatoes and turmeric, cooking until soft and the oil separates again, 5–6 minutes.",
+          "Add vegetables: Add the potato, carrot, beans, and cauliflower, along with enough water to just cover. Bring to a boil, then cover and simmer for 12–15 minutes until the vegetables are tender.",
+          "Add paneer: Stir in the peas, paneer (if using), and salt in the last 3–4 minutes, and simmer gently.",
+          "Finish: Stir in the fresh coriander before serving."
+        ]
+      }
+    ],
+    "calories_kcal": 310,
+    "protein_g": 10,
+    "carbs_g": 28,
+    "fat_g": 17,
+    "fibre_g": 7,
+    "nutrition_basis": "Estimate only — not lab-tested.",
+    "egg_check_notes": "Fully egg-free.",
+    "common_mistakes": "Skipping the dry-roasting of whole spices before grinding loses a lot of depth in the final flavour. Adding too much water while grinding the masala paste makes it hard to fry off properly — keep the paste thick.",
+    "uk_sourcing_notes": "Dried Kashmiri and regular dried red chillies are available at Indian grocers, and sometimes in the world foods aisle of larger Tesco/Sainsbury's stores. Kashmiri chillies are mainly for colour with mild heat — don't substitute all of them with hot dried chillies, or the dish becomes extremely fiery.",
+    "storage_notes": "The curry keeps 2 days refrigerated and improves overnight. It freezes well without the paneer — add fresh paneer when reheating.",
+    "kid_friendly_notes": "This dish is traditionally very spicy — reduce the number of regular dried red chillies substantially (keeping mostly the milder Kashmiri ones for colour) for a kid-friendly version.",
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": true,
+    "is_deleted": false
+  },
+  {
+    "id": 38,
+    "name": "sdfg",
+    "description": "sdfgsdfg",
+    "cuisine": "sdfg",
+    "origin_note": null,
+    "tags": [
+      "sdfg"
+    ],
+    "serves": 4,
+    "prep_time_minutes": null,
+    "cook_time_minutes": null,
+    "total_time_minutes": 46,
+    "time_note": null,
+    "ingredients": [
+      {
+        "group": "Ingredients",
+        "items": [
+          {
+            "name": "sdfgsdfgsdfgsdf"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "sdfgsdfgsdfg"
+        ]
+      }
+    ],
+    "calories_kcal": 4356,
+    "protein_g": 3456,
+    "carbs_g": 3456,
+    "fat_g": 3456,
+    "fibre_g": 3456,
+    "nutrition_basis": null,
+    "egg_check_notes": null,
+    "common_mistakes": null,
+    "uk_sourcing_notes": null,
+    "storage_notes": null,
+    "kid_friendly_notes": null,
+    "is_egg_free": false,
+    "is_vegetarian": true,
+    "contains_dairy": false,
+    "is_deleted": true
+  },
+  {
+    "id": 39,
+    "name": "Hdjd",
+    "description": "Vzhz",
+    "cuisine": "Hzhd",
+    "origin_note": null,
+    "tags": [
+      "Vsh"
+    ],
+    "serves": 7022,
+    "prep_time_minutes": null,
+    "cook_time_minutes": null,
+    "total_time_minutes": 54,
+    "time_note": null,
+    "ingredients": [
+      {
+        "group": "Ingredients",
+        "items": [
+          {
+            "name": "Gsb"
+          },
+          {
+            "name": "Zghs"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "group": "Method",
+        "steps": [
+          "Bdhd",
+          "Sgb"
+        ]
+      }
+    ],
+    "calories_kcal": 132,
+    "protein_g": null,
+    "carbs_g": null,
+    "fat_g": null,
+    "fibre_g": 626,
+    "nutrition_basis": null,
+    "egg_check_notes": null,
+    "common_mistakes": null,
+    "uk_sourcing_notes": null,
+    "storage_notes": null,
+    "kid_friendly_notes": null,
+    "is_egg_free": true,
+    "is_vegetarian": true,
+    "contains_dairy": false,
+    "is_deleted": true
+  }
+]
