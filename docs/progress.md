@@ -2,7 +2,7 @@
 
 ## Phase 0 — Preflight, backup, emergency lockdown — DONE
 - Date: 2026-09-10
-- Branch / PR: phase-0-lockdown / (opened this phase)
+- Branch / PR: phase-0-lockdown / [#1](https://github.com/dugguboy2015-sudo/recipe-book/pull/1) (merged 83ab4b3)
 - Migrations applied: 000_lockdown.sql, 000a_lockdown_maintain.sql
 - Backup: backups/2026-09-10T22-31-51-087Z (32 rows; recipes.json, policies.json, grants.json, columns.json, rls.json)
 - Acceptance:
@@ -11,7 +11,7 @@
   - [x] All 0.9 probes return the stated statuses: PATCH/POST/DELETE with publishable key → 401, code 42501; GET → 200 with 30 rows; GET is_deleted=true → 200 `[]`
   - [x] `schema_migrations` contains 000_lockdown.sql (and 000a_lockdown_maintain.sql, see deviation below)
   - [x] RLS audit (A.0, corrected per deviation below) returns zero rows
-- Preview smoke: N/A (Phase 0 has no Functions/CI yet; verified directly against production REST API and live pages instead)   Production smoke: pages load (200 after Cloudflare's existing clean-URL redirect for .html paths, unrelated to this phase)
+- Preview smoke: PASS https://8739ea62.recipe-book-9eo.pages.dev (no `npm run smoke` yet — Phase 1 adds it; verified manually: pages 200, publishable-key probes match)   Production smoke: PASS https://recipe-book-9eo.pages.dev (all three pages 200; GET returns 30 rows; POST without the write API → 401/42501)
 - Deviations from spec:
   1. **Appendix A.0's third audit query is unreliable and was replaced.** The Supabase Management API's `/database/query` endpoint always executes as `supabase_read_only_user` regardless of the `read_only` flag (confirmed: `select current_user` returns `supabase_read_only_user` even with `read_only: false`). `information_schema.role_table_grants` only surfaces grants where the *current* role is grantor/grantee/PUBLIC, so querying it from this role can never see grants held by `anon`/`authenticated` — it always returns zero rows, which would be a false pass even with no lockdown applied at all. Verified this by running the original query against the *pre-lockdown* database: it returned `[]` despite `anon` holding every privilege. Replaced it with a query over `pg_class.relacl` via `aclexplode()`, which is visible to any role with `SELECT` on `pg_class`:
      ```sql
