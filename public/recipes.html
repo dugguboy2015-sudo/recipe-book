@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recipe Book | Recipes</title>
-  <link rel="stylesheet" href="styles.css?v=20260829" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-page="recipes">
   <div class="wrap">
@@ -98,7 +98,7 @@
           <p id="modalNotes"></p>
         </div>
       </div>
-      <div style="margin-top: 20px; text-align: right;">
+      <div class="modal-footer">
         <button type="button" class="primary-button" id="closeModal">Close</button>
       </div>
     </div>
@@ -230,8 +230,8 @@
   <button id="addRecipeButton" class="floating-add-button" type="button" title="Add recipe" aria-label="Add recipe">+</button>
   <div id="snackbar" class="snackbar" aria-live="polite"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=20260829"></script>
-  <script src="js/app.js?v=20260829"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js" integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP" crossorigin="anonymous"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

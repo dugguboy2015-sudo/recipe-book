@@ -1,0 +1,30 @@
+{
+  "name": "recipe-book",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "wrangler pages dev public --port 8788",
+    "dev:vars": "node scripts/write-dev-vars.mjs",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check": "npm run lint && npm test && npm run check:secrets",
+    "smoke": "node scripts/smoke.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "backup": "node scripts/backup.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "sql": "node scripts/sql.mjs",
+    "secrets:push": "node scripts/set-secrets.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "vitest": "^3.0.0",
+    "wrangler": "^4.0.0"
+  }
+}
