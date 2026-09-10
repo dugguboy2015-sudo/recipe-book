@@ -520,6 +520,11 @@ button:disabled {
   padding: 16px;
 }
 
+.modal-footer {
+  margin-top: 20px;
+  text-align: right;
+}
+
 .detail-panel h4 {
   color: var(--sage-deep);
   margin-bottom: 10px;

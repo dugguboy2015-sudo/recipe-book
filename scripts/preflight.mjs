@@ -20,12 +20,6 @@ async function check(name, required, fn) {
   }
 }
 
-async function ghJson(args) {
-  const { execFileSync } = await import('node:child_process');
-  const out = execFileSync('gh', args, { encoding: 'utf8' });
-  return JSON.parse(out);
-}
-
 await check('Node >= 20', true, () => {
   const major = Number(process.versions.node.split('.')[0]);
   if (major < 20) throw new Error(`node ${process.versions.node} < 20`);
