@@ -45,3 +45,33 @@
   3. Added `tests/lib/env.test.js`, one test file covering `scripts/lib/env.mjs` (KEY=VALUE parsing, missing-required-key errors, the known-defaults merge). Not in the original Phase 1 task list, but `npm test` / CI need at least one test file to pass, and Appendix G's fuller suite isn't due until Phase 4 (once `recipe-rules.js` exists). Kept intentionally small — just covers code already written this phase.
 - Also noted (not a deviation, just an environment quirk worth recording): a fresh `npm install` on this Windows machine hit the known npm/cli#4828 optional-dependency bug (`Cannot find module @rollup/rollup-win32-x64-msvc`) after `npm ci`-equivalent installs. Fixed locally with `npm install --no-save @rollup/rollup-win32-x64-msvc`; doesn't affect `package-lock.json` and doesn't affect Linux CI, which resolves its own platform's optional binary normally.
 - Notes for next phase: Phase 2 (schema hardening & health columns) is next. Migrations 001–008 apply against the now-locked-down database; nothing in `public/js` reads the new columns yet, so no expand/contract risk. `scripts/sync-config.mjs` (2.5) will need `public/config/` to exist — it doesn't yet, `scripts/sync-config.mjs` should create it.
+
+---
+
+## Phase 2 — Schema hardening & health columns (expand-only) — DONE
+- Date: 2026-09-11
+- Branch / PR: phase-2-schema / [#5](https://github.com/dugguboy2015-sudo/recipe-book/pull/5) (merged 86fe961)
+- Migrations applied: 001_constraints.sql, 002_cuisines.sql, 003_slug.sql, 004_meal_types.sql, 005_audit_and_generations.sql, 005a_recipe_audit_log_seq_fix.sql, 006_health_columns.sql, 007_read_views.sql, 008_default_privileges.sql
+- Backup: backups/2026-09-10T23-07-46-476Z (32 rows) — taken before this phase's migrations
+- Acceptance:
+  - [x] `schema_migrations` lists 000–008 (plus the two follow-up fixes 000a, 005a)
+  - [x] Every A.9 expectation holds (all 10 checks; see below); corrected A.0 audit returns zero rows
+  - [x] `is_protein_smart` exists and is `false` for every current row (confirmed: `count(*) filter (where is_protein_smart) = 0`)
+  - [x] The live site still reads correctly (production smoke + manual browser check, zero console errors)
+- Preview smoke: PASS https://33e1187c.recipe-book-9eo.pages.dev   Production smoke: PASS https://recipe-book-9eo.pages.dev
+- A.9 verification results:
+  1. Dietary columns: `is_egg_free`/`is_vegetarian`/`contains_dairy` all default `null`/`NOT NULL`; `is_deleted` default `false`/`NOT NULL`; `cuisine` `NOT NULL` — matches exactly.
+  2. Trigger `recipes_set_updated_at` present.
+  3. Zero rows with `total_time_minutes` < parts.
+  4. Cuisine distribution matches exactly: Chaat 3, Fusion 6, Gujarati 1, Indo-Chinese 3, Maharashtrian 9, North Indian 4, Other 2, Rajasthani 2, South Indian 2 (32 total).
+  5. Zero rows with missing slug.
+  6. Meal-type counts (non-deleted) match §1.4's tag vocabulary with the Snack→Snacks and Packed Lunch Friendly→Packed Lunch renames: Breakfast 9, Dessert 5, Dinner 13, Lunch 18, Packed Lunch 8, Snacks 16.
+  7. `similar_recipes('kanda poha', 3)` (called via service-role REST RPC, since the Management API's read-only role can't execute it — same pattern as the A.0 audit fix) returns Kanda Poha, score 1.0.
+  8. `recipe_stats`: `total: 30, vegetarian: 30, egg_free: 30, dairy_free: 0, protein_smart: 0, top_cuisine: Maharashtrian, top_cuisine_count: 9`.
+  9. Corrected A.0 audit (RLS enabled, security_invoker views, non-select anon/authenticated table privileges via relacl): all three return zero rows.
+  10. `count(*) filter (where is_protein_smart)` = 0, as expected.
+- Deviations from spec:
+  1. **`scripts/migrate.mjs`'s checksum guard was broken by Windows line-ending normalization.** It hashed migration files' raw bytes, but `core.autocrlf=true` (this machine's git config) rewrites LF→CRLF on every checkout. The very first `git switch` after Phase 0 changed `000_lockdown.sql`'s on-disk bytes without changing its content, and `migrate.mjs` refused to proceed ("Applied migration has changed on disk"). Fixed by normalizing `\r\n`→`\n` before hashing in both the already-applied-check and the new-file digest — this made the two Phase 0 files re-match immediately (they were LF when first hashed), no data or `schema_migrations` changes needed.
+  2. **`001_constraints.sql`'s `recipes_serves_range` check (1–50) failed** against the pre-existing junk soft-deleted row id 39 ("Hdjd", `serves: 7022`) — the same row `002_cuisines.sql` already special-cases for its junk cuisine/tags. Added `update ... set serves = 4 where id = 39 and is_deleted and serves > 50` immediately before the constraint, scoped tightly to that one known-junk row.
+  3. **`recipe_audit_log`'s identity-column sequence was exposed to `anon`/`authenticated`** (SELECT/UPDATE/USAGE) by this Supabase project's default grant behaviour for sequences — the same phenomenon Phase 0 found on tables (`public.recipes` originally had anon holding every privilege), just for sequences, and only affecting objects created before `008_default_privileges.sql` locks down future defaults. Found by extending the standing A.0 audit to also check `pg_class.relkind='S'`. Fixed with `migrations/005a_recipe_audit_log_seq_fix.sql`. This relkind='S' check is now part of the standing audit for every future phase that creates a table with a `generated ... as identity` column.
+- Notes for next phase: Phase 3 (structured ingredients, units & nutrition backfill) is next. `scripts/fixtures/recipes.snapshot.json` (32 rows, timestamps stripped, taken from the pre-migration backup) and `scripts/fixtures/slugs.json` are ready for the ingredient-backfill authoring work. Remember to check every new identity-column table's backing sequence against `anon`/`authenticated` after applying, until the pattern is proven to no longer occur (008's default-privilege revoke should prevent it for anything created from Phase 3 onward, but verify rather than assume).
