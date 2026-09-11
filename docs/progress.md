@@ -101,3 +101,24 @@
   2. Extended the standing A.0 RLS/grants audit (see Phase 0's deviation entry) to also check `pg_class.relkind = 'S'` for stray `anon`/`authenticated` sequence grants on every new table. Came back clean this time — confirms `008_default_privileges.sql`'s revoke is working for objects created from Phase 3 onward, unlike `recipe_audit_log` in Phase 2 (created in 005, before 008 took effect).
   3. One real migration bug caught and fixed before it ever committed: `009`'s `group_name` has a 60-char check constraint, but the live source data for Kothimbir Vadi's tempering group is `"For the tempering (optional, for extra flavour after steaming)"` (64 chars). `scripts/build-ingredients-backfill.mjs` now has a `fitGroupName()` helper that strips a trailing parenthetical before hard-truncating; no group name over 60 chars remains.
 - Notes for next phase: Phase 4 (front-end modularisation) is next. The ingredient dictionary (`scripts/data/ingredient-dictionary.mjs`) and backfill scripts are one-time authoring tools, not part of the standing `npm run check` pipeline — they're not needed again until a future recipe needs re-backfilling. `public/js/shared/units.js` (cup/spoon display formatting, Appendix C.2) will need to agree with the `units` table's `to_base` values used here (cup=240ml, tbsp=15ml, tsp=5ml).
+
+---
+
+## Phase 4 — Front-end modularisation (behaviour-preserving) — DONE
+- Date: 2026-09-11
+- Branch / PR: phase-4-modules / [#9](https://github.com/dugguboy2015-sudo/recipe-book/pull/9) (merged a3468fd)
+- Migrations applied: none (front-end only)
+- Backup: not required (no data-affecting changes)
+- Acceptance:
+  - [x] `app.js` is gone; no module exceeds 300 lines (largest is `shared/recipe-rules.js` at ~300, `pages/recipes.js` at ~220)
+  - [x] Every parity-checklist line (43 items, `docs/parity-checklist.md`) verified on preview via the browser tool: dashboard stats/recent, detail modal open/close, recipes page search/filters/pagination/clear, add/edit form fill/validate/focus/cancel, delete-confirm modal, full planner flow (select/assign/remove/reset/persist). Zero console errors throughout.
+  - [x] `npm run check` passes; Appendix G.1 tests exist and pass (46 tests) plus 8 query-builder tests, 57 total
+  - [x] Network log on preview shows no `is_deleted,deleted_at` probe query on page load — `checkSoftDeleteSupport()` is gone entirely
+- Preview smoke: PASS https://eb309462.recipe-book-9eo.pages.dev (all 6 checks + full manual walkthrough)   Production smoke: PASS https://recipe-book-9eo.pages.dev (all 6 checks; manually re-verified in-browser, zero console errors)
+- Deviations from spec:
+  1. Two small consolidations beyond the one explicitly permitted (deleting `checkSoftDeleteSupport`), both because the refactor unavoidably passed through this code and the visible result is provably identical:
+     - Dashboard previously fetched the recipe list twice (an initial fetch to render "recently added", then `loadDashboard()` fetching everything again to compute stats and re-render the same 3 cards). Now computed from one query.
+     - The two byte-identical recipe-detail-modal markup blocks in `index.html`/`recipes.html` are gone, per task 4.4's own instruction to render the markup once from `components/recipe-modal.js`.
+  2. `config.js` doesn't yet include `TURNSTILE_SITE_KEY` (the target layout in §4's file list mentions it "by hostname"). Nothing consumes Turnstile until Phase 6, so it's added then rather than as unused dead config now.
+  3. Confirmed (not new, but now blocking local iteration directly): `wrangler pages dev` cannot serve *any* route locally while `wrangler.toml` declares the `AI` binding — it always tries to establish the remote-binding session first, regardless of whether the requested route touches AI, and there's no local runtime for that binding to fall back to. This isn't a flag-fixable wrangler limitation; verified this phase entirely against the Cloudflare Pages preview deployment instead. Still on the list to address by Phase 9 (wider token scope, or accept preview-only local iteration for AI-adjacent work).
+- Notes for next phase: Phase 5 (design system & app shell) is next. `public/js/shared/recipe-rules.js` is fully implemented (not just slugify/escapeHtml) and tested, so Phases 6-9 can build directly on `normalizeRecipeInput`, `dietaryWarnings`, the ingredient/step text round-trip, and `reconcileTimes` without redoing that work. `public/js/components/recipe-form.js` still writes straight to Supabase with the publishable key — Phase 6 replaces that internals only, the module's public `openAdd`/`openEdit` shape shouldn't need to change.
