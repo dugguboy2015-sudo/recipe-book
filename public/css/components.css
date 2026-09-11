@@ -279,6 +279,9 @@
 
 /* ---------- Dialog (native) ---------- */
 dialog {
+  /* The global reset zeroes margin on every element, which defeats the UA stylesheet's
+     `dialog:modal { margin: auto }` centering — restore it explicitly. */
+  margin: auto;
   width: min(760px, calc(100vw - 2 * var(--sp-4)));
   max-height: 88vh;
   overflow: auto;
