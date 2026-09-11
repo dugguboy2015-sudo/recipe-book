@@ -126,10 +126,6 @@ export function createIngredientEditor({ client, container, onChange }) {
     return group?.rows.find((r) => r.key === rowKey);
   }
 
-  function closeAllListboxes() {
-    container.querySelectorAll('.combobox-listbox').forEach((el) => { el.hidden = true; });
-  }
-
   async function handleComboboxInput(input) {
     const term = input.value;
     const listbox = input.parentElement.querySelector('.combobox-listbox');
@@ -237,9 +233,10 @@ export function createIngredientEditor({ client, container, onChange }) {
               : null;
             row.ingredientReviewed = match?.status === 'reviewed';
           }
-          searchInput.value = row.ingredientName;
-          closeAllListboxes();
-          onChange?.();
+          // A full re-render (not just closeAllListboxes) so the New-ingredient badge and
+          // category select (10.7) appear immediately for a row that just became unresolved/new,
+          // and disappear immediately for a row that just became a resolved match.
+          render();
         });
 
         rowEl.querySelector('.ingredient-quantity').addEventListener('input', (e) => { row.quantity = parseAmount(e.target.value); });
