@@ -18,7 +18,9 @@
     "backup": "node scripts/backup.mjs",
     "migrate": "node scripts/migrate.mjs",
     "sql": "node scripts/sql.mjs",
-    "secrets:push": "node scripts/set-secrets.mjs"
+    "secrets:push": "node scripts/set-secrets.mjs",
+    "extract-example": "node scripts/extract-example.mjs",
+    "eval-generate": "node scripts/eval-generate.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
