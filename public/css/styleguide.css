@@ -1,0 +1,51 @@
+/* Layout and swatch utilities for styleguide.html only — kept out of components.css since
+   nothing in the real app uses them. Colours still come only from tokens.css. */
+
+.sg-section { margin-bottom: var(--sp-8); }
+.sg-section h2 { border-bottom: 1px solid var(--line); padding-bottom: var(--sp-2); margin-bottom: var(--sp-4); }
+.sg-row { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: center; margin-bottom: var(--sp-4); }
+.sg-row.sg-col { flex-direction: column; align-items: flex-start; }
+.sg-row.sg-stack { flex-direction: column; align-items: stretch; max-width: 320px; }
+.sg-label { font-size: var(--fs-1); color: var(--ink-muted); display: block; margin-bottom: var(--sp-2); }
+.sg-swatch { width: 100px; height: 64px; border-radius: var(--radius-control); border: 1px solid var(--line); display: flex; align-items: flex-end; padding: var(--sp-1); font-size: var(--fs-1); }
+.sg-toolbar { position: sticky; top: 0; background: var(--bg); padding: var(--sp-4) 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: var(--sp-6); }
+.sg-toolbar h1 { font-size: var(--fs-6); }
+.sg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-4); }
+.sg-intro { color: var(--ink-muted); margin-bottom: var(--sp-6); }
+.sg-note { color: var(--ink-muted); }
+
+.sg-bg-bg { background: var(--bg); }
+.sg-bg-surface { background: var(--surface); }
+.sg-bg-surface-raised { background: var(--surface-raised); }
+.sg-bg-brand { background: var(--brand); }
+.sg-bg-brand-ink { background: var(--brand-ink); color: var(--surface); }
+.sg-bg-ok { background: var(--ok-bg); color: var(--ok); }
+.sg-bg-warn { background: var(--warn-bg); color: var(--warn); }
+.sg-bg-danger { background: var(--danger-bg); color: var(--danger); }
+.sg-bg-protein { background: var(--protein-bg); color: var(--protein); }
+.sg-bg-spice { background: var(--spice-bg); color: var(--spice-ink); }
+.sg-bg-cuisine-south-indian { background: var(--cuisine-south-indian-bg); color: var(--cuisine-south-indian-ink); }
+.sg-bg-cuisine-north-indian { background: var(--cuisine-north-indian-bg); color: var(--cuisine-north-indian-ink); }
+.sg-bg-cuisine-maharashtrian { background: var(--cuisine-maharashtrian-bg); color: var(--cuisine-maharashtrian-ink); }
+.sg-bg-cuisine-rajasthani { background: var(--cuisine-rajasthani-bg); color: var(--cuisine-rajasthani-ink); }
+.sg-bg-cuisine-chaat { background: var(--cuisine-chaat-bg); color: var(--cuisine-chaat-ink); }
+.sg-bg-cuisine-indo-chinese { background: var(--cuisine-indo-chinese-bg); color: var(--cuisine-indo-chinese-ink); }
+.sg-bg-cuisine-gujarati { background: var(--cuisine-gujarati-bg); color: var(--cuisine-gujarati-ink); }
+.sg-bg-cuisine-fusion { background: var(--cuisine-fusion-bg); color: var(--cuisine-fusion-ink); }
+
+.sg-fs-8 { font-size: var(--fs-8); }
+.sg-fs-7 { font-size: var(--fs-7); }
+.sg-fs-6 { font-size: var(--fs-6); }
+.sg-fs-5 { font-size: var(--fs-5); }
+.sg-fs-4 { font-size: var(--fs-4); }
+.sg-fs-3 { font-size: var(--fs-3); }
+.sg-fs-2 { font-size: var(--fs-2); }
+.sg-fs-1 { font-size: var(--fs-1); }
+
+.sg-w-7 { width: 7%; }
+.sg-w-35 { width: 35%; }
+.sg-w-45 { width: 45%; }
+.sg-w-60 { width: 60%; }
+.sg-w-80 { width: 80%; }
+.sg-h-16 { height: 16px; }
+.sg-h-24 { height: 24px; }

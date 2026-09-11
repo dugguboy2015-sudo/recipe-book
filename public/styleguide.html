@@ -7,62 +7,54 @@
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
-  <style>
-    .sg-section { margin-bottom: var(--sp-8); }
-    .sg-section h2 { border-bottom: 1px solid var(--line); padding-bottom: var(--sp-2); margin-bottom: var(--sp-4); }
-    .sg-row { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: center; margin-bottom: var(--sp-4); }
-    .sg-label { font-size: var(--fs-1); color: var(--ink-muted); display: block; margin-bottom: var(--sp-2); }
-    .sg-swatch { width: 100px; height: 64px; border-radius: var(--radius-control); border: 1px solid var(--line); display: flex; align-items: flex-end; padding: var(--sp-1); font-size: var(--fs-1); }
-    .sg-toolbar { position: sticky; top: 0; background: var(--bg); padding: var(--sp-4) 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: var(--sp-6); }
-    .sg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-4); }
-  </style>
+  <link rel="stylesheet" href="css/styleguide.css" />
 </head>
 <body>
   <div class="wrap">
     <div class="sg-toolbar">
-      <h1 style="font-size: var(--fs-6);">Design system style guide</h1>
+      <h1>Design system style guide</h1>
       <button type="button" class="ghost-button" id="themeToggle">Toggle dark theme</button>
     </div>
 
-    <p style="color: var(--ink-muted); margin-bottom: var(--sp-6);">Every component in every state, per Appendix L.3. Not linked from the app nav. Hover and focus states are live — try tabbing through and hovering.</p>
+    <p class="sg-intro">Every component in every state, per Appendix L.3. Not linked from the app nav. Hover and focus states are live — try tabbing through and hovering.</p>
 
     <section class="sg-section">
       <h2>Colour tokens</h2>
       <div class="sg-row">
-        <div><span class="sg-label">bg</span><div class="sg-swatch" style="background:var(--bg)"></div></div>
-        <div><span class="sg-label">surface</span><div class="sg-swatch" style="background:var(--surface)"></div></div>
-        <div><span class="sg-label">surface-raised</span><div class="sg-swatch" style="background:var(--surface-raised)"></div></div>
-        <div><span class="sg-label">brand</span><div class="sg-swatch" style="background:var(--brand)"></div></div>
-        <div><span class="sg-label">brand-ink</span><div class="sg-swatch" style="background:var(--brand-ink); color:var(--surface)">Aa</div></div>
-        <div><span class="sg-label">ok</span><div class="sg-swatch" style="background:var(--ok-bg); color:var(--ok)">Aa</div></div>
-        <div><span class="sg-label">warn</span><div class="sg-swatch" style="background:var(--warn-bg); color:var(--warn)">Aa</div></div>
-        <div><span class="sg-label">danger</span><div class="sg-swatch" style="background:var(--danger-bg); color:var(--danger)">Aa</div></div>
-        <div><span class="sg-label">protein</span><div class="sg-swatch" style="background:var(--protein-bg); color:var(--protein)">Aa</div></div>
-        <div><span class="sg-label">spice</span><div class="sg-swatch" style="background:var(--spice-bg); color:var(--spice-ink)">Aa</div></div>
+        <div><span class="sg-label">bg</span><div class="sg-swatch sg-bg-bg"></div></div>
+        <div><span class="sg-label">surface</span><div class="sg-swatch sg-bg-surface"></div></div>
+        <div><span class="sg-label">surface-raised</span><div class="sg-swatch sg-bg-surface-raised"></div></div>
+        <div><span class="sg-label">brand</span><div class="sg-swatch sg-bg-brand"></div></div>
+        <div><span class="sg-label">brand-ink</span><div class="sg-swatch sg-bg-brand-ink">Aa</div></div>
+        <div><span class="sg-label">ok</span><div class="sg-swatch sg-bg-ok">Aa</div></div>
+        <div><span class="sg-label">warn</span><div class="sg-swatch sg-bg-warn">Aa</div></div>
+        <div><span class="sg-label">danger</span><div class="sg-swatch sg-bg-danger">Aa</div></div>
+        <div><span class="sg-label">protein</span><div class="sg-swatch sg-bg-protein">Aa</div></div>
+        <div><span class="sg-label">spice</span><div class="sg-swatch sg-bg-spice">Aa</div></div>
       </div>
       <div class="sg-row">
-        <div><span class="sg-label">South Indian</span><div class="sg-swatch" style="background:var(--cuisine-south-indian-bg); color:var(--cuisine-south-indian-ink)">Aa</div></div>
-        <div><span class="sg-label">North Indian</span><div class="sg-swatch" style="background:var(--cuisine-north-indian-bg); color:var(--cuisine-north-indian-ink)">Aa</div></div>
-        <div><span class="sg-label">Maharashtrian</span><div class="sg-swatch" style="background:var(--cuisine-maharashtrian-bg); color:var(--cuisine-maharashtrian-ink)">Aa</div></div>
-        <div><span class="sg-label">Rajasthani</span><div class="sg-swatch" style="background:var(--cuisine-rajasthani-bg); color:var(--cuisine-rajasthani-ink)">Aa</div></div>
-        <div><span class="sg-label">Chaat</span><div class="sg-swatch" style="background:var(--cuisine-chaat-bg); color:var(--cuisine-chaat-ink)">Aa</div></div>
-        <div><span class="sg-label">Indo-Chinese</span><div class="sg-swatch" style="background:var(--cuisine-indo-chinese-bg); color:var(--cuisine-indo-chinese-ink)">Aa</div></div>
-        <div><span class="sg-label">Gujarati</span><div class="sg-swatch" style="background:var(--cuisine-gujarati-bg); color:var(--cuisine-gujarati-ink)">Aa</div></div>
-        <div><span class="sg-label">Fusion</span><div class="sg-swatch" style="background:var(--cuisine-fusion-bg); color:var(--cuisine-fusion-ink)">Aa</div></div>
+        <div><span class="sg-label">South Indian</span><div class="sg-swatch sg-bg-cuisine-south-indian">Aa</div></div>
+        <div><span class="sg-label">North Indian</span><div class="sg-swatch sg-bg-cuisine-north-indian">Aa</div></div>
+        <div><span class="sg-label">Maharashtrian</span><div class="sg-swatch sg-bg-cuisine-maharashtrian">Aa</div></div>
+        <div><span class="sg-label">Rajasthani</span><div class="sg-swatch sg-bg-cuisine-rajasthani">Aa</div></div>
+        <div><span class="sg-label">Chaat</span><div class="sg-swatch sg-bg-cuisine-chaat">Aa</div></div>
+        <div><span class="sg-label">Indo-Chinese</span><div class="sg-swatch sg-bg-cuisine-indo-chinese">Aa</div></div>
+        <div><span class="sg-label">Gujarati</span><div class="sg-swatch sg-bg-cuisine-gujarati">Aa</div></div>
+        <div><span class="sg-label">Fusion</span><div class="sg-swatch sg-bg-cuisine-fusion">Aa</div></div>
       </div>
     </section>
 
     <section class="sg-section">
       <h2>Type scale</h2>
-      <div class="sg-row" style="flex-direction: column; align-items: flex-start;">
-        <span style="font-size:var(--fs-8)">fs-8 · 48px</span>
-        <span style="font-size:var(--fs-7)">fs-7 · 36px</span>
-        <span style="font-size:var(--fs-6)">fs-6 · 28px</span>
-        <span style="font-size:var(--fs-5)">fs-5 · 22px</span>
-        <span style="font-size:var(--fs-4)">fs-4 · 18px</span>
-        <span style="font-size:var(--fs-3)">fs-3 · 16px (body)</span>
-        <span style="font-size:var(--fs-2)">fs-2 · 14px</span>
-        <span style="font-size:var(--fs-1)">fs-1 · 12px</span>
+      <div class="sg-row sg-col">
+        <span class="sg-fs-8">fs-8 · 48px</span>
+        <span class="sg-fs-7">fs-7 · 36px</span>
+        <span class="sg-fs-6">fs-6 · 28px</span>
+        <span class="sg-fs-5">fs-5 · 22px</span>
+        <span class="sg-fs-4">fs-4 · 18px</span>
+        <span class="sg-fs-3">fs-3 · 16px (body)</span>
+        <span class="sg-fs-2">fs-2 · 14px</span>
+        <span class="sg-fs-1">fs-1 · 12px</span>
       </div>
     </section>
 
@@ -129,9 +121,9 @@
         <tbody>
           <tr><td>Calories</td><td>430 kcal</td><td>22%</td></tr>
           <tr><td>Protein</td><td>18 g</td><td>36%</td></tr>
-          <tr><td>Sugars</td><td>6 g</td><td><span class="ri-bar"><span class="ri-bar-fill green" style="width:7%"></span></span></td></tr>
-          <tr><td>Saturates</td><td>9 g</td><td><span class="ri-bar"><span class="ri-bar-fill amber" style="width:45%"></span></span></td></tr>
-          <tr><td>Salt</td><td>2.1 g</td><td><span class="ri-bar"><span class="ri-bar-fill red" style="width:35%"></span></span></td></tr>
+          <tr><td>Sugars</td><td>6 g</td><td><span class="ri-bar"><span class="ri-bar-fill green sg-w-7"></span></span></td></tr>
+          <tr><td>Saturates</td><td>9 g</td><td><span class="ri-bar"><span class="ri-bar-fill amber sg-w-45"></span></span></td></tr>
+          <tr><td>Salt</td><td>2.1 g</td><td><span class="ri-bar"><span class="ri-bar-fill red sg-w-35"></span></span></td></tr>
         </tbody>
       </table>
     </section>
@@ -223,65 +215,22 @@
 
     <section class="sg-section">
       <h2>Skeleton</h2>
-      <div class="sg-row" style="flex-direction: column; align-items: stretch; max-width: 320px;">
-        <div class="skeleton" style="height: 24px; width: 60%;"></div>
-        <div class="skeleton" style="height: 16px;"></div>
-        <div class="skeleton" style="height: 16px; width: 80%;"></div>
+      <div class="sg-row sg-stack">
+        <div class="skeleton sg-h-24 sg-w-60"></div>
+        <div class="skeleton sg-h-16"></div>
+        <div class="skeleton sg-h-16 sg-w-80"></div>
       </div>
     </section>
 
     <section class="sg-section">
       <h2>StatusRegion</h2>
-      <p style="color: var(--ink-muted);">A visually hidden <code>aria-live</code> region for screen-reader announcements (e.g. "12 recipes found"). Not visible by design — see <code>.status-region</code> in components.css.</p>
+      <p class="sg-note">A visually hidden <code>aria-live</code> region for screen-reader announcements (e.g. "12 recipes found"). Not visible by design — see <code>.status-region</code> in components.css.</p>
       <div class="status-region" aria-live="polite">12 recipes found</div>
     </section>
   </div>
 
   <div id="snackbar" class="snackbar" aria-live="polite"></div>
 
-  <script type="module">
-    import { showSnackbar } from './js/lib/dom.js';
-    import { wireDialog } from './js/components/dialog.js';
-    import { renderRecipeCard, normalizeRecipe } from './js/components/recipe-card.js';
-
-    // Theme toggle (demo-only; the app itself follows prefers-color-scheme)
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-    });
-
-    // RecipeCard demo data
-    const sampleRecipes = [
-      { id: 1, slug: 'kanda-poha', name: 'Kanda Poha', cuisine: 'Maharashtrian', serves: 4, total_time_minutes: 25, spice_level: 3, protein_g: 8, tags: ['Breakfast', 'Snack'], meal_types: ['Breakfast', 'Packed Lunch'], is_vegetarian: true, is_egg_free: true, contains_dairy: false, is_protein_smart: false, contains_nuts: true },
-      { id: 2, slug: 'paneer-tikka-wrap', name: 'Paneer Tikka Wrap', cuisine: 'Fusion', serves: 4, total_time_minutes: 40, spice_level: 4, protein_g: 17, tags: ['Lunch', 'Dinner'], meal_types: ['Lunch', 'Dinner'], is_vegetarian: true, is_egg_free: true, contains_dairy: true, is_protein_smart: false, contains_nuts: false },
-    ];
-    document.getElementById('recipeCardDemo').innerHTML = sampleRecipes.map((r) => renderRecipeCard(normalizeRecipe(r), { actions: true, showTime: true, tagLimit: 4 })).join('');
-
-    // ServingsStepper demo
-    let servings = 4;
-    const stepperValue = document.getElementById('stepperValue');
-    document.getElementById('stepperMinus').addEventListener('click', () => { servings = Math.max(1, servings - 1); stepperValue.textContent = servings; });
-    document.getElementById('stepperPlus').addEventListener('click', () => { servings += 1; stepperValue.textContent = servings; });
-
-    // Dialog demo
-    const sgDialog = wireDialog(document.getElementById('sgDialog'));
-    document.getElementById('openSgDialog').addEventListener('click', () => sgDialog.open());
-    document.getElementById('closeSgDialog').addEventListener('click', () => sgDialog.close());
-
-    // Toast demo
-    document.getElementById('showSgToastSuccess').addEventListener('click', () => showSnackbar('Recipe saved successfully!', 'success'));
-    document.getElementById('showSgToastError').addEventListener('click', () => showSnackbar('Something went wrong.', 'error'));
-
-    // Tabs demo
-    const tab1 = document.getElementById('sgTab1');
-    const tab2 = document.getElementById('sgTab2');
-    function selectTab(selected, other) {
-      selected.setAttribute('aria-selected', 'true');
-      other.setAttribute('aria-selected', 'false');
-    }
-    tab1.addEventListener('click', () => selectTab(tab1, tab2));
-    tab2.addEventListener('click', () => selectTab(tab2, tab1));
-  </script>
+  <script type="module" src="js/styleguide.js"></script>
 </body>
 </html>
