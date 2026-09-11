@@ -1,0 +1,170 @@
+{
+  "request_ok": true,
+  "refusal_reason": null,
+  "name": "Masala Hash Browns",
+  "description": "Crispy, golden potato hash browns given an Indian twist with warming spices, green chilli, and coriander — a fun fusion breakfast side.",
+  "cuisine": "Fusion",
+  "origin_note": "",
+  "meal_types": [
+    "Breakfast",
+    "Snacks"
+  ],
+  "tags": [
+    "Side Dish"
+  ],
+  "serves": 4,
+  "spice_level": 4,
+  "prep_time_minutes": 15,
+  "cook_time_minutes": 15,
+  "total_time_minutes": 40,
+  "time_note": null,
+  "ingredients": [
+    {
+      "group": "For the hash browns",
+      "items": [
+        {
+          "name": "Potato",
+          "unit": "piece",
+          "category": "vegetable",
+          "optional": false,
+          "quantity": 4,
+          "preparation": "medium, starchy like Maris Piper, peeled and coarsely grated"
+        },
+        {
+          "name": "Onion",
+          "unit": "piece",
+          "category": "vegetable",
+          "optional": false,
+          "quantity": 1,
+          "preparation": "small, finely chopped"
+        },
+        {
+          "name": "Green chilli",
+          "unit": "piece",
+          "category": "vegetable",
+          "optional": false,
+          "quantity": 1,
+          "preparation": "finely chopped"
+        },
+        {
+          "name": "Ginger",
+          "unit": "tsp",
+          "category": "vegetable",
+          "optional": false,
+          "quantity": 0.5,
+          "preparation": "grated"
+        },
+        {
+          "name": "Cumin seeds",
+          "unit": "tsp",
+          "category": "spice",
+          "optional": false,
+          "quantity": 0.5,
+          "preparation": ""
+        },
+        {
+          "name": "Turmeric powder",
+          "unit": "tsp",
+          "category": "spice",
+          "optional": false,
+          "quantity": 0.5,
+          "preparation": ""
+        },
+        {
+          "name": "Red chilli powder",
+          "unit": "tsp",
+          "category": "spice",
+          "optional": false,
+          "quantity": 0.5,
+          "preparation": "(adjust to taste)"
+        },
+        {
+          "name": "Garam masala",
+          "unit": "tsp",
+          "category": "spice",
+          "optional": false,
+          "quantity": 0.5,
+          "preparation": ""
+        },
+        {
+          "name": "Carom seeds (ajwain)",
+          "unit": "tsp",
+          "category": "spice",
+          "optional": true,
+          "quantity": 0.25,
+          "preparation": "( optional — helps digestion and adds flavour)"
+        },
+        {
+          "name": "Fresh coriander leaves",
+          "unit": "tbsp",
+          "category": "herb",
+          "optional": false,
+          "quantity": 2,
+          "preparation": "fresh, chopped"
+        },
+        {
+          "name": "Gram flour (besan)",
+          "unit": "tbsp",
+          "category": "pulse_legume",
+          "optional": false,
+          "quantity": 2,
+          "preparation": "or cornflour, as a binder"
+        },
+        {
+          "name": "Salt",
+          "unit": "to_taste",
+          "category": "other",
+          "optional": false,
+          "quantity": null,
+          "preparation": "to taste"
+        }
+      ]
+    },
+    {
+      "group": "For shallow frying",
+      "items": [
+        {
+          "name": "Cooking oil",
+          "unit": "cup",
+          "category": "oil_fat",
+          "optional": false,
+          "quantity": 0.25,
+          "preparation": "(for shallow frying, in batches)"
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "group": "Method",
+      "steps": [
+        "Grate and drain: Coarsely grate the potatoes into a large bowl of cold water (this prevents browning and rinses off excess surface starch). Swish briefly, then drain thoroughly.",
+        "Remove moisture: Transfer the grated potato to a clean kitchen towel or muslin cloth and squeeze out as much water as possible — this step is essential for crispy hash browns rather than soggy ones. Let it sit for 10 minutes, then squeeze again.",
+        "Season the mixture: In a large bowl, combine the drained potato with the onion, green chilli, ginger, cumin seeds, turmeric, red chilli powder, garam masala, ajwain (if using), and coriander leaves. Mix well.",
+        "Bind: Sprinkle over the gram flour or cornflour and salt, then mix thoroughly until the mixture holds together when pressed — it shouldn't be wet or loose. If it still feels too wet, add another ½ tbsp of gram flour.",
+        "Shape: Divide the mixture into 8 portions. Take each portion in your palms and press firmly into a flat, compact patty about the size of your palm — the tighter you pack it, the better it holds together while frying.",
+        "Heat the oil: Heat 2 tbsp of the oil in a wide, flat pan or griddle on medium heat.",
+        "Fry the hash browns: Place 3–4 patties in the pan at a time, without overcrowding. Cook for 4–5 minutes per side, pressing down gently once with a spatula, until deep golden brown and crisp on both sides. Add the remaining oil as needed for the second batch.",
+        "Drain and serve: Transfer to a plate lined with kitchen paper to remove excess oil. Serve hot, as is or with ketchup, mint chutney, or a dollop of yoghurt."
+      ]
+    }
+  ],
+  "is_vegetarian": true,
+  "is_egg_free": true,
+  "contains_dairy": false,
+  "egg_check_notes": "This recipe is naturally egg-free — gram flour (besan) or cornflour is used as the binder instead of egg, which is what many Western hash brown or patty recipes rely on. No hidden-egg risk here as long as you stick to gram flour/cornflour rather than a shop-bought binder mix (some ready-made \"hash brown mixes\" or coatings can contain egg powder, so always check if using a packet product).",
+  "calories_kcal": 210,
+  "protein_g": 4,
+  "carbs_g": 30,
+  "sugars_g": 3,
+  "fibre_g": 3,
+  "fat_g": 9,
+  "saturates_g": 1.5,
+  "salt_g": 1,
+  "nutrition_basis": "Estimate only — not lab-tested. Based on 2 hash browns per serving.",
+  "lunchbox_notes": null,
+  "common_mistakes": "Skipping the water-squeezing step is the most common cause of hash browns falling apart or turning soggy and oily rather than crisp — don't rush this part. Also avoid flipping too early; let a proper golden crust form first so the patty holds its shape.",
+  "uk_sourcing_notes": "Maris Piper or King Edward potatoes (widely available at any UK supermarket) work best due to their higher starch content, which helps crispiness. Ajwain is available at Indian grocers; if you don't have it, it can simply be left out without much impact on the dish.",
+  "storage_notes": "The shaped (uncooked) patties can be covered and refrigerated for a few hours before frying. Cooked hash browns are best eaten fresh and crisp, but leftovers can be reheated in a dry pan or air fryer to re-crisp — avoid the microwave, which makes them soggy.",
+  "kid_friendly_notes": "Omit the green chilli and reduce the red chilli powder for a milder, kid-friendly version — the cumin and garam masala still give plenty of flavour without heat."
+}
