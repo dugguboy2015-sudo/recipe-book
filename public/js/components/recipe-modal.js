@@ -1,39 +1,39 @@
 import { escapeHtml } from '../shared/recipe-rules.js';
 import { fetchRecipeById } from '../lib/queries.js';
+import { wireDialog } from './dialog.js';
 
 const MODAL_HTML = `
-  <div id="recipeModal" class="modal-backdrop" aria-hidden="true">
-    <div class="recipe-detail" role="dialog" aria-modal="true">
-      <div class="detail-header">
-        <h3 id="modalTitle">Recipe</h3>
-        <div class="detail-meta" id="modalMeta"></div>
+  <dialog id="recipeModal" class="recipe-detail">
+    <div class="detail-header">
+      <h3 id="modalTitle">Recipe</h3>
+      <div class="detail-meta" id="modalMeta"></div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-panel">
+        <h4>Ingredients</h4>
+        <ul id="modalIngredients"></ul>
       </div>
-      <div class="detail-grid">
-        <div class="detail-panel">
-          <h4>Ingredients</h4>
-          <ul id="modalIngredients"></ul>
-        </div>
-        <div class="detail-panel">
-          <h4>Steps</h4>
-          <ol id="modalSteps"></ol>
-        </div>
-        <div class="detail-panel">
-          <h4>Nutrition</h4>
-          <p id="modalNutrition"></p>
-        </div>
-        <div class="detail-panel">
-          <h4>Notes</h4>
-          <p id="modalNotes"></p>
-        </div>
+      <div class="detail-panel">
+        <h4>Steps</h4>
+        <ol id="modalSteps"></ol>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="primary-button" id="closeModal">Close</button>
+      <div class="detail-panel">
+        <h4>Nutrition</h4>
+        <p id="modalNutrition"></p>
+      </div>
+      <div class="detail-panel">
+        <h4>Notes</h4>
+        <p id="modalNotes"></p>
       </div>
     </div>
-  </div>
+    <div class="modal-footer">
+      <button type="button" class="primary-button" id="closeModal">Close</button>
+    </div>
+  </dialog>
 `;
 
 let mounted = false;
+let dialogHandle = null;
 
 export function mountRecipeModal() {
   if (mounted || document.getElementById('recipeModal')) {
@@ -43,11 +43,9 @@ export function mountRecipeModal() {
   document.body.insertAdjacentHTML('beforeend', MODAL_HTML);
   mounted = true;
 
-  const modal = document.getElementById('recipeModal');
-  document.getElementById('closeModal')?.addEventListener('click', closeRecipeModal);
-  modal?.addEventListener('click', (event) => {
-    if (event.target.id === 'recipeModal') closeRecipeModal();
-  });
+  const dialog = document.getElementById('recipeModal');
+  dialogHandle = wireDialog(dialog);
+  document.getElementById('closeModal')?.addEventListener('click', () => dialogHandle.close());
 }
 
 export async function openRecipeModal(client, id) {
@@ -55,7 +53,7 @@ export async function openRecipeModal(client, id) {
   if (!data) return;
 
   const modal = document.getElementById('recipeModal');
-  if (!modal) return;
+  if (!modal || !dialogHandle) return;
 
   document.getElementById('modalTitle').textContent = data.name;
   document.getElementById('modalMeta').innerHTML = `
@@ -88,13 +86,9 @@ export async function openRecipeModal(client, id) {
   ].filter(Boolean);
 
   document.getElementById('modalNotes').textContent = notesList.length ? notesList.join(' ') : 'No additional notes.';
-  modal.classList.add('visible');
-  modal.setAttribute('aria-hidden', 'false');
+  dialogHandle.open();
 }
 
 export function closeRecipeModal() {
-  const modal = document.getElementById('recipeModal');
-  if (!modal) return;
-  modal.classList.remove('visible');
-  modal.setAttribute('aria-hidden', 'true');
+  dialogHandle?.close();
 }

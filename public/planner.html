@@ -4,22 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recipe Book | Weekly Planner</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
 </head>
 <body data-page="planner">
+  <a class="skip-link" href="#content">Skip to content</a>
   <div class="wrap">
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="index.html">Dashboard</a>
-      <a href="recipes.html">Recipes</a>
-      <a href="planner.html" aria-current="page">Weekly Planner</a>
-    </nav>
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Dashboard</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="planner.html" aria-current="page">Weekly Planner</a>
+        <a href="recipes.html">Ask for a recipe</a>
+      </nav>
+    </header>
 
-    <header>
+    <header class="page-header">
       <span class="eyebrow">Weekly Kitchen Planner</span>
       <h1>Plan the week,<br><em>without the chaos</em></h1>
     </header>
 
-    <main class="planner-shell">
+    <main id="content" class="planner-shell">
       <aside class="planner-browser">
         <div class="content-head">
           <h2>Recipe browse</h2>
@@ -39,7 +46,17 @@
         <div id="plannerGrid" class="planner-grid"></div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <p>Recipe Book — a family kitchen companion.</p>
+    </footer>
   </div>
+
+  <nav class="bottom-tab-bar" aria-label="Main navigation">
+    <a href="index.html">Dashboard</a>
+    <a href="recipes.html">Recipes</a>
+    <a href="planner.html" aria-current="page">Planner</a>
+  </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js" integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP" crossorigin="anonymous"></script>
   <script type="module" src="js/main.js"></script>
