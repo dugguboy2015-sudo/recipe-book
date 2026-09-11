@@ -1,6 +1,6 @@
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml, debounce } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
-import { fetchPlannerRecipes } from '../lib/queries.js';
+import { searchRecipes } from '../lib/queries.js';
 import { normalizeRecipe } from '../components/recipe-card.js';
 import { DAYS, MEAL_SLOTS, loadPlanner, persistPlanner, assignRecipeToDay as assignRecipeToDayInStore, defaultPlanner } from '../lib/planner-store.js';
 
@@ -78,21 +78,15 @@ export async function initPlannerPage() {
   }
 
   function renderPlannerRecipes() {
-    const searchTerm = plannerSearch.value.trim().toLowerCase();
-    const list = state.recipes.filter((recipe) => {
-      const text = `${recipe.name} ${recipe.description || ''}`.toLowerCase();
-      return !searchTerm || text.includes(searchTerm);
-    }).slice(0, 12);
-
     selectedRecipeSummary.textContent = state.selectedRecipe ? `Selected: ${state.selectedRecipe.name}` : 'No recipe selected';
     selectedRecipeSummary.classList.toggle('has-selection', Boolean(state.selectedRecipe));
 
-    if (!list.length) {
+    if (!state.recipes.length) {
       plannerList.innerHTML = '<div class="empty-state">No matching recipes.</div>';
       return;
     }
 
-    plannerList.innerHTML = list.map((recipe) => `
+    plannerList.innerHTML = state.recipes.map((recipe) => `
       <div class="browser-item${state.selectedRecipe && state.selectedRecipe.id === recipe.id ? ' active' : ''}" data-id="${recipe.id}">
         <strong>${escapeHtml(recipe.name)}</strong>
         <small>${escapeHtml(recipe.cuisine || 'General')}</small>
@@ -109,7 +103,31 @@ export async function initPlannerPage() {
     });
   }
 
-  plannerSearch.addEventListener('input', () => renderPlannerRecipes());
+  function renderPlannerError() {
+    plannerList.innerHTML = `
+      <div class="empty-state">
+        <p>Couldn't load recipes. Check your connection.</p>
+        <button type="button" class="primary-button" id="plannerRetry">Retry</button>
+      </div>
+    `;
+    document.getElementById('plannerRetry')?.addEventListener('click', () => search(plannerSearch.value));
+  }
+
+  // BUG-6/8.5: the same searchRecipes() the recipes page uses, server-side, so a match beyond
+  // the old .limit(50) preload's alphabetical cutoff is still found.
+  async function search(term) {
+    plannerList.innerHTML = Array.from({ length: 6 }).map(() => '<div class="skeleton browser-item-skeleton"></div>').join('');
+    const result = await searchRecipes(supabase, { term }, { page: 1, pageSize: 12 });
+    if (!result.ok) {
+      renderPlannerError();
+      return;
+    }
+    state.recipes = result.data.map(normalizeRecipe);
+    renderPlannerRecipes();
+  }
+
+  const debouncedSearch = debounce(() => search(plannerSearch.value.trim()), 300);
+  plannerSearch.addEventListener('input', debouncedSearch);
 
   resetWeek.addEventListener('click', () => {
     state.planner = defaultPlanner();
@@ -119,9 +137,6 @@ export async function initPlannerPage() {
     renderPlannerRecipes();
   });
 
-  const recipes = await fetchPlannerRecipes(supabase, 50);
-  state.recipes = recipes.map(normalizeRecipe);
-
   renderPlannerBoard();
-  renderPlannerRecipes();
+  await search('');
 }

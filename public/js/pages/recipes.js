@@ -1,12 +1,13 @@
-import { escapeHtml, showSnackbar } from '../lib/dom.js';
+import { escapeHtml, showSnackbar, debounce } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
-import { fetchRecipesList, fetchCuisineOptions, fetchTagOptions, fetchSearchSuggestions, fetchRecipeBySlug } from '../lib/queries.js';
+import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeBySlug } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { createRecipeForm } from '../components/recipe-form.js';
 import { wireDialog } from '../components/dialog.js';
 import { deleteRecipe, restoreRecipe } from '../lib/api.js';
 import { MEAL_TYPES } from '../shared/recipe-rules.js';
+import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 
 function defaultFilters() {
   return {
@@ -15,19 +16,35 @@ function defaultFilters() {
   };
 }
 
+function toDietaryFilter(filters) {
+  return {
+    vegetarian: filters.vegetarian, eggFree: filters.eggFree, dairyFree: filters.dairyFree,
+    proteinSmart: filters.proteinSmart, nutFree: filters.nutFree, spiceMax: filters.spiceMax,
+  };
+}
+
+const initialParams = new URLSearchParams(window.location.search);
 const state = {
   recipes: [],
-  page: 1,
+  page: searchParamsToPage(initialParams),
   pageSize: 12,
   totalFilteredCount: 0,
-  filters: defaultFilters(),
+  filters: { ...defaultFilters(), ...searchParamsToFilters(initialParams) },
 };
 
 let pendingDeleteRecipeId = null;
 
+function syncUrl() {
+  const params = filtersToSearchParams(state.filters, state.page);
+  const query = params.toString();
+  const url = `${window.location.pathname}${query ? `?${query}` : ''}`;
+  window.history.replaceState(null, '', url);
+}
+
 export async function initRecipesPage() {
   const recipeGrid = document.getElementById('recipeGrid');
   const resultCount = document.getElementById('resultCount');
+  const resultStatus = document.getElementById('resultStatus');
   const cuisineFilter = document.getElementById('cuisineFilter');
   const tagFilters = document.getElementById('tagFilters');
   const prevPage = document.getElementById('prevPage');
@@ -35,7 +52,6 @@ export async function initRecipesPage() {
   const pageStatus = document.getElementById('pageStatus');
   const searchInput = document.getElementById('searchInput');
   const recipeSuggestions = document.getElementById('recipeSuggestions');
-  const applyFilters = document.getElementById('applyFilters');
   const clearFilters = document.getElementById('clearFilters');
   const mealTypeFilters = document.getElementById('mealTypeFilters');
   const spiceMaxFilter = document.getElementById('spiceMaxFilter');
@@ -44,46 +60,90 @@ export async function initRecipesPage() {
 
   mountRecipeModal();
 
-  const [cuisines, suggestions, tags] = await Promise.all([
-    fetchCuisineOptions(supabase),
-    fetchSearchSuggestions(supabase),
-    fetchTagOptions(supabase),
+  // 8.2: the cuisine facet and tag chips come from the read-only *_counts views (bounded, and
+  // already reflect only live recipes) instead of scanning every recipe client-side.
+  const [cuisineCountsResult, tagCountsResult] = await Promise.all([
+    fetchCuisineCounts(supabase),
+    fetchTagCounts(supabase),
   ]);
 
-  cuisineFilter.innerHTML = '<option value="">All cuisines</option>' + cuisines.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  const cuisineOptions = cuisineCountsResult.ok ? cuisineCountsResult.data.filter((row) => row.recipes > 0) : [];
+  cuisineFilter.innerHTML = '<option value="">All cuisines</option>'
+    + cuisineOptions.map((row) => `<option value="${escapeHtml(row.cuisine)}">${escapeHtml(row.cuisine)} (${row.recipes})</option>`).join('');
+  cuisineFilter.value = state.filters.cuisine;
 
-  if (recipeSuggestions) {
-    recipeSuggestions.innerHTML = suggestions.map((value) => `<option value="${escapeHtml(value)}"></option>`).join('');
-  }
-
-  tagFilters.innerHTML = tags.map((tag) => `<button type="button" class="chip" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('');
+  const tagOptions = tagCountsResult.ok ? tagCountsResult.data : [];
+  tagFilters.innerHTML = tagOptions.map((row) => `<button type="button" class="chip${state.filters.tags.includes(row.tag) ? ' active' : ''}" data-tag="${escapeHtml(row.tag)}">${escapeHtml(row.tag)} (${row.recipes})</button>`).join('');
   tagFilters.querySelectorAll('.chip').forEach((button) => {
     button.addEventListener('click', () => {
       const tag = button.dataset.tag;
       const active = state.filters.tags.includes(tag);
       state.filters.tags = active ? state.filters.tags.filter((item) => item !== tag) : [...state.filters.tags, tag];
       button.classList.toggle('active', !active);
+      state.page = 1;
+      refreshRecipes();
     });
   });
 
   if (mealTypeFilters) {
-    mealTypeFilters.innerHTML = MEAL_TYPES.map((type) => `<button type="button" class="chip" data-meal-type="${escapeHtml(type)}">${escapeHtml(type)}</button>`).join('');
+    mealTypeFilters.innerHTML = MEAL_TYPES.map((type) => `<button type="button" class="chip${state.filters.mealTypes.includes(type) ? ' active' : ''}" data-meal-type="${escapeHtml(type)}">${escapeHtml(type)}</button>`).join('');
     mealTypeFilters.querySelectorAll('.chip').forEach((button) => {
       button.addEventListener('click', () => {
         const mealType = button.dataset.mealType;
         const active = state.filters.mealTypes.includes(mealType);
         state.filters.mealTypes = active ? state.filters.mealTypes.filter((item) => item !== mealType) : [...state.filters.mealTypes, mealType];
         button.classList.toggle('active', !active);
+        state.page = 1;
+        refreshRecipes();
       });
     });
   }
 
+  document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => {
+    const key = chip.dataset.dietary;
+    const stateKey = { vegetarian: 'vegetarian', 'egg-free': 'eggFree', 'dairy-free': 'dairyFree', 'protein-smart': 'proteinSmart', 'nut-free': 'nutFree' }[key];
+    if (stateKey && state.filters[stateKey]) chip.classList.add('active');
+    chip.addEventListener('click', () => {
+      const active = chip.classList.contains('active');
+      chip.classList.toggle('active', !active);
+      if (stateKey) state.filters[stateKey] = !active;
+      state.page = 1;
+      refreshRecipes();
+    });
+  });
+
+  if (spiceMaxFilter) {
+    spiceMaxFilter.value = state.filters.spiceMax ? String(state.filters.spiceMax) : '';
+    spiceMaxFilter.addEventListener('change', (event) => {
+      state.filters.spiceMax = event.target.value ? Number(event.target.value) : null;
+      state.page = 1;
+      refreshRecipes();
+    });
+  }
+
+  searchInput.value = state.filters.search;
+
   function updateStatus(count) {
     const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
     resultCount.textContent = `${count} recipes`;
+    if (resultStatus) resultStatus.textContent = `${count} recipes found`;
     pageStatus.textContent = `Page ${state.page} of ${totalPages}`;
     prevPage.disabled = state.page <= 1;
     nextPage.disabled = state.page >= totalPages;
+  }
+
+  function renderSkeleton() {
+    recipeGrid.innerHTML = Array.from({ length: state.pageSize }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
+  }
+
+  function renderErrorState() {
+    recipeGrid.innerHTML = `
+      <div class="empty-state">
+        <p>Couldn't load recipes. Check your connection.</p>
+        <button type="button" class="primary-button" id="recipesRetry">Retry</button>
+      </div>
+    `;
+    document.getElementById('recipesRetry')?.addEventListener('click', refreshRecipes);
   }
 
   function renderCards(recipes) {
@@ -119,10 +179,17 @@ export async function initRecipesPage() {
   }
 
   async function refreshRecipes() {
-    const { recipes, totalCount, page } = await fetchRecipesList(supabase, state.filters, { page: state.page, pageSize: state.pageSize });
-    state.totalFilteredCount = totalCount;
-    state.page = page;
-    state.recipes = recipes.map(normalizeRecipe);
+    syncUrl();
+    renderSkeleton();
+    const filters = { term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes, dietary: toDietaryFilter(state.filters) };
+    const result = await searchRecipes(supabase, filters, { page: state.page, pageSize: state.pageSize });
+    if (!result.ok) {
+      renderErrorState();
+      return;
+    }
+    state.totalFilteredCount = result.totalCount;
+    state.page = result.page;
+    state.recipes = result.data.map(normalizeRecipe);
     renderCards(state.recipes);
   }
 
@@ -185,40 +252,41 @@ export async function initRecipesPage() {
   cancelDeleteRecipe?.addEventListener('click', closeDeleteConfirm);
   confirmDeleteRecipe?.addEventListener('click', confirmSoftDelete);
 
-  function commitSearch() {
-    const nextSearch = searchInput.value.trim();
-    if (nextSearch === state.filters.search) return;
-    state.filters.search = nextSearch;
+  // 8.3: live, debounced (250ms) suggestions at 2+ characters, instead of a whole-corpus datalist
+  // fetched once. 8.6: every filter (including free text, debounced 300ms) applies on change —
+  // there's no Apply button any more.
+  const updateSuggestions = debounce(async (term) => {
+    if (!recipeSuggestions) return;
+    const result = await fetchSearchSuggestions(supabase, term);
+    if (result.ok) recipeSuggestions.innerHTML = result.data.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('');
+  }, 250);
+
+  const applySearch = debounce(() => {
+    state.filters.search = searchInput.value.trim();
     state.page = 1;
     refreshRecipes();
-  }
+  }, 300);
 
-  searchInput.addEventListener('change', commitSearch);
-  searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      commitSearch();
-    }
+  searchInput.addEventListener('input', () => {
+    updateSuggestions(searchInput.value);
+    applySearch();
   });
 
   cuisineFilter.addEventListener('change', (event) => {
     state.filters.cuisine = event.target.value;
-  });
-
-  applyFilters.addEventListener('click', () => {
     state.page = 1;
     refreshRecipes();
   });
 
   clearFilters.addEventListener('click', () => {
     state.filters = defaultFilters();
+    state.page = 1;
     searchInput.value = '';
     cuisineFilter.value = '';
     if (spiceMaxFilter) spiceMaxFilter.value = '';
     document.querySelectorAll('#tagFilters .chip').forEach((chip) => chip.classList.remove('active'));
     document.querySelectorAll('#mealTypeFilters .chip').forEach((chip) => chip.classList.remove('active'));
     document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => chip.classList.remove('active'));
-    state.page = 1;
     refreshRecipes();
   });
 
@@ -229,37 +297,23 @@ export async function initRecipesPage() {
     }
   });
 
+  // 8.8: guard before incrementing, rather than incrementing and clamping afterwards.
   nextPage.addEventListener('click', () => {
-    state.page += 1;
-    refreshRecipes();
-  });
-
-  document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      const key = chip.dataset.dietary;
-      const active = chip.classList.contains('active');
-      chip.classList.toggle('active', !active);
-      if (key === 'vegetarian') state.filters.vegetarian = !active;
-      if (key === 'egg-free') state.filters.eggFree = !active;
-      if (key === 'dairy-free') state.filters.dairyFree = !active;
-      if (key === 'protein-smart') state.filters.proteinSmart = !active;
-      if (key === 'nut-free') state.filters.nutFree = !active;
-    });
-  });
-
-  spiceMaxFilter?.addEventListener('change', (event) => {
-    state.filters.spiceMax = event.target.value ? Number(event.target.value) : null;
+    const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
+    if (state.page < totalPages) {
+      state.page += 1;
+      refreshRecipes();
+    }
   });
 
   await refreshRecipes();
 
   // Deep link (task 7.4): recipes.html?recipe=<slug>&serves=6 opens the detail view directly.
-  const deepLinkParams = new URLSearchParams(window.location.search);
-  const deepLinkSlug = deepLinkParams.get('recipe');
+  const deepLinkSlug = initialParams.get('recipe');
   if (deepLinkSlug) {
     const deepLinkRecipe = await fetchRecipeBySlug(supabase, deepLinkSlug);
     if (deepLinkRecipe) {
-      const requestedServes = Number(deepLinkParams.get('serves'));
+      const requestedServes = Number(initialParams.get('serves'));
       openRecipeModal(supabase, deepLinkRecipe.id, {
         serves: Number.isFinite(requestedServes) && requestedServes > 0 ? requestedServes : undefined,
         onEdit: (id) => recipeForm.openEdit(id),

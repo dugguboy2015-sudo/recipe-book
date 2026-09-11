@@ -373,6 +373,10 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background: var(--line); } }
 
+.recipe-card-skeleton { height: 220px; border-radius: var(--radius-card); }
+.metric-card-skeleton { height: 96px; border-radius: var(--radius-card); }
+.browser-item-skeleton { height: 64px; border-radius: var(--radius-card); }
+
 /* ---------- StatusRegion (aria-live) ---------- */
 .status-region { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

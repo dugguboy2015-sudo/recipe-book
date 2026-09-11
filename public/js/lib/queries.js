@@ -1,5 +1,7 @@
-// Every READ query against `recipes`. Each function takes the Supabase client explicitly so
-// tests can inject a fake one that records calls instead of hitting the network.
+// Every READ query against `recipes` and its read models. Each function takes the Supabase client
+// explicitly so tests can inject a fake one that records calls instead of hitting the network.
+// List-returning functions return {ok, data, error} (BUG-4/8.4) so a failed request can render a
+// distinct error state instead of silently looking like "no results".
 
 const RECIPE_LIST_COLUMNS = 'id,slug,name,description,cuisine,tags,meal_types,serves,total_time_minutes,spice_level,protein_g,is_egg_free,is_vegetarian,contains_dairy,is_protein_smart,contains_nuts';
 const DASHBOARD_COLUMNS = 'id,slug,name,cuisine,tags,meal_types,serves,spice_level,protein_g,is_vegetarian,is_egg_free,contains_dairy,is_protein_smart,contains_nuts,created_at';
@@ -10,88 +12,114 @@ function buildSearchFilter(value) {
   return `name.ilike."${pattern}",description.ilike."${pattern}"`;
 }
 
-function applyListFilters(query, filters) {
+function applySearchFilters(query, filters = {}) {
   let q = query.eq('is_deleted', false);
-  if (filters.search) q = q.or(buildSearchFilter(filters.search.trim()));
+  if (filters.term) q = q.or(buildSearchFilter(filters.term.trim()));
   if (filters.cuisine) q = q.eq('cuisine', filters.cuisine);
   for (const tag of filters.tags || []) q = q.contains('tags', [tag]);
   for (const mealType of filters.mealTypes || []) q = q.contains('meal_types', [mealType]);
-  if (filters.vegetarian) q = q.eq('is_vegetarian', true);
-  if (filters.eggFree) q = q.eq('is_egg_free', true);
-  if (filters.dairyFree) q = q.eq('contains_dairy', false);
-  if (filters.proteinSmart) q = q.eq('is_protein_smart', true);
-  if (filters.nutFree) q = q.eq('contains_nuts', false);
-  if (filters.spiceMax) q = q.lte('spice_level', filters.spiceMax);
+  const dietary = filters.dietary || {};
+  if (dietary.vegetarian) q = q.eq('is_vegetarian', true);
+  if (dietary.eggFree) q = q.eq('is_egg_free', true);
+  if (dietary.dairyFree) q = q.eq('contains_dairy', false);
+  if (dietary.proteinSmart) q = q.eq('is_protein_smart', true);
+  if (dietary.nutFree) q = q.eq('contains_nuts', false);
+  if (dietary.spiceMax) q = q.lte('spice_level', dietary.spiceMax);
   return q;
 }
 
-export async function fetchRecipesList(client, filters, { page, pageSize }) {
-  const countQuery = applyListFilters(client.from('recipes').select('id', { count: 'exact', head: true }), filters);
+/**
+ * The one search implementation (BUG-6), used by both the recipes page and the planner.
+ * @param {{ term?: string, cuisine?: string, tags?: string[], mealTypes?: string[],
+ *   dietary?: { vegetarian?: boolean, eggFree?: boolean, dairyFree?: boolean, proteinSmart?: boolean, nutFree?: boolean, spiceMax?: number } }} filters
+ * @param {{ page: number, pageSize: number }} pagination
+ * @returns {Promise<{ok: boolean, data: object[], totalCount: number, page: number, error: object|null}>}
+ */
+export async function searchRecipes(client, filters = {}, { page = 1, pageSize = 12 } = {}) {
+  const countQuery = applySearchFilters(client.from('recipes').select('id', { count: 'exact', head: true }), filters);
   const { count: totalCount, error: countError } = await countQuery;
-  if (countError) console.error(countError);
+  if (countError) {
+    console.error(countError);
+    return { ok: false, data: [], totalCount: 0, page, error: countError };
+  }
 
   const total = Number(totalCount || 0);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const clampedPage = Math.min(page, totalPages);
+  const clampedPage = Math.min(Math.max(1, page), totalPages);
   const from = (clampedPage - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let dataQuery = applyListFilters(client.from('recipes').select(RECIPE_LIST_COLUMNS), filters);
+  let dataQuery = applySearchFilters(client.from('recipes').select(RECIPE_LIST_COLUMNS), filters);
   dataQuery = dataQuery.range(from, to).order('name', { ascending: true });
   const { data, error } = await dataQuery;
   if (error) {
     console.error(error);
-    return { recipes: [], totalCount: total, page: clampedPage };
+    return { ok: false, data: [], totalCount: total, page: clampedPage, error };
   }
-  return { recipes: data || [], totalCount: total, page: clampedPage };
+  return { ok: true, data: data || [], totalCount: total, page: clampedPage, error: null };
 }
 
-/** The full controlled cuisine vocabulary (migration 002), for the recipe form's cuisine <select>
- * — distinct from fetchCuisineOptions, which only lists cuisines currently in use (the filter). */
-export async function fetchAllCuisines(client) {
-  const { data, error } = await client.from('cuisines').select('name').order('sort_order', { ascending: true });
+/** recipe_stats (007_read_views.sql): totals for the dashboard tiles, one bounded row — no full-table read. */
+export async function fetchRecipeStats(client) {
+  const { data, error } = await client.from('recipe_stats').select('*').maybeSingle();
   if (error) {
     console.error(error);
-    return [];
+    return { ok: false, data: null, error };
   }
-  return (data || []).map((row) => row.name);
+  return { ok: true, data, error: null };
 }
 
-export async function fetchCuisineOptions(client) {
-  const { data, error } = await client.from('recipes').select('cuisine').eq('is_deleted', false).not('cuisine', 'is', null).order('cuisine');
+/** The N most recently added recipes for the dashboard, bounded by `limit` — not a full-table read. */
+export async function fetchRecentRecipes(client, limit = 3) {
+  const { data, error } = await client
+    .from('recipes')
+    .select(DASHBOARD_COLUMNS)
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: false })
+    .limit(limit);
   if (error) {
     console.error(error);
-    return [];
+    return { ok: false, data: [], error };
   }
-  return [...new Set((data || []).map((row) => row.cuisine).filter(Boolean))];
+  return { ok: true, data: data || [], error: null };
 }
 
-export async function fetchTagOptions(client) {
-  const { data, error } = await client.from('recipes').select('tags').eq('is_deleted', false);
+/** cuisine_counts (007_read_views.sql): every cuisine with its live recipe count, for the filter facet (BUG-2). */
+export async function fetchCuisineCounts(client) {
+  const { data, error } = await client.from('cuisine_counts').select('cuisine,sort_order,recipes').order('sort_order', { ascending: true });
   if (error) {
     console.error(error);
-    return [];
+    return { ok: false, data: [], error };
   }
-  return [...new Set((data || []).flatMap((row) => (Array.isArray(row.tags) ? row.tags : [])).filter(Boolean))].sort();
+  return { ok: true, data: data || [], error: null };
 }
 
-export async function fetchSearchSuggestions(client) {
-  const { data, error } = await client.from('recipes').select('name,description').eq('is_deleted', false).order('name');
+/** tag_counts (007_read_views.sql): every tag with its live recipe count, for the tag-filter facet (BUG-2). */
+export async function fetchTagCounts(client) {
+  const { data, error } = await client.from('tag_counts').select('tag,recipes').order('recipes', { ascending: false });
   if (error) {
     console.error(error);
-    return [];
+    return { ok: false, data: [], error };
   }
-  const values = (data || []).flatMap((recipe) => [recipe.name, recipe.description].map((v) => String(v || '').trim()).filter(Boolean));
-  return [...new Set(values)];
+  return { ok: true, data: data || [], error: null };
 }
 
-export async function fetchDashboardRecipes(client) {
-  const { data, error } = await client.from('recipes').select(DASHBOARD_COLUMNS).eq('is_deleted', false);
+/** Live, debounced (250ms, caller's responsibility) search-box suggestions — 2+ characters, limit 8 (8.3). */
+export async function fetchSearchSuggestions(client, term, limit = 8) {
+  const trimmed = String(term || '').trim();
+  if (trimmed.length < 2) return { ok: true, data: [], error: null };
+  const { data, error } = await client
+    .from('recipes')
+    .select('name')
+    .eq('is_deleted', false)
+    .ilike('name', `*${trimmed}*`)
+    .order('name', { ascending: true })
+    .limit(limit);
   if (error) {
     console.error(error);
-    return null;
+    return { ok: false, data: [], error };
   }
-  return data || [];
+  return { ok: true, data: (data || []).map((row) => row.name), error: null };
 }
 
 export async function fetchRecipeById(client, id) {
@@ -113,6 +141,17 @@ export async function fetchRecipeBySlug(client, slug) {
     return null;
   }
   return data;
+}
+
+/** The full controlled cuisine vocabulary (migration 002), for the recipe form's cuisine <select>
+ * — distinct from fetchCuisineCounts, which only lists cuisines currently in use (the filter). */
+export async function fetchAllCuisines(client) {
+  const { data, error } = await client.from('cuisines').select('name').order('sort_order', { ascending: true });
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return (data || []).map((row) => row.name);
 }
 
 const INGREDIENT_COLUMNS = 'id,name,display_name,category,contains_meat,contains_egg,contains_dairy,contains_nuts,contains_gluten,status';
@@ -201,18 +240,4 @@ export async function fetchRecipeIngredients(client, recipeId) {
     });
   }
   return groups;
-}
-
-export async function fetchPlannerRecipes(client, limit = 50) {
-  const { data, error } = await client
-    .from('recipes')
-    .select(RECIPE_LIST_COLUMNS)
-    .eq('is_deleted', false)
-    .order('name', { ascending: true })
-    .limit(limit);
-  if (error) {
-    console.error(error);
-    return [];
-  }
-  return data || [];
 }
