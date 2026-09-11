@@ -45,3 +45,12 @@ export function setBusy(element, busy) {
   element.disabled = Boolean(busy);
   element.classList.toggle('is-busy', Boolean(busy));
 }
+
+/** @returns {(...args: any[]) => void} `fn`, delayed by `wait`ms and restarted on every call (BUG-8's 8.6/8.3). */
+export function debounce(fn, wait) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), wait);
+  };
+}
