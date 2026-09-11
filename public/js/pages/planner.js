@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes } from '../lib/queries.js';
 import { normalizeRecipe } from '../components/recipe-card.js';
 import { DAYS, MEAL_SLOTS, loadPlanner, persistPlanner, assignRecipeToDay as assignRecipeToDayInStore, defaultPlanner } from '../lib/planner-store.js';
+import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
+import { MEAL_TYPES } from '../shared/recipe-rules.js';
 
 const state = {
   recipes: [],
@@ -15,6 +17,15 @@ function assignRecipeToDay(day, slot, recipe) {
   persistPlanner(state.planner);
 }
 
+const SLOT_PROMPTS = {
+  Breakfast: 'a tasty, protein-forward vegetarian breakfast',
+  Lunch: 'a satisfying vegetarian lunch',
+  Dinner: 'a flavourful vegetarian dinner',
+  Snacks: 'a healthy vegetarian snack',
+  Dessert: 'a lighter vegetarian dessert',
+  Other: 'a tasty vegetarian dish',
+};
+
 export async function initPlannerPage() {
   const plannerGrid = document.getElementById('plannerGrid');
   const plannerList = document.getElementById('plannerList');
@@ -23,6 +34,8 @@ export async function initPlannerPage() {
   const selectedRecipeSummary = document.getElementById('selectedRecipeSummary');
 
   if (!plannerGrid || !plannerList || !plannerSearch || !resetWeek || !selectedRecipeSummary) return;
+
+  const askDialog = mountAskDialog();
 
   function renderPlannerBoard() {
     plannerGrid.innerHTML = DAYS.map((day) => {
@@ -39,7 +52,10 @@ export async function initPlannerPage() {
                 <div class="slot-recipe">${escapeHtml(item.name)}</div>
                 <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-id="${item.id}" data-remove-slot="${slot}">Remove</button>
               </div>
-            `).join('') : '<div class="slot-empty">No recipe planned</div>'}
+            `).join('') : `
+              <div class="slot-empty">No recipe planned</div>
+              <button type="button" class="ghost-button suggest-new-button" data-suggest-day="${day}" data-suggest-slot="${slot}">✨ Suggest something new</button>
+            `}
           </div>
         `;
       }).join('');
@@ -73,6 +89,17 @@ export async function initPlannerPage() {
         state.planner[day] = (state.planner[day] || []).filter((item) => !(item.id === id && (item.slot || 'Dinner') === slot));
         persistPlanner(state.planner);
         renderPlannerBoard();
+      });
+    });
+
+    // 10.5: from an empty slot, suggest a fresh AI recipe for that meal — the draft is reviewed
+    // and saved on the recipes page, which then offers to add the saved recipe back to this slot.
+    plannerGrid.querySelectorAll('.suggest-new-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        const day = button.dataset.suggestDay;
+        const slot = button.dataset.suggestSlot;
+        storePendingPlannerSlot({ day, slot });
+        askDialog.open({ initialPrompt: SLOT_PROMPTS[slot] || SLOT_PROMPTS.Other, mealType: MEAL_TYPES.includes(slot) ? slot : undefined });
       });
     });
   }

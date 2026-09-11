@@ -16,7 +16,9 @@ export function recipeIngredientsToPayload(groups) {
       items: g.items
         .filter((item) => item.ingredientName?.trim())
         .map((item) => ({
-          ingredient: item.ingredientId ? { id: item.ingredientId } : { name: item.ingredientName.trim() },
+          ingredient: item.ingredientId
+            ? { id: item.ingredientId }
+            : { name: item.ingredientName.trim(), ...(item.category ? { category: item.category } : {}) },
           quantity: item.quantity ?? null,
           unit: item.quantity !== null && item.quantity !== undefined
             ? item.unit

@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase-client.js';
 import { fetchRecipeStats, fetchRecentRecipes } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
+import { mountAskDialog } from '../components/ask-dialog.js';
 
 function renderStats(stats) {
   const statsGrid = document.getElementById('statsGrid');
@@ -55,6 +56,7 @@ function renderSkeleton() {
 
 export async function initDashboardPage() {
   mountRecipeModal();
+  mountAskDialog();
 
   async function load() {
     renderSkeleton();

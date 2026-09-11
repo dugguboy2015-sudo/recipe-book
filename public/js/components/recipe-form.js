@@ -1,14 +1,17 @@
 import { escapeHtml, showSnackbar, setBusy } from '../lib/dom.js';
 import { wireDialog } from './dialog.js';
-import { createRecipe, updateRecipe } from '../lib/api.js';
+import { createRecipe, updateRecipe, estimateNutrition } from '../lib/api.js';
 import { createIngredientEditor } from './ingredient-editor.js';
 import { createMethodEditor } from './method-editor.js';
 import { fetchAllCuisines, fetchRecipeIngredients, fetchRecipeById } from '../lib/queries.js';
 import { getHousehold } from '../lib/household.js';
 import { needsHouseholdConfirm } from '../shared/dietary-suggestion.js';
 import { MEAL_TYPES, reconcileTimes } from '../shared/recipe-rules.js';
+import { draftIngredientsToEditorGroups, groupWarningsByField } from '../shared/draft-adapter.js';
 
 const DIETARY_RADIO_FIELDS = ['is_vegetarian', 'is_egg_free', 'contains_dairy'];
+const NUTRITION_FIELDS = ['calories_kcal', 'protein_g', 'carbs_g', 'sugars_g', 'fibre_g', 'fat_g', 'saturates_g', 'salt_g'];
+const DIETARY_LABELS = { is_vegetarian: 'Vegetarian', is_egg_free: 'Egg-free', contains_dairy: 'Contains dairy' };
 
 function parseNumberValue(rawValue) {
   if (rawValue === null || rawValue === undefined || rawValue === '') return null;
@@ -61,8 +64,12 @@ export function createRecipeForm({ client, onSaved }) {
   const householdConfirmModal = document.getElementById('householdConfirmModal');
   const dialogHandle = modal ? wireDialog(modal, { onClose: resetForm }) : null;
   const householdConfirmHandle = householdConfirmModal ? wireDialog(householdConfirmModal) : null;
+  const aiDraftBanner = document.getElementById('aiDraftBanner');
+  const aiDraftWarningsList = document.getElementById('aiDraftWarnings');
+  const estimateNutritionButton = document.getElementById('estimateNutritionButton');
+  const estimateNutritionStatus = document.getElementById('estimateNutritionStatus');
 
-  let mode = 'add';
+  let mode = 'add'; // 'add' | 'edit' | 'ai-draft'
   let editingRecipeId = null;
   let editingUpdatedAt = null;
   let totalTouchedByUser = false;
@@ -70,6 +77,7 @@ export function createRecipeForm({ client, onSaved }) {
   let household = null;
   let cuisineOptionsLoaded = false;
   let pendingConfirmSave = null;
+  let currentGenerationId = null;
   // createIngredientEditor renders synchronously during construction, which fires onChange before
   // the `const` below could ever be assigned — so applyDietarySuggestion closes over this `let`
   // (already initialized to null) instead of the ingredientEditor binding itself.
@@ -115,6 +123,9 @@ export function createRecipeForm({ client, onSaved }) {
   }
 
   function applyDietarySuggestion() {
+    // AI drafts show the model's own dietary answers as an "AI suggests" hint instead (10.3) —
+    // never the ingredient-derived auto-suggestion Phase 7 built for manual recipes.
+    if (mode === 'ai-draft') return;
     if (!ingredientEditorRef || !dietarySuggestionNotice) return;
     const signal = ingredientEditorRef.getDietarySignal();
     if (!signal) {
@@ -151,6 +162,18 @@ export function createRecipeForm({ client, onSaved }) {
     mode = 'add';
     editingRecipeId = null;
     editingUpdatedAt = null;
+    currentGenerationId = null;
+    if (aiDraftBanner) aiDraftBanner.hidden = true;
+    if (aiDraftWarningsList) aiDraftWarningsList.innerHTML = '';
+    clearAiSuggestsHints();
+    if (estimateNutritionStatus) estimateNutritionStatus.textContent = '';
+  }
+
+  function clearAiSuggestsHints() {
+    for (const field of DIETARY_RADIO_FIELDS) {
+      const hint = document.getElementById(`aiSuggests_${field}`);
+      if (hint) hint.hidden = true;
+    }
   }
 
   function wireTimeAutoFill() {
@@ -245,6 +268,101 @@ export function createRecipeForm({ client, onSaved }) {
     dialogHandle.open();
   }
 
+  /**
+   * Opens the form pre-filled from a POST /api/recipes/generate draft for review (task 10.3).
+   * Dietary radios stay unselected — the model's own answers show as an "AI suggests" hint next
+   * to each — and the recipe saves with source:'ai' + generationId so it links back to its row.
+   */
+  async function openDraft(draft, generationId, warnings = [], goalInfo = {}) {
+    if (!modal || !form || !title || !submitButton) return;
+    resetForm();
+    await ensureCuisineOptions();
+
+    mode = 'ai-draft';
+    currentGenerationId = generationId;
+    title.textContent = `Review: ${draft.name || 'AI draft'}`;
+    submitButton.textContent = 'Save recipe';
+
+    form.querySelector('[name="name"]').value = draft.name || '';
+    if (cuisineSelect) cuisineSelect.value = draft.cuisine || '';
+    form.querySelector('[name="description"]').value = draft.description || '';
+    form.querySelector('[name="serves"]').value = draft.serves ?? '';
+    form.querySelector('[name="spice_level"]').value = draft.spice_level ?? '';
+    form.querySelector('[name="tags"]').value = (draft.tags || []).join(', ');
+    renderMealTypeChips(draft.meal_types || []);
+
+    totalTouchedByUser = true; // the draft's own total is authoritative until the user clears it
+    form.querySelector('[name="prep_time_minutes"]').value = draft.prep_time_minutes ?? '';
+    form.querySelector('[name="cook_time_minutes"]').value = draft.cook_time_minutes ?? '';
+    form.querySelector('[name="total_time_minutes"]').value = draft.total_time_minutes ?? '';
+    form.querySelector('[name="time_note"]').value = draft.time_note || '';
+
+    ingredientEditor?.setValue(draftIngredientsToEditorGroups(draft.ingredients));
+    methodEditor?.setValue(draft.steps);
+
+    showAiSuggestsHint('is_vegetarian', draft.is_vegetarian);
+    showAiSuggestsHint('is_egg_free', draft.is_egg_free);
+    showAiSuggestsHint('contains_dairy', draft.contains_dairy);
+
+    form.querySelector('[name="calories_kcal"]').value = draft.calories_kcal ?? '';
+    form.querySelector('[name="protein_g"]').value = draft.protein_g ?? '';
+    form.querySelector('[name="carbs_g"]').value = draft.carbs_g ?? '';
+    form.querySelector('[name="sugars_g"]').value = draft.sugars_g ?? '';
+    form.querySelector('[name="fibre_g"]').value = draft.fibre_g ?? '';
+    form.querySelector('[name="fat_g"]').value = draft.fat_g ?? '';
+    form.querySelector('[name="saturates_g"]').value = draft.saturates_g ?? '';
+    form.querySelector('[name="salt_g"]').value = draft.salt_g ?? '';
+    form.querySelector('[name="nutrition_basis"]').value = draft.nutrition_basis || '';
+
+    form.querySelector('[name="lunchbox_notes"]').value = draft.lunchbox_notes || '';
+    form.querySelector('[name="origin_note"]').value = draft.origin_note || '';
+    form.querySelector('[name="egg_check_notes"]').value = draft.egg_check_notes || '';
+    form.querySelector('[name="common_mistakes"]').value = draft.common_mistakes || '';
+    form.querySelector('[name="uk_sourcing_notes"]').value = draft.uk_sourcing_notes || '';
+    form.querySelector('[name="storage_notes"]').value = draft.storage_notes || '';
+    form.querySelector('[name="kid_friendly_notes"]').value = draft.kid_friendly_notes || '';
+
+    if (aiDraftBanner) {
+      aiDraftBanner.hidden = false;
+      aiDraftBanner.textContent = goalInfo.goalAdjusted
+        ? 'AI draft. Check it before saving, especially the dietary answers. To keep at least 60% of new recipes protein-smart, this one is protein-smart too.'
+        : 'AI draft. Check it before saving, especially the dietary answers.';
+    }
+    renderAiWarnings(warnings);
+
+    dialogHandle.open();
+  }
+
+  function showAiSuggestsHint(field, value) {
+    const hint = document.getElementById(`aiSuggests_${field}`);
+    if (!hint) return;
+    hint.hidden = value === null || value === undefined;
+    hint.textContent = `AI suggests: ${value ? 'Yes' : 'No'}`;
+  }
+
+  function renderAiWarnings(warnings) {
+    if (!aiDraftWarningsList) return;
+    document.querySelectorAll('.field-error[data-ai-warning]').forEach((el) => {
+      el.textContent = '';
+      delete el.dataset.aiWarning;
+    });
+    const byField = groupWarningsByField(warnings);
+    const items = [];
+    for (const [field, fieldWarnings] of byField.entries()) {
+      for (const warning of fieldWarnings) {
+        const evidence = warning.evidence?.length ? ` (${warning.evidence.join(', ')})` : '';
+        const label = DIETARY_LABELS[field] || field;
+        items.push(`<li><strong>${escapeHtml(label)}:</strong> ${escapeHtml(warning.message)}${escapeHtml(evidence)}</li>`);
+        const errorSlot = form.querySelector(`[data-error-for="${field}"]`);
+        if (errorSlot) {
+          errorSlot.textContent = `⚠ ${warning.message}${evidence}`;
+          errorSlot.dataset.aiWarning = 'true';
+        }
+      }
+    }
+    aiDraftWarningsList.innerHTML = items.length ? `<ul>${items.join('')}</ul>` : '';
+  }
+
   function focusField(fieldName) {
     form.querySelector(`[name="${fieldName}"]`)?.focus();
   }
@@ -307,8 +425,10 @@ export function createRecipeForm({ client, onSaved }) {
     if (recipe.is_vegetarian === null) errors.is_vegetarian = 'Please answer Yes or No.';
     if (recipe.is_egg_free === null) errors.is_egg_free = 'Please answer Yes or No.';
     if (recipe.contains_dairy === null) errors.contains_dairy = 'Please answer Yes or No.';
-    for (const field of ['calories_kcal', 'protein_g', 'carbs_g', 'sugars_g', 'fibre_g', 'fat_g', 'saturates_g', 'salt_g']) {
-      if (recipe[field] !== null && recipe[field] < 0) errors[field] = 'Must be 0 or more.';
+    // Phase 10: full nutrition is required to save, manual and AI recipes alike.
+    for (const field of NUTRITION_FIELDS) {
+      if (recipe[field] === null) errors[field] = 'Required — use Estimate nutrition or enter a value.';
+      else if (recipe[field] < 0) errors[field] = 'Must be 0 or more.';
     }
 
     return { valid: Object.keys(errors).length === 0, errors, recipe, ingredients };
@@ -319,12 +439,12 @@ export function createRecipeForm({ client, onSaved }) {
     try {
       const result = mode === 'edit'
         ? await updateRecipe(editingRecipeId, { recipe, ingredients, expectedUpdatedAt: editingUpdatedAt, turnstileContainer })
-        : await createRecipe({ recipe, ingredients, turnstileContainer, source: 'manual' });
+        : await createRecipe({ recipe, ingredients, turnstileContainer, source: mode === 'ai-draft' ? 'ai' : 'manual', generationId: mode === 'ai-draft' ? currentGenerationId : undefined });
 
       if (result.ok) {
         showSnackbar(mode === 'edit' ? 'Recipe updated successfully!' : 'Recipe added successfully!', 'success');
         dialogHandle.close();
-        await onSaved?.(mode === 'edit');
+        await onSaved?.(mode === 'edit', mode === 'ai-draft' ? result.data.recipe : null);
         return;
       }
 
@@ -381,6 +501,36 @@ export function createRecipeForm({ client, onSaved }) {
     await performSave(validation.recipe, validation.ingredients);
   }
 
+  estimateNutritionButton?.addEventListener('click', async () => {
+    const name = form.querySelector('[name="name"]').value.trim();
+    const serves = parseNumberValue(form.querySelector('[name="serves"]').value) || 1;
+    const ingredients = ingredientEditor?.getValue() || [];
+    if (!ingredients.some((g) => g.items.length)) {
+      showSnackbar('Add at least one ingredient before estimating nutrition.', 'error');
+      return;
+    }
+
+    setBusy(estimateNutritionButton, true);
+    if (estimateNutritionStatus) estimateNutritionStatus.textContent = 'Estimating…';
+    try {
+      const result = await estimateNutrition({ name: name || 'Recipe', serves, ingredients, turnstileContainer });
+      if (!result.ok) {
+        if (estimateNutritionStatus) estimateNutritionStatus.textContent = '';
+        showSnackbar(result.message || "Couldn't estimate nutrition. Please try again.", 'error');
+        return;
+      }
+      const { nutrition } = result.data;
+      for (const field of NUTRITION_FIELDS) {
+        const input = form.querySelector(`[name="${field}"]`);
+        if (input && nutrition[field] !== null && nutrition[field] !== undefined) input.value = nutrition[field];
+      }
+      form.querySelector('[name="nutrition_basis"]').value = nutrition.nutrition_basis || '';
+      if (estimateNutritionStatus) estimateNutritionStatus.textContent = 'Estimated — check before saving.';
+    } finally {
+      setBusy(estimateNutritionButton, false);
+    }
+  });
+
   document.getElementById('confirmHouseholdConfirm')?.addEventListener('click', () => {
     householdConfirmHandle?.close();
     const save = pendingConfirmSave;
@@ -400,6 +550,7 @@ export function createRecipeForm({ client, onSaved }) {
   return {
     openAdd,
     openEdit,
+    openDraft,
     focusField,
   };
 }

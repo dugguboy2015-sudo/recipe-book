@@ -17,7 +17,7 @@
         <a href="index.html">Dashboard</a>
         <a href="recipes.html" aria-current="page">Recipes</a>
         <a href="planner.html">Weekly Planner</a>
-        <a href="recipes.html">Ask for a recipe</a>
+        <button type="button" id="scrollToGeneratePanel">Ask for a recipe</button>
       </nav>
     </header>
 
@@ -27,6 +27,8 @@
     </header>
 
     <main id="content" class="page-shell">
+      <div id="generatePanelContainer"></div>
+
       <section class="filter-panel">
         <div class="filter-row">
           <label class="search-field">
@@ -119,6 +121,9 @@
     </div>
 
     <form id="addRecipeForm" novalidate>
+      <p class="notice ai-draft-banner" id="aiDraftBanner" hidden></p>
+      <div id="aiDraftWarnings"></div>
+
       <details class="form-section" open>
         <summary>Basics</summary>
         <div class="form-grid">
@@ -216,6 +221,7 @@
               <label><input type="radio" name="is_vegetarian" value="yes" /><span>Yes</span></label>
               <label><input type="radio" name="is_vegetarian" value="no" /><span>No</span></label>
             </div>
+            <span class="hint" id="aiSuggests_is_vegetarian" hidden></span>
             <small class="field-error" data-error-for="is_vegetarian"></small>
           </div>
 
@@ -225,6 +231,7 @@
               <label><input type="radio" name="is_egg_free" value="yes" /><span>Yes</span></label>
               <label><input type="radio" name="is_egg_free" value="no" /><span>No</span></label>
             </div>
+            <span class="hint" id="aiSuggests_is_egg_free" hidden></span>
             <small class="field-error" data-error-for="is_egg_free"></small>
           </div>
 
@@ -234,13 +241,18 @@
               <label><input type="radio" name="contains_dairy" value="yes" /><span>Yes</span></label>
               <label><input type="radio" name="contains_dairy" value="no" /><span>No</span></label>
             </div>
+            <span class="hint" id="aiSuggests_contains_dairy" hidden></span>
             <small class="field-error" data-error-for="contains_dairy"></small>
           </div>
         </div>
       </details>
 
       <details class="form-section" open>
-        <summary>Nutrition per serving <span class="hint">(estimates)</span></summary>
+        <summary>Nutrition per serving <span class="hint">(required)</span></summary>
+        <div class="form-actions form-actions-start">
+          <button type="button" class="ghost-button" id="estimateNutritionButton">Estimate nutrition</button>
+          <span class="hint" id="estimateNutritionStatus"></span>
+        </div>
         <div class="form-grid">
           <label class="field">
             <span>Calories (kcal)</span>

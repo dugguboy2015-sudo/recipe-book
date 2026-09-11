@@ -181,7 +181,7 @@ function countIngredientLines(ingredients) {
   return ingredients.reduce((n, g) => n + (Array.isArray(g?.items) ? g.items.length : 0), 0);
 }
 
-export function normalizeRecipeInput(raw, { cuisines = [], mode = 'strict', partial = false } = {}) {
+export function normalizeRecipeInput(raw, { cuisines = [], mode = 'strict', partial = false, requireNutrition = false } = {}) {
   const input = isPlainObject(raw) ? raw : {};
   const errors = {};
   const warnings = [];
@@ -295,12 +295,18 @@ export function normalizeRecipeInput(raw, { cuisines = [], mode = 'strict', part
   for (const field of NUTRITION_FIELDS) {
     if (!shouldValidate(field)) continue;
     if (input[field] == null || input[field] === '') {
-      value[field] = null;
+      if (requireNutrition) {
+        errors[field] = `${field} is required.`;
+      } else {
+        value[field] = null;
+      }
       continue;
     }
     const amount = Number(input[field]);
-    if (!Number.isFinite(amount) || amount < 0 || amount > LIMITS.nutritionMax) {
-      errors[field] = `${field} must be between 0 and ${LIMITS.nutritionMax}.`;
+    // Phase 10: once nutrition is required, salt_g gets a tighter, plausible per-serving ceiling.
+    const max = requireNutrition && field === 'salt_g' ? 20 : LIMITS.nutritionMax;
+    if (!Number.isFinite(amount) || amount < 0 || amount > max) {
+      errors[field] = `${field} must be between 0 and ${max}.`;
     } else {
       value[field] = amount;
     }

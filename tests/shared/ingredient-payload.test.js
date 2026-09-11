@@ -42,6 +42,13 @@ describe('recipeIngredientsToPayload', () => {
     ]);
   });
 
+  it('includes category on a new ingredient when the row carries one (task 10.7)', () => {
+    const groups = [{ group: 'Ingredients', items: [
+      { ingredientId: null, ingredientName: 'kasuri methi', category: 'herb', quantity: 1, unit: 'tsp', preparation: '', isOptional: false, scales: true },
+    ] }];
+    expect(recipeIngredientsToPayload(groups)[0].items[0].ingredient).toEqual({ name: 'kasuri methi', category: 'herb' });
+  });
+
   it('drops empty groups and unnamed rows', () => {
     const groups = [
       { group: 'Empty', items: [{ ingredientId: null, ingredientName: '  ', quantity: null, unit: 'tbsp', preparation: '', isOptional: false, scales: true }] },
