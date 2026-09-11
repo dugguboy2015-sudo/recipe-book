@@ -34,6 +34,7 @@
 
 .toolbar { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
 .notice { color: var(--ink-muted); font-size: var(--fs-2); }
+.ai-draft-banner { background: var(--warn-bg); color: var(--warn); border-radius: var(--radius-control); padding: var(--sp-3); font-weight: 600; margin-bottom: var(--sp-3); }
 
 .search-box, select { border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; padding: var(--sp-2) var(--sp-3); min-height: 44px; }
 .search-box { min-width: 230px; }

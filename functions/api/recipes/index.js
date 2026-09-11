@@ -96,7 +96,8 @@ export async function onRequestPost({ request, env }) {
 
   // B.4 sends ingredients as a sibling of recipe, but normalizeRecipeInput's ingredient-count
   // check (shared with the client-side form) looks for it on the object it validates.
-  const { ok, value, errors } = normalizeRecipeInput({ ...body.recipe, ingredients: body.ingredients }, { cuisines, mode: 'strict' });
+  // Phase 10: all J.1 nutrition fields are required to save, manual and AI recipes alike.
+  const { ok, value, errors } = normalizeRecipeInput({ ...body.recipe, ingredients: body.ingredients }, { cuisines, mode: 'strict', requireNutrition: true });
   if (!ok) return problem(400, 'validation_failed', 'Please fix the highlighted fields.', { errors });
   ensureRequiredForCreate(value);
 

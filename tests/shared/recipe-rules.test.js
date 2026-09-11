@@ -160,6 +160,39 @@ describe('normalizeRecipeInput', () => {
     expect(ok).toBe(true);
     expect(warnings.some((w) => w.field === 'ingredients')).toBe(true);
   });
+
+  describe('requireNutrition (Phase 10)', () => {
+    const nutrition = { calories_kcal: 250, protein_g: 12, carbs_g: 30, sugars_g: 3, fibre_g: 6, fat_g: 8, saturates_g: 2, salt_g: 0.8 };
+
+    it('nutrition stays optional by default', () => {
+      const { ok, value } = normalizeRecipeInput({ ...validBase }, { cuisines });
+      expect(ok).toBe(true);
+      expect(value.calories_kcal).toBeNull();
+    });
+
+    it('errors on every missing J.1 field when requireNutrition is true', () => {
+      const { ok, errors } = normalizeRecipeInput({ ...validBase }, { cuisines, requireNutrition: true });
+      expect(ok).toBe(false);
+      for (const field of Object.keys(nutrition)) expect(errors[field]).toBeTruthy();
+    });
+
+    it('accepts a fully-populated nutrition set when required', () => {
+      const { ok, value } = normalizeRecipeInput({ ...validBase, ...nutrition }, { cuisines, requireNutrition: true });
+      expect(ok).toBe(true);
+      expect(value.calories_kcal).toBe(250);
+    });
+
+    it('caps salt_g at 20 (not the general 5000 nutritionMax) when nutrition is required', () => {
+      const { ok, errors } = normalizeRecipeInput({ ...validBase, ...nutrition, salt_g: 21 }, { cuisines, requireNutrition: true });
+      expect(ok).toBe(false);
+      expect(errors.salt_g).toBeTruthy();
+    });
+
+    it('does not force nutrition on a partial (PATCH) update that never touches those fields', () => {
+      const { ok } = normalizeRecipeInput({ description: 'New description' }, { cuisines, partial: true, requireNutrition: true });
+      expect(ok).toBe(true);
+    });
+  });
 });
 
 describe('deriveIngredientFlags', () => {

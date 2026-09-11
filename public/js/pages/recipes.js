@@ -8,6 +8,9 @@ import { wireDialog } from '../components/dialog.js';
 import { deleteRecipe, restoreRecipe } from '../lib/api.js';
 import { MEAL_TYPES } from '../shared/recipe-rules.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
+import { createGenerateFlow } from '../components/generate-flow.js';
+import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
+import { loadPlanner, persistPlanner, assignRecipeToDay } from '../lib/planner-store.js';
 
 function defaultFilters() {
   return {
@@ -59,6 +62,20 @@ export async function initRecipesPage() {
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
   mountRecipeModal();
+
+  // recipes.html already has the inline "Describe a recipe" panel (10.1) — its header button
+  // scrolls to and focuses that instead of opening a second, redundant dialog for the same flow.
+  const generatePanelContainer = document.getElementById('generatePanelContainer');
+  if (generatePanelContainer) {
+    createGenerateFlow({
+      container: generatePanelContainer,
+      onDraftReady: (draft, generationId, warnings, goalInfo) => recipeForm.openDraft(draft, generationId, warnings, goalInfo),
+    });
+  }
+  document.getElementById('scrollToGeneratePanel')?.addEventListener('click', () => {
+    generatePanelContainer?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('generatePrompt')?.focus();
+  });
 
   // 8.2: the cuisine facet and tag chips come from the read-only *_counts views (bounded, and
   // already reflect only live recipes) instead of scanning every recipe client-side.
@@ -195,10 +212,27 @@ export async function initRecipesPage() {
 
   const recipeForm = createRecipeForm({
     client: supabase,
-    onSaved: async (isEdit) => {
+    onSaved: async (isEdit, savedAiRecipe) => {
       // 6.6: only a create resets to page 1 (BUG-3) — an edit stays on the current page.
       if (!isEdit) state.page = 1;
       await refreshRecipes();
+
+      // 10.5: a recipe generated for a specific empty planner slot offers to go straight there.
+      if (savedAiRecipe) {
+        const pendingSlot = takePendingPlannerSlot();
+        if (pendingSlot) {
+          showSnackbar(`Add to ${pendingSlot.day}'s ${pendingSlot.slot}?`, 'success', {
+            label: 'Add',
+            duration: 10000,
+            onClick: () => {
+              const planner = loadPlanner();
+              assignRecipeToDay(planner, pendingSlot.day, pendingSlot.slot, { id: savedAiRecipe.id, name: savedAiRecipe.name });
+              persistPlanner(planner);
+              showSnackbar(`Added to ${pendingSlot.day}'s ${pendingSlot.slot}.`, 'success');
+            },
+          });
+        }
+      }
     },
   });
 
@@ -321,6 +355,14 @@ export async function initRecipesPage() {
       });
     } else {
       showSnackbar('This recipe was removed.', 'error');
+    }
+  }
+
+  // Task 10.5: a draft generated from another page (via the header's Ask dialog) arrives here.
+  if (initialParams.get('review') === '1') {
+    const pending = takePendingDraft();
+    if (pending) {
+      recipeForm.openDraft(pending.draft, pending.generationId, pending.warnings, pending.goalInfo);
     }
   }
 }

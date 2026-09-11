@@ -11,6 +11,7 @@ import { buildMessages, RUNTIME_UNITS, RUNTIME_CATEGORIES } from '../../_lib/ai/
 import { generateDraft } from '../../_lib/ai/index.js';
 import { evaluateDraft } from '../../_lib/ai/evaluate-draft.js';
 import { computeEffectiveGoal } from '../../_lib/ai/protein-goal.js';
+import { fetchRecentProteinSmartRecords } from '../../_lib/ai/recent-generations.js';
 import { MEAL_TYPES } from '../../../public/js/shared/recipe-rules.js';
 import { todayStartUtcIso, nextMidnightUtcIso } from '../../_lib/ai/daily-window.js';
 
@@ -69,15 +70,6 @@ async function findExistingBySlug(db, slug) {
     console.error('Name-collision lookup failed (continuing without it):', err);
     return null;
   }
-}
-
-/** Last 20 saved AI recipes' protein_smart flags, or every generated draft's when fewer than 5 are saved (J.3). */
-async function fetchRecentProteinSmartRecords(db) {
-  const { data: saved } = await db.request('recipe_generations?select=protein_smart&kind=eq.recipe&outcome=eq.saved&protein_smart=not.is.null&order=created_at.desc&limit=20');
-  const savedRecords = saved || [];
-  if (savedRecords.length >= 5) return savedRecords;
-  const { data: allGenerated } = await db.request('recipe_generations?select=protein_smart&kind=eq.recipe&protein_smart=not.is.null&order=created_at.desc&limit=20');
-  return allGenerated || [];
 }
 
 /** @returns {Promise<string|null>} the inserted row's id, or null if the insert failed. */
@@ -143,7 +135,19 @@ export async function onRequestPost({ request, env }) {
     } catch (err) {
       console.error('similar_recipes lookup failed (continuing without a duplicate check):', err);
     }
-    if (matches.length > 0) return problem(409, 'similar_exists', 'A similar recipe already exists.', { matches });
+    if (matches.length > 0) {
+      // The UI links each match to its recipe (10.2), which needs the slug similar_recipes()
+      // doesn't return.
+      try {
+        const ids = matches.map((m) => m.id).join(',');
+        const { data: withSlugs } = await db.request(`recipes?select=id,slug&id=in.(${ids})`);
+        const slugById = new Map((withSlugs || []).map((r) => [r.id, r.slug]));
+        matches = matches.map((m) => ({ ...m, slug: slugById.get(m.id) || null }));
+      } catch (err) {
+        console.error('Failed to enrich similar_recipes matches with slugs (continuing without them):', err);
+      }
+      return problem(409, 'similar_exists', 'A similar recipe already exists.', { matches });
+    }
   }
 
   let cuisines;

@@ -10,6 +10,13 @@ const UNIT_OPTIONS = [
   ['g', 'g'], ['kg', 'kg'], ['ml', 'ml'], ['l', 'litre'],
 ];
 
+// Migration 009's ingredients.category check constraint (Appendix A.12) — a new ingredient needs
+// one of these to save (task 10.7's category select for AI-draft and manually-typed new rows).
+const CATEGORY_OPTIONS = [
+  'grain_whole', 'grain_refined', 'pulse_legume', 'dairy', 'plant_protein', 'vegetable', 'fruit',
+  'nut_seed', 'spice', 'herb', 'oil_fat', 'sweetener', 'condiment', 'other',
+];
+
 let rowSeq = 0;
 let groupSeq = 0;
 
@@ -20,6 +27,7 @@ function newRow(overrides = {}) {
     ingredientName: '',
     ingredientFlags: null,
     ingredientReviewed: false,
+    category: null,
     quantity: null,
     unit: 'tbsp',
     preparation: '',
@@ -37,17 +45,26 @@ function unitOptionsHtml(selected) {
   return UNIT_OPTIONS.map(([value, label]) => `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`).join('');
 }
 
+function categoryOptionsHtml(selected) {
+  return CATEGORY_OPTIONS.map((value) => `<option value="${value}" ${value === (selected || 'other') ? 'selected' : ''}>${value.replace(/_/g, ' ')}</option>`).join('');
+}
+
 function rowHtml(row) {
+  // A row with no matched ingredientId is one that will be created on save (10.7) — true whether
+  // it came from a paste, a manual "Add as new", or an AI draft's unresolved item.
+  const isNew = row.ingredientId === null && row.ingredientName.trim();
   return `
     <div class="ingredient-row" data-row-key="${row.key}">
       <div class="combobox ingredient-combobox">
         <input type="text" class="ingredient-search" role="combobox" aria-expanded="false" aria-autocomplete="list"
           placeholder="Search ingredient…" value="${escapeHtml(row.ingredientName)}" autocomplete="off" />
         <ul class="combobox-listbox" role="listbox" hidden></ul>
+        ${isNew ? `<span class="badge new-ingredient-badge">New ingredient</span>` : ''}
       </div>
       <input type="text" class="ingredient-quantity" placeholder="1½" value="${row.quantity !== null ? escapeHtml(formatAmount(row.quantity)) : ''}" aria-label="Quantity" />
       <select class="ingredient-unit" aria-label="Unit">${unitOptionsHtml(row.unit)}</select>
       <input type="text" class="ingredient-preparation" placeholder="preparation, e.g. finely chopped" value="${escapeHtml(row.preparation)}" aria-label="Preparation" />
+      ${isNew ? `<select class="ingredient-category" aria-label="New ingredient category">${categoryOptionsHtml(row.category)}</select>` : '<span></span>'}
       <label class="checkbox-field"><input type="checkbox" class="ingredient-optional" ${row.isOptional ? 'checked' : ''} /> Optional</label>
       <label class="checkbox-field"><input type="checkbox" class="ingredient-no-scale" ${!row.scales ? 'checked' : ''} /> Doesn't scale</label>
       <button type="button" class="icon-button remove-row" aria-label="Remove ingredient">✕</button>
@@ -107,10 +124,6 @@ export function createIngredientEditor({ client, container, onChange }) {
   function findRow(groupKey, rowKey) {
     const group = findGroup(groupKey);
     return group?.rows.find((r) => r.key === rowKey);
-  }
-
-  function closeAllListboxes() {
-    container.querySelectorAll('.combobox-listbox').forEach((el) => { el.hidden = true; });
   }
 
   async function handleComboboxInput(input) {
@@ -220,14 +233,16 @@ export function createIngredientEditor({ client, container, onChange }) {
               : null;
             row.ingredientReviewed = match?.status === 'reviewed';
           }
-          searchInput.value = row.ingredientName;
-          closeAllListboxes();
-          onChange?.();
+          // A full re-render (not just closeAllListboxes) so the New-ingredient badge and
+          // category select (10.7) appear immediately for a row that just became unresolved/new,
+          // and disappear immediately for a row that just became a resolved match.
+          render();
         });
 
         rowEl.querySelector('.ingredient-quantity').addEventListener('input', (e) => { row.quantity = parseAmount(e.target.value); });
         rowEl.querySelector('.ingredient-unit').addEventListener('change', (e) => { row.unit = e.target.value; });
         rowEl.querySelector('.ingredient-preparation').addEventListener('input', (e) => { row.preparation = e.target.value; });
+        rowEl.querySelector('.ingredient-category')?.addEventListener('change', (e) => { row.category = e.target.value; });
         rowEl.querySelector('.ingredient-optional').addEventListener('change', (e) => { row.isOptional = e.target.checked; });
         rowEl.querySelector('.ingredient-no-scale').addEventListener('change', (e) => { row.scales = !e.target.checked; });
         rowEl.querySelector('.remove-row').addEventListener('click', () => {
@@ -254,6 +269,7 @@ export function createIngredientEditor({ client, container, onChange }) {
         ingredientName: item.ingredientName ?? '',
         ingredientFlags: item.ingredientFlags ?? null,
         ingredientReviewed: Boolean(item.ingredientReviewed),
+        category: item.category ?? null,
         quantity: item.quantity ?? null,
         unit: item.unit ?? 'tbsp',
         preparation: item.preparation ?? '',

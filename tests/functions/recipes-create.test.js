@@ -6,6 +6,8 @@ const validRecipe = {
   name: 'Test Dal', cuisine: 'North Indian', description: 'A simple dal.', serves: 4,
   total_time_minutes: 30, steps: [{ group: 'Method', steps: ['Cook the dal.'] }],
   is_vegetarian: true, is_egg_free: true, contains_dairy: false,
+  // Phase 10: nutrition is required to save.
+  calories_kcal: 250, protein_g: 12, carbs_g: 30, sugars_g: 3, fibre_g: 6, fat_g: 8, saturates_g: 2, salt_g: 0.8,
 };
 
 function makeRequest({ origin = 'https://recipe-book-9eo.pages.dev', body = {} } = {}) {
@@ -58,6 +60,17 @@ describe('POST /api/recipes', () => {
     const data = await res.json();
     expect(data.code).toBe('validation_failed');
     expect(data.errors.name).toBeTruthy();
+  });
+
+  it('rejects a recipe missing nutrition with 400 validation_failed (Phase 10: nutrition is required)', async () => {
+    stubFetch([turnstileOk, rateLimitCount(0), cuisinesList]);
+    const withoutCalories = { ...validRecipe };
+    delete withoutCalories.calories_kcal;
+    const res = await onRequestPost({ request: makeRequest({ body: { recipe: withoutCalories, turnstileToken: 'x'.repeat(20) } }), env: fakeEnv() });
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.code).toBe('validation_failed');
+    expect(data.errors.calories_kcal).toBeTruthy();
   });
 
   it('creates a recipe and writes an audit row on success', async () => {

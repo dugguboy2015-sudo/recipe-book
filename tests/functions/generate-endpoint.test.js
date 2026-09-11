@@ -22,6 +22,7 @@ function generationCount(globalN, ipN = globalN) {
 const noSimilarRecipes = { test: (url, init) => url.includes('rpc/similar_recipes') && init.method === 'POST', respond: () => jsonResponse(200, []) };
 const noRecentGenerations = { test: (url, init) => url.includes('recipe_generations?select=protein_smart') && init.method === 'GET', respond: () => jsonResponse(200, []) };
 const similarRecipeMatch = { test: (url, init) => url.includes('rpc/similar_recipes') && init.method === 'POST', respond: () => jsonResponse(200, [{ id: 11, name: 'Kanda Poha', score: 0.8 }]) };
+const similarRecipeSlugLookup = { test: (url) => url.includes('recipes?select=id,slug'), respond: () => jsonResponse(200, [{ id: 11, slug: 'kanda-poha' }]) };
 const noIngredientUsage = { test: (url) => url.includes('ingredient_usage'), respond: () => jsonResponse(200, []) };
 const noIngredientMatches = { test: (url, init) => url.includes('ingredients?') || url.includes('ingredient_aliases?') || (url.includes('rpc/match_ingredient') && init.method === 'POST'), respond: () => jsonResponse(200, []) };
 const noNameCollision = { test: (url) => url.includes('recipes?select=id,name&slug='), respond: () => jsonResponse(200, []) };
@@ -110,13 +111,13 @@ describe('POST /api/recipes/generate — short-circuits (no model call)', () => 
 
   it('rejects with 409 similar_exists on a >=0.6 match, without ever calling the model or logging a generation row', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), similarRecipeMatch, generationInsertOk(genRows)]);
+    stubFetch([turnstileOk, generationCount(0), similarRecipeMatch, similarRecipeSlugLookup, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'kanda poha', turnstileToken: 'x'.repeat(20) } }), env });
     expect(res.status).toBe(409);
     const data = await res.json();
     expect(data.code).toBe('similar_exists');
-    expect(data.matches[0].name).toBe('Kanda Poha');
+    expect(data.matches[0]).toMatchObject({ name: 'Kanda Poha', slug: 'kanda-poha' });
     expect(env.AI.run).not.toHaveBeenCalled();
     expect(genRows).toHaveLength(0);
   });

@@ -104,7 +104,9 @@ export async function onRequestPatch({ request, env, params }) {
 
   const cuisines = await getCuisines(db);
   // See index.js: B.4 sends ingredients as a sibling of recipe, not nested inside it.
-  const { ok, value, errors } = normalizeRecipeInput({ ...body.recipe, ingredients: body.ingredients }, { cuisines, mode: 'strict', partial: true });
+  // Phase 10: nutrition is required to save, but partial mode still only validates fields the
+  // client actually sent — a PATCH that doesn't touch nutrition isn't forced to add it here.
+  const { ok, value, errors } = normalizeRecipeInput({ ...body.recipe, ingredients: body.ingredients }, { cuisines, mode: 'strict', partial: true, requireNutrition: true });
   if (!ok) return problem(400, 'validation_failed', 'Please fix the highlighted fields.', { errors });
 
   const ingredients = resolveIngredients(body.ingredients);

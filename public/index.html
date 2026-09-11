@@ -17,7 +17,7 @@
         <a href="index.html" aria-current="page">Dashboard</a>
         <a href="recipes.html">Recipes</a>
         <a href="planner.html">Weekly Planner</a>
-        <a href="recipes.html">Ask for a recipe</a>
+        <button type="button" data-open-ask-dialog>Ask for a recipe</button>
       </nav>
     </header>
 
@@ -64,6 +64,9 @@
     <a href="recipes.html">Recipes</a>
     <a href="planner.html">Planner</a>
   </nav>
+
+  <div id="snackbar" class="snackbar" aria-live="polite"></div>
+  <div id="turnstileContainer"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js" integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP" crossorigin="anonymous"></script>
   <script type="module" src="js/main.js"></script>
