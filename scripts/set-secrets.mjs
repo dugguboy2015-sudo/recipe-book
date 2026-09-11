@@ -14,11 +14,13 @@ if (!secrets.IP_HASH_SALT) {
   throw new Error('IP_HASH_SALT is not set. Run `npm run dev:vars` first to generate one.');
 }
 
+// execFileSync doesn't go through a shell, but npx is a .cmd wrapper on Windows that needs one
+// (plain "npx.cmd" as the file still fails with EINVAL under execFileSync's spawnSync path).
 for (const [name, value] of Object.entries(secrets)) {
   for (const envFlag of [[], ['--env', 'preview']]) {
     const args = ['wrangler', 'pages', 'secret', 'put', name, '--project-name', 'recipe-book', ...envFlag];
     console.log(`Setting ${name}${envFlag.length ? ' (preview)' : ' (production)'}...`);
-    execFileSync('npx', args, { input: value, stdio: ['pipe', 'inherit', 'inherit'] });
+    execFileSync('npx', args, { input: value, stdio: ['pipe', 'inherit', 'inherit'], shell: true });
   }
 }
 console.log('All secrets pushed to production and preview.');

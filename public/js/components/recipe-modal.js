@@ -1,6 +1,7 @@
 import { escapeHtml } from '../shared/recipe-rules.js';
 import { fetchRecipeById } from '../lib/queries.js';
 import { wireDialog } from './dialog.js';
+import { showSnackbar } from '../lib/dom.js';
 
 const MODAL_HTML = `
   <dialog id="recipeModal" class="recipe-detail">
@@ -50,7 +51,10 @@ export function mountRecipeModal() {
 
 export async function openRecipeModal(client, id) {
   const data = await fetchRecipeById(client, id);
-  if (!data) return;
+  if (!data) {
+    showSnackbar('This recipe was removed.', 'error');
+    return;
+  }
 
   const modal = document.getElementById('recipeModal');
   if (!modal || !dialogHandle) return;

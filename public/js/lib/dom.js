@@ -10,15 +10,34 @@ export function $$(selector, root = document) {
 
 let snackbarTimeoutId;
 
-export function showSnackbar(message, type = 'success') {
+/**
+ * @param {string} message
+ * @param {'success'|'error'} [type]
+ * @param {{ label: string, onClick: () => void, duration?: number }} [action] - e.g. an Undo button
+ */
+export function showSnackbar(message, type = 'success', action) {
   const snackbar = document.getElementById('snackbar');
   if (!snackbar) return;
   snackbar.textContent = message;
   snackbar.className = `snackbar show ${type}`;
+
+  if (action) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'toast-action';
+    button.textContent = action.label;
+    button.addEventListener('click', () => {
+      clearTimeout(snackbarTimeoutId);
+      snackbar.classList.remove('show');
+      action.onClick();
+    });
+    snackbar.appendChild(button);
+  }
+
   clearTimeout(snackbarTimeoutId);
   snackbarTimeoutId = setTimeout(() => {
     snackbar.classList.remove('show');
-  }, 3000);
+  }, action?.duration ?? 3000);
 }
 
 export function setBusy(element, busy) {

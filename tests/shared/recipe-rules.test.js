@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   slugify, parseAmount, formatAmount, ingredientsToText, textToIngredients,
   stepsToText, textToSteps, reconcileTimes, normalizeRecipeInput, dietaryWarnings,
+  deriveIngredientFlags,
 } from '../../public/js/shared/recipe-rules.js';
 
 describe('slugify', () => {
@@ -158,6 +159,35 @@ describe('normalizeRecipeInput', () => {
     const { ok, warnings } = normalizeRecipeInput({ ...validBase, ingredients: [{ group: 'Ingredients', items }] }, { cuisines, mode: 'draft' });
     expect(ok).toBe(true);
     expect(warnings.some((w) => w.field === 'ingredients')).toBe(true);
+  });
+});
+
+describe('deriveIngredientFlags', () => {
+  it('sets contains_meat for a meat ingredient', () => {
+    expect(deriveIngredientFlags('chicken stock')).toEqual({ contains_meat: true, contains_egg: false, contains_dairy: false, contains_nuts: false, contains_gluten: false });
+  });
+  it('sets contains_egg for egg noodles', () => {
+    expect(deriveIngredientFlags('egg noodles').contains_egg).toBe(true);
+  });
+  it('does not flag eggplant as containing egg', () => {
+    expect(deriveIngredientFlags('eggplant').contains_egg).toBe(false);
+  });
+  it('sets contains_dairy for paneer', () => {
+    expect(deriveIngredientFlags('paneer').contains_dairy).toBe(true);
+  });
+  it('does not flag coconut milk as dairy', () => {
+    expect(deriveIngredientFlags('coconut milk').contains_dairy).toBe(false);
+  });
+  it('sets contains_nuts for cashews but not coconut', () => {
+    expect(deriveIngredientFlags('cashews').contains_nuts).toBe(true);
+    expect(deriveIngredientFlags('coconut').contains_nuts).toBe(false);
+  });
+  it('sets contains_gluten for wheat flour but not gluten-free flour', () => {
+    expect(deriveIngredientFlags('whole wheat flour').contains_gluten).toBe(true);
+    expect(deriveIngredientFlags('gluten-free flour').contains_gluten).toBe(false);
+  });
+  it('returns all-false for a plain vegetable', () => {
+    expect(deriveIngredientFlags('onion')).toEqual({ contains_meat: false, contains_egg: false, contains_dairy: false, contains_nuts: false, contains_gluten: false });
   });
 });
 

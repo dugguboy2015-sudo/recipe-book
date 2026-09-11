@@ -5,6 +5,7 @@ import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js'
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { createRecipeForm } from '../components/recipe-form.js';
 import { wireDialog } from '../components/dialog.js';
+import { deleteRecipe, restoreRecipe } from '../lib/api.js';
 
 const state = {
   recipes: [],
@@ -85,8 +86,9 @@ export async function initRecipesPage() {
         event.stopPropagation();
         const id = Number(button.dataset.id);
         if (button.dataset.action === 'edit') {
-          const recipe = state.recipes.find((item) => item.id === id);
-          if (recipe) recipeForm.openEdit(recipe);
+          // Phase 6 acceptance: editing is disabled until the structured ingredient editor
+          // ships in Phase 7. Add, delete and undo work now.
+          showSnackbar('Editing is being upgraded and returns shortly.', 'error');
         } else if (button.dataset.action === 'delete') {
           openDeleteConfirm(id);
         }
@@ -105,7 +107,6 @@ export async function initRecipesPage() {
   }
 
   const recipeForm = createRecipeForm({
-    client: supabase,
     onSaved: async () => {
       state.page = 1;
       await refreshRecipes();
@@ -127,25 +128,35 @@ export async function initRecipesPage() {
     deleteDialog?.close();
   }
 
+  const turnstileContainer = document.getElementById('turnstileContainer');
+
   async function confirmSoftDelete() {
     if (!pendingDeleteRecipeId) return;
     const recipeId = pendingDeleteRecipeId;
     closeDeleteConfirm();
 
-    try {
-      const { error } = await supabase
-        .from('recipes')
-        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
-        .eq('id', recipeId);
-      if (error) throw error;
-
-      showSnackbar('Recipe deleted successfully.', 'success');
-      state.page = 1;
-      await refreshRecipes();
-    } catch (error) {
-      console.error(error);
-      showSnackbar(error.message || 'Unable to delete recipe. Please try again.', 'error');
+    const result = await deleteRecipe(recipeId, { turnstileContainer });
+    if (!result.ok) {
+      const message = result.code === 'not_found' ? 'This recipe was already removed.' : (result.message || 'Unable to delete recipe. Please try again.');
+      showSnackbar(message, 'error');
+      return;
     }
+
+    showSnackbar('Recipe deleted successfully.', 'success', {
+      label: 'Undo',
+      duration: 8000,
+      onClick: async () => {
+        const undoResult = await restoreRecipe(recipeId, { turnstileContainer });
+        if (undoResult.ok) {
+          showSnackbar('Recipe restored.', 'success');
+          await refreshRecipes();
+        } else {
+          showSnackbar(undoResult.message || 'Unable to restore recipe.', 'error');
+        }
+      },
+    });
+    state.page = 1;
+    await refreshRecipes();
   }
 
   addRecipeButton?.addEventListener('click', () => recipeForm.openAdd());

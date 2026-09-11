@@ -7,6 +7,10 @@ const PATTERNS = [
   { name: 'Google API key', re: /AIza[0-9A-Za-z_-]{30,}/g },
 ];
 
+// Vars that are deliberately public and belong in committed client code (Appendix §3.2 marks each
+// of these "no (public)") — a literal match here is the feature working as designed, not a leak.
+const PUBLIC_VAR_NAMES = new Set(['TURNSTILE_SITE_KEY']);
+
 function literalSecretsFromEnvLocal() {
   if (!existsSync('.env.local')) return [];
   const text = readFileSync('.env.local', 'utf8');
@@ -24,6 +28,7 @@ function literalSecretsFromEnvLocal() {
     if (!value) continue;
     if (/^(true|false)$/i.test(value)) continue;
     if (/^\d+$/.test(value)) continue;
+    if (PUBLIC_VAR_NAMES.has(key)) continue;
     values.push({ name: key, value });
   }
   return values;
