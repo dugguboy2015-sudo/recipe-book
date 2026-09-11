@@ -70,10 +70,15 @@ export function createRecipeForm({ client, onSaved }) {
   let household = null;
   let cuisineOptionsLoaded = false;
   let pendingConfirmSave = null;
+  // createIngredientEditor renders synchronously during construction, which fires onChange before
+  // the `const` below could ever be assigned — so applyDietarySuggestion closes over this `let`
+  // (already initialized to null) instead of the ingredientEditor binding itself.
+  let ingredientEditorRef = null;
 
   const ingredientEditor = document.getElementById('ingredientEditorContainer')
-    ? createIngredientEditor({ client, container: document.getElementById('ingredientEditorContainer'), onChange: applyDietarySuggestion })
+    ? createIngredientEditor({ client, container: document.getElementById('ingredientEditorContainer'), onChange: () => applyDietarySuggestion() })
     : null;
+  ingredientEditorRef = ingredientEditor;
   const methodEditor = document.getElementById('methodEditorContainer')
     ? createMethodEditor({ container: document.getElementById('methodEditorContainer') })
     : null;
@@ -110,8 +115,8 @@ export function createRecipeForm({ client, onSaved }) {
   }
 
   function applyDietarySuggestion() {
-    if (!ingredientEditor || !dietarySuggestionNotice) return;
-    const signal = ingredientEditor.getDietarySignal();
+    if (!ingredientEditorRef || !dietarySuggestionNotice) return;
+    const signal = ingredientEditorRef.getDietarySignal();
     if (!signal) {
       dietarySuggestionNotice.hidden = true;
       return;
