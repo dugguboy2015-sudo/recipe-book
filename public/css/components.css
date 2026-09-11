@@ -205,6 +205,15 @@
 .nutrition-panel .ri-bar-fill.amber { background: var(--warn); }
 .nutrition-panel .ri-bar-fill.red { background: var(--danger); }
 
+/* Width utility classes, 5% steps — strict CSP (style-src 'self') forbids setting width via an
+   inline style attribute, so a dynamic %RI bar picks the nearest one of these instead. */
+.w-pct-0 { width: 0%; } .w-pct-5 { width: 5%; } .w-pct-10 { width: 10%; } .w-pct-15 { width: 15%; }
+.w-pct-20 { width: 20%; } .w-pct-25 { width: 25%; } .w-pct-30 { width: 30%; } .w-pct-35 { width: 35%; }
+.w-pct-40 { width: 40%; } .w-pct-45 { width: 45%; } .w-pct-50 { width: 50%; } .w-pct-55 { width: 55%; }
+.w-pct-60 { width: 60%; } .w-pct-65 { width: 65%; } .w-pct-70 { width: 70%; } .w-pct-75 { width: 75%; }
+.w-pct-80 { width: 80%; } .w-pct-85 { width: 85%; } .w-pct-90 { width: 90%; } .w-pct-95 { width: 95%; }
+.w-pct-100 { width: 100%; }
+
 /* ---------- ServingsStepper ---------- */
 .servings-stepper { display: inline-flex; align-items: center; gap: var(--sp-2); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: var(--sp-1); }
 .servings-stepper button { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--surface-raised); color: var(--brand-ink); font-size: var(--fs-4); }
@@ -437,4 +446,112 @@ header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(
   }
   .bottom-tab-bar a[aria-current="page"] { color: var(--brand-ink); }
   body { padding-bottom: 72px; }
+}
+
+/* ---------- Structured ingredient editor (task 7.1) ---------- */
+.ingredient-groups, .method-groups { display: grid; gap: var(--sp-4); margin-top: var(--sp-4); }
+
+.ingredient-group, .method-group {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.ingredient-group-header, .method-group-header { display: flex; align-items: center; gap: var(--sp-2); }
+.ingredient-group-header .group-name-input, .method-group-header .group-name-input { flex: 1; margin: 0; }
+.ingredient-group-actions { display: flex; gap: var(--sp-1); flex-shrink: 0; }
+
+.ingredient-rows { display: grid; gap: var(--sp-3); }
+
+.ingredient-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) 90px 110px minmax(140px, 1.5fr) auto auto auto;
+  gap: var(--sp-2);
+  align-items: start;
+}
+
+.ingredient-row .ingredient-quantity, .ingredient-row .ingredient-preparation { margin: 0; }
+.ingredient-row .ingredient-unit { margin: 0; }
+.ingredient-combobox { margin: 0; }
+
+@media (max-width: 900px) {
+  .ingredient-row { grid-template-columns: 1fr 1fr; }
+}
+
+.ingredient-editor-actions { display: flex; gap: var(--sp-3); margin-top: var(--sp-3); }
+
+.paste-list-panel { margin-top: var(--sp-3); border-top: 1px solid var(--line); padding-top: var(--sp-3); }
+.paste-list-textarea { width: 100%; font-family: monospace; }
+
+/* ---------- Method (steps) editor (task 7.2) ---------- */
+.method-step { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-2); align-items: start; }
+.method-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--protein-bg);
+  color: var(--brand-ink);
+  font-weight: 700;
+  margin-top: var(--sp-1);
+}
+.method-step-text { width: 100%; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); padding: var(--sp-2) var(--sp-3); font: inherit; color: var(--ink); resize: vertical; }
+.method-step-actions { display: flex; gap: var(--sp-1); }
+
+/* ---------- Form sections (native <details>) ---------- */
+.form-section { border: 1px solid var(--line); border-radius: var(--radius-card); margin-top: var(--sp-4); background: var(--surface); }
+.form-section summary {
+  cursor: pointer;
+  padding: var(--sp-3) var(--sp-4);
+  font-weight: 700;
+  color: var(--brand-ink);
+  font-size: var(--fs-4);
+}
+.form-section summary::-webkit-details-marker { color: var(--brand); }
+.form-section .form-grid { padding: 0 var(--sp-4) var(--sp-4); margin-top: var(--sp-2); }
+.form-section[open] summary { border-bottom: 1px solid var(--line); margin-bottom: var(--sp-2); }
+
+.meal-type-chips, .dietary-radio-group { display: grid; gap: var(--sp-2); }
+
+/* ---------- Recipe detail v2 ---------- */
+.recipe-hero { display: flex; gap: var(--sp-4); align-items: center; flex-wrap: wrap; }
+.recipe-hero-art { width: 72px; height: 72px; flex-shrink: 0; }
+.recipe-hero-meta { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; margin-top: var(--sp-2); }
+
+.scaled-notice { background: var(--warn-bg); color: var(--warn); border-radius: var(--radius-control); padding: var(--sp-2) var(--sp-3); font-size: var(--fs-2); margin: var(--sp-3) 0; }
+
+.time-breakdown { display: flex; gap: var(--sp-4); flex-wrap: wrap; color: var(--ink-muted); font-size: var(--fs-2); }
+
+.detail-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-5); }
+
+/* ---------- Cook mode ---------- */
+.cook-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg);
+  color: var(--ink);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: var(--sp-5);
+}
+.cook-mode-header { display: flex; justify-content: space-between; align-items: center; }
+.cook-mode-body { display: flex; gap: var(--sp-6); overflow: auto; padding: var(--sp-5) 0; }
+.cook-mode-step { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.cook-mode-step-number { color: var(--brand-ink); font-weight: 700; font-size: var(--fs-4); margin-bottom: var(--sp-3); }
+.cook-mode-step-text { font-size: var(--fs-7); line-height: 1.4; }
+.cook-mode-ingredients { width: min(320px, 100%); border-left: 1px solid var(--line); padding-left: var(--sp-5); overflow-y: auto; }
+.cook-mode-ingredients h4 { color: var(--brand-ink); margin-bottom: var(--sp-2); }
+.cook-mode-footer { display: flex; justify-content: space-between; gap: var(--sp-3); }
+.cook-mode-footer .primary-button { min-width: 120px; }
+
+@media (max-width: 760px) {
+  .cook-mode-body { flex-direction: column; }
+  .cook-mode-ingredients { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; padding-top: var(--sp-4); width: 100%; }
+  .cook-mode-step-text { font-size: var(--fs-6); }
 }

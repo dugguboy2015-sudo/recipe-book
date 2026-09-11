@@ -44,6 +44,11 @@
         </div>
 
         <details class="filter-disclosure">
+          <summary>Meal type <span class="filter-hint">Optional</span></summary>
+          <div class="chip-group" id="mealTypeFilters"></div>
+        </details>
+
+        <details class="filter-disclosure">
           <summary>Tags <span class="filter-hint">Optional</span></summary>
           <div class="chip-group" id="tagFilters"></div>
         </details>
@@ -54,7 +59,24 @@
             <button class="chip" data-dietary="vegetarian" type="button">Vegetarian</button>
             <button class="chip" data-dietary="egg-free" type="button">Egg-free</button>
             <button class="chip" data-dietary="dairy-free" type="button">Dairy-free</button>
+            <button class="chip" data-dietary="protein-smart" type="button">Protein-smart</button>
+            <button class="chip" data-dietary="nut-free" type="button">Nut-free</button>
           </div>
+        </details>
+
+        <details class="filter-disclosure">
+          <summary>Spice <span class="filter-hint">Optional</span></summary>
+          <label>
+            Spice up to
+            <select id="spiceMaxFilter">
+              <option value="">Any</option>
+              <option value="1">1 — mild</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5 — very hot</option>
+            </select>
+          </label>
         </details>
 
         <div class="actions-row">
@@ -97,106 +119,253 @@
     </div>
 
     <form id="addRecipeForm" novalidate>
-      <div class="form-grid">
-        <label class="field">
-          <span>Recipe name</span>
-          <input type="text" name="name" placeholder="e.g. Chicken Pasta" />
-          <small class="field-error" data-error-for="name"></small>
-        </label>
+      <details class="form-section" open>
+        <summary>Basics</summary>
+        <div class="form-grid">
+          <label class="field">
+            <span>Recipe name</span>
+            <input type="text" name="name" placeholder="e.g. Chicken Pasta" />
+            <small class="field-error" data-error-for="name"></small>
+          </label>
 
-        <label class="field">
-          <span>Cuisine</span>
-          <input type="text" name="cuisine" placeholder="e.g. Italian" />
-          <small class="field-error" data-error-for="cuisine"></small>
-        </label>
+          <label class="field">
+            <span>Cuisine</span>
+            <select name="cuisine" id="recipeCuisineSelect"></select>
+            <small class="field-error" data-error-for="cuisine"></small>
+          </label>
 
-        <label class="field full-width">
-          <span>Description</span>
-          <textarea name="description" rows="3" placeholder="Short description of the dish"></textarea>
-          <small class="field-error" data-error-for="description"></small>
-        </label>
+          <label class="field full-width">
+            <span>Description</span>
+            <textarea name="description" rows="3" placeholder="Short description of the dish"></textarea>
+            <small class="field-error" data-error-for="description"></small>
+          </label>
 
-        <label class="field">
-          <span>Serves</span>
-          <input type="number" name="serves" min="1" step="1" placeholder="4" />
-          <small class="field-error" data-error-for="serves"></small>
-        </label>
+          <label class="field">
+            <span>Serves</span>
+            <input type="number" name="serves" min="1" step="1" placeholder="4" />
+            <small class="field-error" data-error-for="serves"></small>
+          </label>
 
-        <label class="field">
-          <span>Total time (minutes)</span>
-          <input type="number" name="total_time_minutes" min="1" step="1" placeholder="30" />
-          <small class="field-error" data-error-for="total_time_minutes"></small>
-        </label>
+          <label class="field">
+            <span>Spice level <span class="hint">(1 mild – 5 very hot)</span></span>
+            <input type="number" name="spice_level" min="1" max="5" step="1" placeholder="3" />
+            <small class="field-error" data-error-for="spice_level"></small>
+          </label>
 
-        <label class="field">
-          <span>Tags</span>
-          <input type="text" name="tags" placeholder="easy, family, quick" />
-          <small class="field-error" data-error-for="tags"></small>
-        </label>
+          <label class="field full-width">
+            <span>Meal types</span>
+            <div class="meal-type-chips chip-group" id="mealTypeChips"></div>
+          </label>
 
-        <label class="field full-width">
-          <span>Ingredients (one per line)</span>
-          <textarea name="ingredients" rows="5" placeholder="Chicken breast&#10;Pasta&#10;Garlic"></textarea>
-          <small class="field-error" data-error-for="ingredients"></small>
-        </label>
+          <label class="field">
+            <span>Tags</span>
+            <input type="text" name="tags" placeholder="easy, family, quick" />
+            <small class="field-error" data-error-for="tags"></small>
+          </label>
+        </div>
+      </details>
 
-        <label class="field full-width">
-          <span>Steps (one per line)</span>
-          <textarea name="steps" rows="5" placeholder="Boil pasta&#10;Cook chicken with garlic&#10;Combine and serve"></textarea>
-          <small class="field-error" data-error-for="steps"></small>
-        </label>
+      <details class="form-section" open>
+        <summary>Time</summary>
+        <div class="form-grid">
+          <label class="field">
+            <span>Prep (minutes)</span>
+            <input type="number" name="prep_time_minutes" min="0" step="1" placeholder="15" />
+            <small class="field-error" data-error-for="prep_time_minutes"></small>
+          </label>
 
-        <label class="field checkbox-field">
-          <input type="checkbox" name="is_vegetarian" />
-          <span>Vegetarian</span>
-        </label>
+          <label class="field">
+            <span>Cook (minutes)</span>
+            <input type="number" name="cook_time_minutes" min="0" step="1" placeholder="20" />
+            <small class="field-error" data-error-for="cook_time_minutes"></small>
+          </label>
 
-        <label class="field checkbox-field">
-          <input type="checkbox" name="is_egg_free" />
-          <span>Egg-free</span>
-        </label>
+          <label class="field">
+            <span>Total (minutes) <span class="hint">(auto from prep + cook)</span></span>
+            <input type="number" name="total_time_minutes" min="1" step="1" placeholder="30" />
+            <small class="field-error" data-error-for="total_time_minutes"></small>
+          </label>
 
-        <label class="field checkbox-field">
-          <input type="checkbox" name="contains_dairy" />
-          <span>Contains dairy</span>
-        </label>
+          <label class="field full-width">
+            <span>Time note <span class="hint">(optional)</span></span>
+            <input type="text" name="time_note" placeholder="e.g. plus 30 minutes to soak" />
+            <small class="field-error" data-error-for="time_note"></small>
+          </label>
+        </div>
+      </details>
 
-        <label class="field">
-          <span>Calories (kcal)</span>
-          <input type="number" name="calories_kcal" min="0" step="1" placeholder="420" />
-          <small class="field-error" data-error-for="calories_kcal"></small>
-        </label>
+      <details class="form-section" open>
+        <summary>Ingredients</summary>
+        <div id="ingredientEditorContainer"></div>
+        <small class="field-error" data-error-for="ingredients"></small>
+      </details>
 
-        <label class="field">
-          <span>Protein (g)</span>
-          <input type="number" name="protein_g" min="0" step="0.1" placeholder="25" />
-          <small class="field-error" data-error-for="protein_g"></small>
-        </label>
+      <details class="form-section" open>
+        <summary>Method</summary>
+        <div id="methodEditorContainer"></div>
+        <small class="field-error" data-error-for="steps"></small>
+      </details>
 
-        <label class="field">
-          <span>Carbs (g)</span>
-          <input type="number" name="carbs_g" min="0" step="0.1" placeholder="40" />
-          <small class="field-error" data-error-for="carbs_g"></small>
-        </label>
+      <details class="form-section" open>
+        <summary>Dietary</summary>
+        <p class="notice" id="dietarySuggestionNotice" hidden></p>
+        <div class="form-grid">
+          <div class="field">
+            <span>Vegetarian?</span>
+            <div class="yes-no-radio" role="radiogroup" aria-label="Vegetarian?">
+              <label><input type="radio" name="is_vegetarian" value="yes" /><span>Yes</span></label>
+              <label><input type="radio" name="is_vegetarian" value="no" /><span>No</span></label>
+            </div>
+            <small class="field-error" data-error-for="is_vegetarian"></small>
+          </div>
 
-        <label class="field">
-          <span>Fat (g)</span>
-          <input type="number" name="fat_g" min="0" step="0.1" placeholder="18" />
-          <small class="field-error" data-error-for="fat_g"></small>
-        </label>
+          <div class="field">
+            <span>Egg-free?</span>
+            <div class="yes-no-radio" role="radiogroup" aria-label="Egg-free?">
+              <label><input type="radio" name="is_egg_free" value="yes" /><span>Yes</span></label>
+              <label><input type="radio" name="is_egg_free" value="no" /><span>No</span></label>
+            </div>
+            <small class="field-error" data-error-for="is_egg_free"></small>
+          </div>
 
-        <label class="field">
-          <span>Fibre (g)</span>
-          <input type="number" name="fibre_g" min="0" step="0.1" placeholder="6" />
-          <small class="field-error" data-error-for="fibre_g"></small>
-        </label>
-      </div>
+          <div class="field">
+            <span>Contains dairy?</span>
+            <div class="yes-no-radio" role="radiogroup" aria-label="Contains dairy?">
+              <label><input type="radio" name="contains_dairy" value="yes" /><span>Yes</span></label>
+              <label><input type="radio" name="contains_dairy" value="no" /><span>No</span></label>
+            </div>
+            <small class="field-error" data-error-for="contains_dairy"></small>
+          </div>
+        </div>
+      </details>
+
+      <details class="form-section" open>
+        <summary>Nutrition per serving <span class="hint">(estimates)</span></summary>
+        <div class="form-grid">
+          <label class="field">
+            <span>Calories (kcal)</span>
+            <input type="number" name="calories_kcal" min="0" step="1" placeholder="420" />
+            <small class="field-error" data-error-for="calories_kcal"></small>
+          </label>
+
+          <label class="field">
+            <span>Protein (g)</span>
+            <input type="number" name="protein_g" min="0" step="0.1" placeholder="25" />
+            <small class="field-error" data-error-for="protein_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Carbs (g)</span>
+            <input type="number" name="carbs_g" min="0" step="0.1" placeholder="40" />
+            <small class="field-error" data-error-for="carbs_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Sugars (g)</span>
+            <input type="number" name="sugars_g" min="0" step="0.1" placeholder="5" />
+            <small class="field-error" data-error-for="sugars_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Fibre (g)</span>
+            <input type="number" name="fibre_g" min="0" step="0.1" placeholder="6" />
+            <small class="field-error" data-error-for="fibre_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Fat (g)</span>
+            <input type="number" name="fat_g" min="0" step="0.1" placeholder="18" />
+            <small class="field-error" data-error-for="fat_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Saturates (g)</span>
+            <input type="number" name="saturates_g" min="0" step="0.1" placeholder="4" />
+            <small class="field-error" data-error-for="saturates_g"></small>
+          </label>
+
+          <label class="field">
+            <span>Salt (g)</span>
+            <input type="number" name="salt_g" min="0" step="0.1" placeholder="1.1" />
+            <small class="field-error" data-error-for="salt_g"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Nutrition basis <span class="hint">(optional)</span></span>
+            <input type="text" name="nutrition_basis" placeholder="Per serving (1 of 4). Estimate." />
+            <small class="field-error" data-error-for="nutrition_basis"></small>
+          </label>
+        </div>
+      </details>
+
+      <details class="form-section" id="packedLunchSection" hidden>
+        <summary>Packed lunch</summary>
+        <div class="form-grid">
+          <label class="field full-width">
+            <span>Lunchbox notes</span>
+            <textarea name="lunchbox_notes" rows="3" placeholder="Tastes good cold; keeps about 5 hours with an ice pack."></textarea>
+            <small class="field-error" data-error-for="lunchbox_notes"></small>
+          </label>
+        </div>
+      </details>
+
+      <details class="form-section">
+        <summary>Notes</summary>
+        <div class="form-grid">
+          <label class="field full-width">
+            <span>Origin note <span class="hint">(optional)</span></span>
+            <textarea name="origin_note" rows="2"></textarea>
+            <small class="field-error" data-error-for="origin_note"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Egg check notes <span class="hint">(optional)</span></span>
+            <textarea name="egg_check_notes" rows="2"></textarea>
+            <small class="field-error" data-error-for="egg_check_notes"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Common mistakes <span class="hint">(optional)</span></span>
+            <textarea name="common_mistakes" rows="2"></textarea>
+            <small class="field-error" data-error-for="common_mistakes"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>UK sourcing notes <span class="hint">(optional)</span></span>
+            <textarea name="uk_sourcing_notes" rows="2"></textarea>
+            <small class="field-error" data-error-for="uk_sourcing_notes"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Storage notes <span class="hint">(optional)</span></span>
+            <textarea name="storage_notes" rows="2"></textarea>
+            <small class="field-error" data-error-for="storage_notes"></small>
+          </label>
+
+          <label class="field full-width">
+            <span>Kid-friendly notes <span class="hint">(optional)</span></span>
+            <textarea name="kid_friendly_notes" rows="2"></textarea>
+            <small class="field-error" data-error-for="kid_friendly_notes"></small>
+          </label>
+        </div>
+      </details>
 
       <div class="form-actions">
         <button type="button" class="ghost-button" id="cancelAddRecipe">Cancel</button>
         <button type="submit" class="primary-button" id="submitRecipeButton">Save recipe</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="householdConfirmModal" class="recipe-detail confirmation-panel" aria-labelledby="householdConfirmTitle">
+    <div class="detail-header">
+      <h3 id="householdConfirmTitle">Check dietary answers</h3>
+    </div>
+    <p class="delete-confirm-copy">This household is vegetarian and egg-free. Save anyway?</p>
+    <div class="form-actions">
+      <button type="button" class="ghost-button" id="cancelHouseholdConfirm">Go back</button>
+      <button type="button" class="primary-button" id="confirmHouseholdConfirm">Save anyway</button>
+    </div>
   </dialog>
 
   <dialog id="deleteConfirmModal" class="recipe-detail confirmation-panel" aria-labelledby="deleteConfirmTitle">

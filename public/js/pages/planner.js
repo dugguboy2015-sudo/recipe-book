@@ -2,11 +2,7 @@ import { escapeHtml } from '../shared/recipe-rules.js';
 import { supabase } from '../lib/supabase-client.js';
 import { fetchPlannerRecipes } from '../lib/queries.js';
 import { normalizeRecipe } from '../components/recipe-card.js';
-
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const MEAL_SLOTS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Dessert', 'Other'];
-const PLANNER_KEY = 'recipeBookPlanner';
-const defaultPlanner = () => Object.fromEntries(DAYS.map((day) => [day, []]));
+import { DAYS, MEAL_SLOTS, loadPlanner, persistPlanner, assignRecipeToDay as assignRecipeToDayInStore, defaultPlanner } from '../lib/planner-store.js';
 
 const state = {
   recipes: [],
@@ -14,31 +10,9 @@ const state = {
   planner: loadPlanner(),
 };
 
-function loadPlanner() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PLANNER_KEY) || 'null');
-    if (!saved) return defaultPlanner();
-    const normalized = defaultPlanner();
-    Object.keys(normalized).forEach((day) => {
-      normalized[day] = Array.isArray(saved[day]) ? saved[day] : [];
-    });
-    return normalized;
-  } catch {
-    return defaultPlanner();
-  }
-}
-
-function persistPlanner() {
-  localStorage.setItem(PLANNER_KEY, JSON.stringify(state.planner));
-}
-
 function assignRecipeToDay(day, slot, recipe) {
-  if (!day || !slot || !recipe) return;
-  const current = Array.isArray(state.planner[day]) ? state.planner[day] : [];
-  const updated = current.filter((item) => !(item.id === recipe.id && (item.slot || 'Dinner') === slot));
-  updated.push({ id: recipe.id, name: recipe.name, slot });
-  state.planner[day] = updated;
-  persistPlanner();
+  assignRecipeToDayInStore(state.planner, day, slot, recipe);
+  persistPlanner(state.planner);
 }
 
 export async function initPlannerPage() {
@@ -97,7 +71,7 @@ export async function initPlannerPage() {
         const slot = button.dataset.removeSlot;
         const id = Number(button.dataset.removeId);
         state.planner[day] = (state.planner[day] || []).filter((item) => !(item.id === id && (item.slot || 'Dinner') === slot));
-        persistPlanner();
+        persistPlanner(state.planner);
         renderPlannerBoard();
       });
     });
@@ -140,7 +114,7 @@ export async function initPlannerPage() {
   resetWeek.addEventListener('click', () => {
     state.planner = defaultPlanner();
     state.selectedRecipe = null;
-    persistPlanner();
+    persistPlanner(state.planner);
     renderPlannerBoard();
     renderPlannerRecipes();
   });

@@ -8,7 +8,7 @@ function createFakeClient(response) {
     const record = { table, calls: [] };
     queries.push(record);
     const builder = {};
-    for (const method of ['select', 'eq', 'or', 'contains', 'not', 'order', 'range', 'limit']) {
+    for (const method of ['select', 'eq', 'or', 'contains', 'not', 'order', 'range', 'limit', 'lte', 'in']) {
       builder[method] = (...args) => {
         record.calls.push({ method, args });
         return builder;
@@ -64,6 +64,20 @@ describe('fetchRecipesList', () => {
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'is_vegetarian' && c.args[1] === true)).toBe(true);
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'is_egg_free' && c.args[1] === true)).toBe(true);
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'contains_dairy' && c.args[1] === false)).toBe(true);
+  });
+
+  it('applies the task 7.6 filters: meal type, protein-smart, nut-free and spice-up-to', async () => {
+    const client = createFakeClient({ data: [], error: null, count: 0 });
+    await fetchRecipesList(
+      client,
+      { search: '', cuisine: '', tags: [], mealTypes: ['Packed Lunch'], proteinSmart: true, nutFree: true, spiceMax: 3 },
+      { page: 1, pageSize: 12 },
+    );
+
+    expect(callsFor(client, 'contains').some((c) => c.args[0] === 'meal_types' && c.args[1][0] === 'Packed Lunch')).toBe(true);
+    expect(callsFor(client, 'eq').some((c) => c.args[0] === 'is_protein_smart' && c.args[1] === true)).toBe(true);
+    expect(callsFor(client, 'eq').some((c) => c.args[0] === 'contains_nuts' && c.args[1] === false)).toBe(true);
+    expect(callsFor(client, 'lte').some((c) => c.args[0] === 'spice_level' && c.args[1] === 3)).toBe(true);
   });
 
   it('paginates using range() derived from page/pageSize', async () => {
