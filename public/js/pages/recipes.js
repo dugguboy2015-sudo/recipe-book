@@ -1,18 +1,26 @@
 import { escapeHtml, showSnackbar } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
-import { fetchRecipesList, fetchCuisineOptions, fetchTagOptions, fetchSearchSuggestions } from '../lib/queries.js';
+import { fetchRecipesList, fetchCuisineOptions, fetchTagOptions, fetchSearchSuggestions, fetchRecipeBySlug } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { createRecipeForm } from '../components/recipe-form.js';
 import { wireDialog } from '../components/dialog.js';
 import { deleteRecipe, restoreRecipe } from '../lib/api.js';
+import { MEAL_TYPES } from '../shared/recipe-rules.js';
+
+function defaultFilters() {
+  return {
+    search: '', cuisine: '', tags: [], mealTypes: [],
+    vegetarian: false, eggFree: false, dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null,
+  };
+}
 
 const state = {
   recipes: [],
   page: 1,
   pageSize: 12,
   totalFilteredCount: 0,
-  filters: { search: '', cuisine: '', tags: [], vegetarian: false, eggFree: false, dairyFree: false },
+  filters: defaultFilters(),
 };
 
 let pendingDeleteRecipeId = null;
@@ -29,6 +37,8 @@ export async function initRecipesPage() {
   const recipeSuggestions = document.getElementById('recipeSuggestions');
   const applyFilters = document.getElementById('applyFilters');
   const clearFilters = document.getElementById('clearFilters');
+  const mealTypeFilters = document.getElementById('mealTypeFilters');
+  const spiceMaxFilter = document.getElementById('spiceMaxFilter');
 
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
@@ -56,6 +66,18 @@ export async function initRecipesPage() {
     });
   });
 
+  if (mealTypeFilters) {
+    mealTypeFilters.innerHTML = MEAL_TYPES.map((type) => `<button type="button" class="chip" data-meal-type="${escapeHtml(type)}">${escapeHtml(type)}</button>`).join('');
+    mealTypeFilters.querySelectorAll('.chip').forEach((button) => {
+      button.addEventListener('click', () => {
+        const mealType = button.dataset.mealType;
+        const active = state.filters.mealTypes.includes(mealType);
+        state.filters.mealTypes = active ? state.filters.mealTypes.filter((item) => item !== mealType) : [...state.filters.mealTypes, mealType];
+        button.classList.toggle('active', !active);
+      });
+    });
+  }
+
   function updateStatus(count) {
     const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
     resultCount.textContent = `${count} recipes`;
@@ -77,7 +99,7 @@ export async function initRecipesPage() {
     recipeGrid.querySelectorAll('.recipe-card').forEach((card) => {
       card.addEventListener('click', (event) => {
         if (event.target.closest('[data-action]')) return;
-        openRecipeModal(supabase, Number(card.dataset.id));
+        openRecipeModal(supabase, Number(card.dataset.id), { onEdit: (id) => recipeForm.openEdit(id), onDelete: openDeleteConfirm });
       });
     });
 
@@ -86,9 +108,7 @@ export async function initRecipesPage() {
         event.stopPropagation();
         const id = Number(button.dataset.id);
         if (button.dataset.action === 'edit') {
-          // Phase 6 acceptance: editing is disabled until the structured ingredient editor
-          // ships in Phase 7. Add, delete and undo work now.
-          showSnackbar('Editing is being upgraded and returns shortly.', 'error');
+          recipeForm.openEdit(id);
         } else if (button.dataset.action === 'delete') {
           openDeleteConfirm(id);
         }
@@ -107,8 +127,10 @@ export async function initRecipesPage() {
   }
 
   const recipeForm = createRecipeForm({
-    onSaved: async () => {
-      state.page = 1;
+    client: supabase,
+    onSaved: async (isEdit) => {
+      // 6.6: only a create resets to page 1 (BUG-3) — an edit stays on the current page.
+      if (!isEdit) state.page = 1;
       await refreshRecipes();
     },
   });
@@ -189,10 +211,12 @@ export async function initRecipesPage() {
   });
 
   clearFilters.addEventListener('click', () => {
-    state.filters = { search: '', cuisine: '', tags: [], vegetarian: false, eggFree: false, dairyFree: false };
+    state.filters = defaultFilters();
     searchInput.value = '';
     cuisineFilter.value = '';
+    if (spiceMaxFilter) spiceMaxFilter.value = '';
     document.querySelectorAll('#tagFilters .chip').forEach((chip) => chip.classList.remove('active'));
+    document.querySelectorAll('#mealTypeFilters .chip').forEach((chip) => chip.classList.remove('active'));
     document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => chip.classList.remove('active'));
     state.page = 1;
     refreshRecipes();
@@ -218,8 +242,31 @@ export async function initRecipesPage() {
       if (key === 'vegetarian') state.filters.vegetarian = !active;
       if (key === 'egg-free') state.filters.eggFree = !active;
       if (key === 'dairy-free') state.filters.dairyFree = !active;
+      if (key === 'protein-smart') state.filters.proteinSmart = !active;
+      if (key === 'nut-free') state.filters.nutFree = !active;
     });
   });
 
+  spiceMaxFilter?.addEventListener('change', (event) => {
+    state.filters.spiceMax = event.target.value ? Number(event.target.value) : null;
+  });
+
   await refreshRecipes();
+
+  // Deep link (task 7.4): recipes.html?recipe=<slug>&serves=6 opens the detail view directly.
+  const deepLinkParams = new URLSearchParams(window.location.search);
+  const deepLinkSlug = deepLinkParams.get('recipe');
+  if (deepLinkSlug) {
+    const deepLinkRecipe = await fetchRecipeBySlug(supabase, deepLinkSlug);
+    if (deepLinkRecipe) {
+      const requestedServes = Number(deepLinkParams.get('serves'));
+      openRecipeModal(supabase, deepLinkRecipe.id, {
+        serves: Number.isFinite(requestedServes) && requestedServes > 0 ? requestedServes : undefined,
+        onEdit: (id) => recipeForm.openEdit(id),
+        onDelete: openDeleteConfirm,
+      });
+    } else {
+      showSnackbar('This recipe was removed.', 'error');
+    }
+  }
 }

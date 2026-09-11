@@ -15,7 +15,7 @@ export function normalizeRecipe(recipe) {
   };
 }
 
-function dietaryBadges(recipe) {
+export function dietaryBadges(recipe) {
   return `
     ${recipe.is_vegetarian ? '<span class="badge veg">Vegetarian</span>' : ''}
     ${recipe.is_egg_free ? '<span class="badge egg">Egg-free</span>' : ''}
@@ -30,7 +30,7 @@ function tagList(recipe, limit) {
   return (recipe.tags || []).slice(0, limit).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
 }
 
-function spiceMeter(level) {
+export function spiceMeter(level) {
   if (!level) return '';
   const chillies = Array.from({ length: 5 }, (_, i) => `<span class="chilli${i < level ? ' lit' : ''}" aria-hidden="true">🌶</span>`).join('');
   return `<span class="spice-meter" role="img" aria-label="Spice ${level} of 5">${chillies}</span>`;
