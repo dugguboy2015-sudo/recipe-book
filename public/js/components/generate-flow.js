@@ -150,7 +150,9 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
     // Let "Checking…" actually paint before the (usually brief) Turnstile solve + the long model
     // call run back to back — otherwise this synchronous handoff would skip straight to
     // "generating" without the browser ever getting a frame to show the verifying state.
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    // A plain setTimeout, not requestAnimationFrame: rAF callbacks can be throttled or never fire
+    // at all in a backgrounded/hidden tab, which would hang this flow forever.
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), CLIENT_TIMEOUT_MS);
