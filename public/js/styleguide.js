@@ -4,7 +4,8 @@ import { renderRecipeCard, normalizeRecipe } from './components/recipe-card.js';
 
 // Theme toggle (demo-only; the app itself follows prefers-color-scheme)
 document.getElementById('themeToggle').addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const current = document.documentElement.getAttribute('data-theme') || (systemPrefersDark ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
 });
 
