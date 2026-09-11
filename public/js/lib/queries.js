@@ -80,7 +80,9 @@ export async function fetchDashboardRecipes(client) {
 }
 
 export async function fetchRecipeById(client, id) {
-  const { data, error } = await client.from('recipes').select('*').eq('id', id).eq('is_deleted', false).single();
+  // maybeSingle(), not single(): a recipe that's been deleted since the caller last saw its id is
+  // an expected, unremarkable case here (BUG-9) — not a query error worth logging.
+  const { data, error } = await client.from('recipes').select('*').eq('id', id).eq('is_deleted', false).maybeSingle();
   if (error) {
     console.error(error);
     return null;

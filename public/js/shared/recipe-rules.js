@@ -411,6 +411,55 @@ const DIETARY_KEYWORD_RULES = [
   },
 ];
 
+const NUT_GLUTEN_RULES = [
+  {
+    field: 'contains_nuts',
+    keywords: ['almond', 'cashew', 'peanut', 'groundnut', 'walnut', 'pistachio', 'hazelnut', 'pecan', 'macadamia', 'pine nut', 'nut butter', 'marzipan', 'praline'],
+    exceptions: ['nutmeg', 'coconut', 'butternut', 'water chestnut', 'doughnut'],
+  },
+  {
+    field: 'contains_gluten',
+    keywords: ['wheat', 'atta', 'maida', 'semolina', 'sooji', 'rava', 'barley', 'rye', 'bread', 'pasta', 'noodle', 'couscous', 'seitan', 'soy sauce', 'hing', 'asafoetida'],
+    exceptions: ['buckwheat', 'rice noodle', 'gluten-free', 'tamari'],
+  },
+];
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Strips a rule's exception phrases from text (longest first, so e.g. "eggless mayonnaise" is
+// removed whole rather than leaving "mayonnaise" behind after just "eggless" is stripped), plus
+// any "<qualifier> <keyword>" combinations from exceptionsBefore (e.g. "vegan oyster sauce").
+function stripExceptions(text, rule) {
+  let result = text;
+  const exceptions = [...(rule.exceptions || [])].sort((a, b) => b.length - a.length);
+  for (const exception of exceptions) {
+    result = result.replace(new RegExp(escapeRegex(exception), 'gi'), '');
+  }
+  if (rule.exceptionsBefore) {
+    const beforeKeywordPairs = [];
+    for (const before of rule.exceptionsBefore) {
+      for (const keyword of rule.keywords) beforeKeywordPairs.push(`${before} ${keyword}`);
+    }
+    beforeKeywordPairs.sort((a, b) => b.length - a.length);
+    for (const pair of beforeKeywordPairs) {
+      const [before, ...rest] = pair.split(' ');
+      const keyword = rest.join(' ');
+      result = result.replace(new RegExp(`${before}\\s+${escapeRegex(keyword)}s?\\b`, 'gi'), '');
+    }
+  }
+  return result;
+}
+
+function findKeywordEvidence(text, keywords) {
+  const evidence = [];
+  for (const keyword of keywords) {
+    if (new RegExp(`\\b${escapeRegex(keyword)}s?\\b`, 'i').test(text)) evidence.push(keyword);
+  }
+  return evidence;
+}
+
 function flattenIngredientNames(recipe) {
   const names = [];
   const groups = Array.isArray(recipe?.ingredients) ? recipe.ingredients : [];
@@ -424,41 +473,15 @@ function flattenIngredientNames(recipe) {
 
 export function dietaryWarnings(recipe) {
   const warnings = [];
-  const names = flattenIngredientNames(recipe);
-  const fullText = names.join(' \n ');
+  const fullText = flattenIngredientNames(recipe).join(' \n ');
 
   for (const rule of DIETARY_KEYWORD_RULES) {
     const claimTrue = recipe?.[rule.field] === true;
     const claimFalse = recipe?.[rule.field] === false;
-    const relevantClaim = rule.negate ? claimFalse : claimTrue;
-    if (!relevantClaim) continue;
+    if (!(rule.negate ? claimFalse : claimTrue)) continue;
 
-    let text = fullText;
-    // Longest exception phrase first: "eggless mayonnaise" must be removed whole, or removing just
-    // "eggless" would leave "mayonnaise" behind to falsely match the mayonnaise keyword.
-    const exceptions = [...(rule.exceptions || [])].sort((a, b) => b.length - a.length);
-    for (const exception of exceptions) {
-      text = text.replace(new RegExp(exception.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '');
-    }
-    if (rule.exceptionsBefore) {
-      const beforeKeywordPairs = [];
-      for (const before of rule.exceptionsBefore) {
-        for (const keyword of rule.keywords) beforeKeywordPairs.push(`${before} ${keyword}`);
-      }
-      beforeKeywordPairs.sort((a, b) => b.length - a.length);
-      for (const pair of beforeKeywordPairs) {
-        const [before, ...rest] = pair.split(' ');
-        const keyword = rest.join(' ');
-        text = text.replace(new RegExp(`${before}\\s+${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'gi'), '');
-      }
-    }
-
-    const evidence = [];
-    for (const keyword of rule.keywords) {
-      const re = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'i');
-      const match = text.match(re);
-      if (match) evidence.push(keyword);
-    }
+    const text = stripExceptions(fullText, rule);
+    const evidence = findKeywordEvidence(text, rule.keywords);
 
     if (evidence.length > 0) {
       warnings.push({
@@ -471,4 +494,28 @@ export function dietaryWarnings(recipe) {
   }
 
   return warnings;
+}
+
+// Appendix E, "Flags for new ingredients": derive all five dietary flags for a single ingredient
+// name from its text alone (no claim to check against — this is for filling in a brand new
+// ingredient row, not warning about a contradiction). Used server-side by the write API (task 6.8)
+// so a freeform name like "chicken stock" never silently defaults to contains_meat: false.
+export function deriveIngredientFlags(name) {
+  const text = String(name ?? '').toLowerCase();
+  const flags = { contains_meat: false, contains_egg: false, contains_dairy: false, contains_nuts: false, contains_gluten: false };
+
+  const meatRule = DIETARY_KEYWORD_RULES.find((r) => r.field === 'is_vegetarian');
+  const eggRule = DIETARY_KEYWORD_RULES.find((r) => r.field === 'is_egg_free');
+  const dairyRule = DIETARY_KEYWORD_RULES.find((r) => r.field === 'contains_dairy');
+
+  if (findKeywordEvidence(stripExceptions(text, meatRule), meatRule.keywords).length > 0) flags.contains_meat = true;
+  if (findKeywordEvidence(stripExceptions(text, eggRule), eggRule.keywords).length > 0) flags.contains_egg = true;
+  if (findKeywordEvidence(stripExceptions(text, dairyRule), dairyRule.keywords).length > 0) flags.contains_dairy = true;
+
+  for (const rule of NUT_GLUTEN_RULES) {
+    const text2 = stripExceptions(text, rule);
+    if (findKeywordEvidence(text2, rule.keywords).length > 0) flags[rule.field] = true;
+  }
+
+  return flags;
 }

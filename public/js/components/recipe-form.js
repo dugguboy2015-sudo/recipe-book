@@ -1,5 +1,6 @@
-import { showSnackbar } from '../lib/dom.js';
+import { showSnackbar, setBusy } from '../lib/dom.js';
 import { wireDialog } from './dialog.js';
+import { createRecipe } from '../lib/api.js';
 
 function parseNumberValue(rawValue) {
   if (rawValue === null || rawValue === undefined || rawValue === '') return null;
@@ -23,25 +24,27 @@ function setFieldError(form, fieldName, message) {
   if (error) error.textContent = message || '';
 }
 
-function buildRecipePayload(form) {
+function buildRecipeAndIngredients(form) {
   const formData = new FormData(form);
   const fields = Object.fromEntries(formData.entries());
 
-  const ingredientItems = String(fields.ingredients || '').trim()
-    .split(/\n+/).map((item) => item.trim()).filter(Boolean).map((item) => ({ name: item }));
+  // Phase 6: name-only ingredient rows (no quantity/unit UI yet — the structured editor is
+  // Phase 7). Each line becomes a B.4 ingredient item with a fresh-ingredient name; the write API
+  // derives dietary flags for it server-side from Appendix E keywords.
+  const ingredientNames = String(fields.ingredients || '').trim()
+    .split(/\n+/).map((item) => item.trim()).filter(Boolean);
   const stepItems = String(fields.steps || '').trim()
     .split(/\n+/).map((item) => item.trim()).filter(Boolean);
   const tags = String(fields.tags || '').trim()
     .split(',').map((item) => item.trim()).filter(Boolean);
 
-  return {
+  const recipe = {
     name: String(fields.name || '').trim(),
     description: String(fields.description || '').trim(),
     cuisine: String(fields.cuisine || '').trim(),
     serves: parseNumberValue(fields.serves),
     total_time_minutes: parseNumberValue(fields.total_time_minutes),
     tags,
-    ingredients: ingredientItems.length ? [{ group: 'Ingredients', items: ingredientItems }] : [],
     steps: stepItems.length ? [{ group: 'Method', steps: stepItems }] : [],
     is_vegetarian: Boolean(fields.is_vegetarian),
     is_egg_free: Boolean(fields.is_egg_free),
@@ -52,78 +55,45 @@ function buildRecipePayload(form) {
     fat_g: parseNumberValue(fields.fat_g),
     fibre_g: parseNumberValue(fields.fibre_g),
   };
+
+  const ingredients = ingredientNames.length
+    ? [{ group: 'Ingredients', items: ingredientNames.map((name) => ({ ingredient: { name }, quantity: null, unit: null })) }]
+    : [];
+
+  return { recipe, ingredients, ingredientLineCount: ingredientNames.length };
 }
 
 function validateRecipeForm(form) {
   const errors = {};
-  const values = buildRecipePayload(form);
+  const { recipe, ingredients, ingredientLineCount } = buildRecipeAndIngredients(form);
 
-  if (!values.name) errors.name = 'Recipe name is required.';
-  if (!values.cuisine) errors.cuisine = 'Cuisine is required.';
-  if (!values.description) errors.description = 'Description is required.';
-  if (!values.serves || values.serves <= 0) errors.serves = 'Serves must be greater than 0.';
-  if (!values.total_time_minutes || values.total_time_minutes <= 0) errors.total_time_minutes = 'Time must be greater than 0 minutes.';
-  if (!values.ingredients.length) errors.ingredients = 'Add at least one ingredient.';
-  if (!values.steps.length) errors.steps = 'Add at least one cooking step.';
-  if (values.calories_kcal !== null && values.calories_kcal < 0) errors.calories_kcal = 'Calories must be 0 or more.';
-  if (values.protein_g !== null && values.protein_g < 0) errors.protein_g = 'Protein must be 0 or more.';
-  if (values.carbs_g !== null && values.carbs_g < 0) errors.carbs_g = 'Carbs must be 0 or more.';
-  if (values.fat_g !== null && values.fat_g < 0) errors.fat_g = 'Fat must be 0 or more.';
-  if (values.fibre_g !== null && values.fibre_g < 0) errors.fibre_g = 'Fibre must be 0 or more.';
+  if (!recipe.name) errors.name = 'Recipe name is required.';
+  if (!recipe.cuisine) errors.cuisine = 'Cuisine is required.';
+  if (!recipe.description) errors.description = 'Description is required.';
+  if (!recipe.serves || recipe.serves <= 0) errors.serves = 'Serves must be greater than 0.';
+  if (!recipe.total_time_minutes || recipe.total_time_minutes <= 0) errors.total_time_minutes = 'Time must be greater than 0 minutes.';
+  if (!ingredientLineCount) errors.ingredients = 'Add at least one ingredient.';
+  if (!recipe.steps.length) errors.steps = 'Add at least one cooking step.';
+  if (recipe.calories_kcal !== null && recipe.calories_kcal < 0) errors.calories_kcal = 'Calories must be 0 or more.';
+  if (recipe.protein_g !== null && recipe.protein_g < 0) errors.protein_g = 'Protein must be 0 or more.';
+  if (recipe.carbs_g !== null && recipe.carbs_g < 0) errors.carbs_g = 'Carbs must be 0 or more.';
+  if (recipe.fat_g !== null && recipe.fat_g < 0) errors.fat_g = 'Fat must be 0 or more.';
+  if (recipe.fibre_g !== null && recipe.fibre_g < 0) errors.fibre_g = 'Fibre must be 0 or more.';
 
-  return { valid: Object.keys(errors).length === 0, errors, values };
-}
-
-function fillRecipeForm(form, recipe) {
-  const ingredientLines = [];
-  if (Array.isArray(recipe.ingredients)) {
-    recipe.ingredients.forEach((group) => {
-      if (Array.isArray(group.items)) {
-        group.items.forEach((item) => ingredientLines.push(item.name || item));
-      }
-    });
-  }
-
-  const stepLines = [];
-  if (Array.isArray(recipe.steps)) {
-    recipe.steps.forEach((group) => {
-      if (Array.isArray(group.steps)) {
-        group.steps.forEach((step) => stepLines.push(step));
-      }
-    });
-  }
-
-  form.elements.name.value = recipe.name || '';
-  form.elements.cuisine.value = recipe.cuisine || '';
-  form.elements.description.value = recipe.description || '';
-  form.elements.serves.value = recipe.serves || '';
-  form.elements.total_time_minutes.value = recipe.total_time_minutes || '';
-  form.elements.tags.value = Array.isArray(recipe.tags) ? recipe.tags.join(', ') : '';
-  form.elements.ingredients.value = ingredientLines.join('\n');
-  form.elements.steps.value = stepLines.join('\n');
-  form.elements.is_vegetarian.checked = Boolean(recipe.is_vegetarian);
-  form.elements.is_egg_free.checked = Boolean(recipe.is_egg_free);
-  form.elements.contains_dairy.checked = Boolean(recipe.contains_dairy);
-  form.elements.calories_kcal.value = recipe.calories_kcal ?? '';
-  form.elements.protein_g.value = recipe.protein_g ?? '';
-  form.elements.carbs_g.value = recipe.carbs_g ?? '';
-  form.elements.fat_g.value = recipe.fat_g ?? '';
-  form.elements.fibre_g.value = recipe.fibre_g ?? '';
+  return { valid: Object.keys(errors).length === 0, errors, recipe, ingredients };
 }
 
 /**
- * Wires the add/edit recipe modal once. Writes still go straight to Supabase with the
- * publishable key here, same as before Phase 4 — Phase 6 replaces this with the write API;
- * until then, saving fails with a permission error (expected, per the Phase 0 lockdown).
+ * Wires the add-recipe modal once. Phase 6: only create goes through the write API; edit is
+ * disabled until the structured ingredient editor ships in Phase 7 (task 6, acceptance).
  */
-export function createRecipeForm({ client, onSaved }) {
-  const state = { mode: 'add', currentRecipeId: null };
-
+export function createRecipeForm({ onSaved }) {
   const modal = document.getElementById('addRecipeModal');
   const form = document.getElementById('addRecipeForm');
   const title = document.getElementById('addRecipeTitle');
   const submitButton = document.getElementById('submitRecipeButton');
   const cancelButton = document.getElementById('cancelAddRecipe');
+  const turnstileContainer = document.getElementById('turnstileContainer');
   const dialogHandle = modal ? wireDialog(modal, { onClose: resetForm }) : null;
 
   function resetForm() {
@@ -131,26 +101,19 @@ export function createRecipeForm({ client, onSaved }) {
       form.reset();
       clearFieldErrors(form);
     }
-    state.mode = 'add';
-    state.currentRecipeId = null;
   }
 
-  function open(mode, recipe) {
+  function openAdd() {
     if (!modal || !form || !title || !submitButton) return;
-    state.mode = mode;
-    state.currentRecipeId = recipe ? Number(recipe.id) : null;
-    title.textContent = mode === 'edit' ? 'Edit recipe' : 'Add a new recipe';
-    submitButton.textContent = mode === 'edit' ? 'Update recipe' : 'Save recipe';
-
+    title.textContent = 'Add a new recipe';
+    submitButton.textContent = 'Save recipe';
     form.reset();
     clearFieldErrors(form);
-    if (mode === 'edit' && recipe) fillRecipeForm(form, recipe);
-
     dialogHandle.open();
   }
 
-  function close() {
-    dialogHandle?.close();
+  function focusField(fieldName) {
+    form.querySelector(`[name="${fieldName}"]`)?.focus();
   }
 
   async function handleSubmit(event) {
@@ -165,29 +128,52 @@ export function createRecipeForm({ client, onSaved }) {
       return;
     }
 
+    setBusy(submitButton, true);
     try {
-      if (state.mode === 'edit' && state.currentRecipeId) {
-        const { error } = await client.from('recipes').update(validation.values).eq('id', state.currentRecipeId).select().single();
-        if (error) throw error;
-        showSnackbar('Recipe updated successfully!', 'success');
-      } else {
-        const { error } = await client.from('recipes').insert([validation.values]).select().single();
-        if (error) throw error;
+      const result = await createRecipe({
+        recipe: validation.recipe,
+        ingredients: validation.ingredients,
+        turnstileContainer,
+        source: 'manual',
+      });
+
+      if (result.ok) {
         showSnackbar('Recipe added successfully!', 'success');
+        dialogHandle.close();
+        await onSaved?.();
+        return;
       }
-      close();
-      await onSaved?.();
-    } catch (error) {
-      console.error(error);
-      showSnackbar(error.message || 'Unable to save recipe. Please try again.', 'error');
+
+      switch (result.code) {
+        case 'validation_failed':
+          Object.entries(result.errors || {}).forEach(([fieldName, message]) => setFieldError(form, fieldName, message));
+          showSnackbar('Please fix the highlighted fields before saving.', 'error');
+          form.querySelector('.input-error')?.focus();
+          break;
+        case 'verification_failed':
+          showSnackbar("We couldn't confirm you're not a bot. Try saving again.", 'error');
+          break;
+        case 'duplicate_recipe':
+          showSnackbar(`You already have ${result.existing?.name || 'a recipe with this name'}.`, 'error');
+          break;
+        case 'rate_limited': {
+          const minutes = Math.max(1, Math.ceil(Number(result.retryAfter || 3600) / 60));
+          showSnackbar(`Too many changes from your network. Try again in ${minutes} minutes.`, 'error');
+          break;
+        }
+        default:
+          showSnackbar(result.message || "Couldn't save. Your changes are still in the form. Try again.", 'error');
+      }
+    } finally {
+      setBusy(submitButton, false);
     }
   }
 
-  cancelButton?.addEventListener('click', close);
+  cancelButton?.addEventListener('click', () => dialogHandle.close());
   form?.addEventListener('submit', handleSubmit);
 
   return {
-    openAdd: () => open('add', null),
-    openEdit: (recipe) => open('edit', recipe),
+    openAdd,
+    focusField,
   };
 }

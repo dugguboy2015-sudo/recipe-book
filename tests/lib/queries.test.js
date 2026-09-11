@@ -18,6 +18,10 @@ function createFakeClient(response) {
       record.calls.push({ method: 'single', args });
       return Promise.resolve(response);
     };
+    builder.maybeSingle = (...args) => {
+      record.calls.push({ method: 'maybeSingle', args });
+      return Promise.resolve(response);
+    };
     builder.then = (resolve) => resolve(response);
     return builder;
   }
