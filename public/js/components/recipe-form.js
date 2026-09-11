@@ -1,4 +1,5 @@
 import { showSnackbar } from '../lib/dom.js';
+import { wireDialog } from './dialog.js';
 
 function parseNumberValue(rawValue) {
   if (rawValue === null || rawValue === undefined || rawValue === '') return null;
@@ -123,6 +124,16 @@ export function createRecipeForm({ client, onSaved }) {
   const title = document.getElementById('addRecipeTitle');
   const submitButton = document.getElementById('submitRecipeButton');
   const cancelButton = document.getElementById('cancelAddRecipe');
+  const dialogHandle = modal ? wireDialog(modal, { onClose: resetForm }) : null;
+
+  function resetForm() {
+    if (form) {
+      form.reset();
+      clearFieldErrors(form);
+    }
+    state.mode = 'add';
+    state.currentRecipeId = null;
+  }
 
   function open(mode, recipe) {
     if (!modal || !form || !title || !submitButton) return;
@@ -135,20 +146,11 @@ export function createRecipeForm({ client, onSaved }) {
     clearFieldErrors(form);
     if (mode === 'edit' && recipe) fillRecipeForm(form, recipe);
 
-    modal.classList.add('visible');
-    modal.setAttribute('aria-hidden', 'false');
+    dialogHandle.open();
   }
 
   function close() {
-    if (!modal) return;
-    if (form) {
-      form.reset();
-      clearFieldErrors(form);
-    }
-    modal.classList.remove('visible');
-    modal.setAttribute('aria-hidden', 'true');
-    state.mode = 'add';
-    state.currentRecipeId = null;
+    dialogHandle?.close();
   }
 
   async function handleSubmit(event) {
@@ -182,9 +184,6 @@ export function createRecipeForm({ client, onSaved }) {
   }
 
   cancelButton?.addEventListener('click', close);
-  modal?.addEventListener('click', (event) => {
-    if (event.target.id === 'addRecipeModal') close();
-  });
   form?.addEventListener('submit', handleSubmit);
 
   return {

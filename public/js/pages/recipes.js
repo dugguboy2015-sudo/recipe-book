@@ -4,6 +4,7 @@ import { fetchRecipesList, fetchCuisineOptions, fetchTagOptions, fetchSearchSugg
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { createRecipeForm } from '../components/recipe-form.js';
+import { wireDialog } from '../components/dialog.js';
 
 const state = {
   recipes: [],
@@ -115,19 +116,15 @@ export async function initRecipesPage() {
   const deleteConfirmModal = document.getElementById('deleteConfirmModal');
   const cancelDeleteRecipe = document.getElementById('cancelDeleteRecipe');
   const confirmDeleteRecipe = document.getElementById('confirmDeleteRecipe');
+  const deleteDialog = deleteConfirmModal ? wireDialog(deleteConfirmModal, { onClose: () => { pendingDeleteRecipeId = null; } }) : null;
 
   function openDeleteConfirm(recipeId) {
     pendingDeleteRecipeId = recipeId;
-    if (!deleteConfirmModal) return;
-    deleteConfirmModal.classList.add('visible');
-    deleteConfirmModal.setAttribute('aria-hidden', 'false');
+    deleteDialog?.open();
   }
 
   function closeDeleteConfirm() {
-    pendingDeleteRecipeId = null;
-    if (!deleteConfirmModal) return;
-    deleteConfirmModal.classList.remove('visible');
-    deleteConfirmModal.setAttribute('aria-hidden', 'true');
+    deleteDialog?.close();
   }
 
   async function confirmSoftDelete() {
@@ -154,9 +151,6 @@ export async function initRecipesPage() {
   addRecipeButton?.addEventListener('click', () => recipeForm.openAdd());
   cancelDeleteRecipe?.addEventListener('click', closeDeleteConfirm);
   confirmDeleteRecipe?.addEventListener('click', confirmSoftDelete);
-  deleteConfirmModal?.addEventListener('click', (event) => {
-    if (event.target.id === 'deleteConfirmModal') closeDeleteConfirm();
-  });
 
   function commitSearch() {
     const nextSearch = searchInput.value.trim();

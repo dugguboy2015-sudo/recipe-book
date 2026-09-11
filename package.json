@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "check": "npm run lint && npm test && npm run check:secrets && node scripts/sync-config.mjs --check",
+    "check": "npm run lint && npm test && npm run check:secrets && node scripts/sync-config.mjs --check && node scripts/lint-css.mjs && node scripts/contrast.mjs",
     "smoke": "node scripts/smoke.mjs",
     "preflight": "node scripts/preflight.mjs",
     "backup": "node scripts/backup.mjs",

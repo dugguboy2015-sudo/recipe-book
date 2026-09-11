@@ -1,0 +1,440 @@
+/* Every component, styled through tokens only (enforced by lint-css.mjs). */
+
+/* ---------- Buttons ---------- */
+.primary-button, .secondary-button, .ghost-button, .danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  border: 0;
+  border-radius: var(--radius-control);
+  padding: var(--sp-2) var(--sp-4);
+  min-height: 44px;
+  font-weight: 600;
+  font-size: var(--fs-3);
+  transition: opacity var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+}
+
+.primary-button { background: var(--brand-ink); color: var(--surface); }
+.primary-button:hover { background: var(--spice); }
+
+.secondary-button, .danger-button { background: var(--danger); color: var(--surface); }
+.secondary-button:hover, .danger-button:hover { background: var(--brand-ink); }
+
+.ghost-button { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.ghost-button:hover { border-color: var(--brand); }
+
+.primary-button.is-busy, .secondary-button.is-busy, .ghost-button.is-busy {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.primary-button.is-busy::after, .secondary-button.is-busy::after, .ghost-button.is-busy::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  color: var(--surface);
+  animation: spin var(--motion-slow) linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* IconButton */
+.icon-button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--brand-ink);
+  font-size: var(--fs-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+}
+
+.icon-button:hover { transform: translateY(-1px); border-color: var(--brand); }
+.icon-button.edit-button:hover { background: var(--protein-bg); }
+.icon-button.delete-button { color: var(--danger); }
+.icon-button.delete-button:hover { background: var(--danger-bg); }
+
+/* ---------- Chip (filter / toggle / removable) ---------- */
+.chip {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-2);
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease);
+}
+
+.chip.active { background: var(--brand-ink); color: var(--surface); border-color: var(--brand-ink); }
+
+.chip.removable .chip-remove { border: 0; background: transparent; color: inherit; font-size: var(--fs-3); line-height: 1; }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+/* ---------- Badge ---------- */
+.badge-list { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.badge.veg { background: var(--ok-bg); color: var(--ok); }
+.badge.egg { background: var(--warn-bg); color: var(--warn); }
+.badge.dairy { background: var(--cuisine-maharashtrian-bg); color: var(--cuisine-maharashtrian-ink); }
+.badge.protein-smart { background: var(--protein-bg); color: var(--protein); }
+.badge.packed-lunch { background: var(--cuisine-fusion-bg); color: var(--cuisine-fusion-ink); }
+.badge.nut-free { background: var(--cuisine-gujarati-bg); color: var(--cuisine-gujarati-ink); }
+
+/* ---------- Cuisine tint helper (used by RecipeCard's accent band) ---------- */
+.cuisine-band {
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-control);
+  font-size: var(--fs-1);
+  font-weight: 700;
+  display: inline-block;
+  /* Fallback for any cuisine without a specific tint below (lower specificity, so the
+     [data-cuisine="X"] rules always win for the 8 named cuisines regardless of source order). */
+  background: var(--cuisine-other-bg);
+  color: var(--cuisine-other-ink);
+}
+.cuisine-band[data-cuisine="South Indian"] { background: var(--cuisine-south-indian-bg); color: var(--cuisine-south-indian-ink); }
+.cuisine-band[data-cuisine="North Indian"] { background: var(--cuisine-north-indian-bg); color: var(--cuisine-north-indian-ink); }
+.cuisine-band[data-cuisine="Maharashtrian"] { background: var(--cuisine-maharashtrian-bg); color: var(--cuisine-maharashtrian-ink); }
+.cuisine-band[data-cuisine="Rajasthani"] { background: var(--cuisine-rajasthani-bg); color: var(--cuisine-rajasthani-ink); }
+.cuisine-band[data-cuisine="Chaat"] { background: var(--cuisine-chaat-bg); color: var(--cuisine-chaat-ink); }
+.cuisine-band[data-cuisine="Indo-Chinese"] { background: var(--cuisine-indo-chinese-bg); color: var(--cuisine-indo-chinese-ink); }
+.cuisine-band[data-cuisine="Gujarati"] { background: var(--cuisine-gujarati-bg); color: var(--cuisine-gujarati-ink); }
+.cuisine-band[data-cuisine="Fusion"] { background: var(--cuisine-fusion-bg); color: var(--cuisine-fusion-ink); }
+
+/* ---------- RecipeCard ---------- */
+.recipe-grid, .card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--sp-4);
+}
+
+.recipe-card {
+  position: relative;
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-2);
+  transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.recipe-card:hover { transform: translateY(-2px); box-shadow: 0 18px 30px var(--shadow-color-raised); }
+
+.recipe-card-header { display: flex; justify-content: space-between; align-items: start; gap: var(--sp-3); }
+.recipe-card-title-wrap { flex: 1; min-width: 0; }
+
+.recipe-card h3 { color: var(--brand-ink); font-size: var(--fs-5); }
+
+.recipe-card-title-button {
+  position: relative;
+  z-index: 1;
+  background: none;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: var(--brand-ink);
+  font-family: 'Fraunces', serif;
+  font-size: var(--fs-5);
+  padding: 0;
+}
+
+/* Stretches the title button over the whole card (UX-1) so the card opens on click or Enter
+   anywhere in it, while the edit/delete icon buttons (z-index 2 below) stay independently clickable. */
+.recipe-card-title-button::after { content: ''; position: absolute; inset: 0; }
+
+.recipe-card-actions { position: relative; z-index: 2; display: flex; align-items: center; gap: var(--sp-2); }
+
+.recipe-meta { display: flex; flex-wrap: wrap; gap: var(--sp-2); color: var(--ink-muted); font-size: var(--fs-2); align-items: center; }
+
+.recipe-card-protein { font-size: var(--fs-1); color: var(--protein); font-weight: 700; }
+
+.tag-list { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.tag {
+  background: var(--ok-bg);
+  border: 1px solid var(--brand);
+  color: var(--brand-ink);
+  border-radius: var(--radius-pill);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-1);
+  font-weight: 600;
+}
+
+.recipe-card-art { width: 56px; height: 56px; flex-shrink: 0; }
+.recipe-card-art .monogram { width: 100%; height: 100%; display: block; border-radius: var(--radius-control); }
+
+/* ---------- SpiceMeter (1-5 chillies) ---------- */
+.spice-meter { display: inline-flex; align-items: center; gap: 2px; color: var(--line); font-size: var(--fs-2); }
+.spice-meter .chilli.lit { color: var(--spice); }
+
+/* ---------- NutritionPanel ---------- */
+.nutrition-panel { width: 100%; border-collapse: collapse; font-size: var(--fs-2); }
+.nutrition-panel caption { text-align: left; color: var(--ink-muted); font-size: var(--fs-1); margin-bottom: var(--sp-2); }
+.nutrition-panel th, .nutrition-panel td { text-align: left; padding: var(--sp-1) var(--sp-2); border-bottom: 1px solid var(--line); }
+.nutrition-panel .ri-bar { display: inline-block; height: 6px; border-radius: var(--radius-pill); background: var(--line); width: 100%; overflow: hidden; }
+.nutrition-panel .ri-bar-fill { display: block; height: 100%; border-radius: var(--radius-pill); }
+.nutrition-panel .ri-bar-fill.green { background: var(--ok); }
+.nutrition-panel .ri-bar-fill.amber { background: var(--warn); }
+.nutrition-panel .ri-bar-fill.red { background: var(--danger); }
+
+/* ---------- ServingsStepper ---------- */
+.servings-stepper { display: inline-flex; align-items: center; gap: var(--sp-2); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: var(--sp-1); }
+.servings-stepper button { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--surface-raised); color: var(--brand-ink); font-size: var(--fs-4); }
+.servings-stepper button:hover { background: var(--protein-bg); }
+.servings-stepper output { min-width: 2ch; text-align: center; font-weight: 700; }
+
+/* ---------- FormField ---------- */
+.field { display: grid; gap: var(--sp-1); color: var(--brand-ink); font-weight: 600; }
+.field span { font-size: var(--fs-2); }
+.field .hint { color: var(--ink-muted); font-weight: 400; font-size: var(--fs-1); }
+
+.field input, .field textarea, .field select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 44px;
+  font: inherit;
+  color: var(--ink);
+}
+
+.field textarea { resize: vertical; min-height: 90px; }
+
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible {
+  border-color: var(--brand);
+}
+
+.field-error { min-height: 1em; color: var(--danger); font-size: var(--fs-1); font-weight: 600; }
+
+.input-error { border-color: var(--danger) !important; background: var(--danger-bg); }
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 44px;
+}
+
+.checkbox-field input { width: auto; min-height: 0; }
+
+/* ---------- YesNoRadio ---------- */
+.yes-no-radio { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-pill); overflow: hidden; }
+.yes-no-radio label { padding: var(--sp-2) var(--sp-4); cursor: pointer; font-weight: 600; }
+.yes-no-radio input { position: absolute; opacity: 0; pointer-events: none; }
+.yes-no-radio input:checked + span { color: var(--surface); }
+.yes-no-radio label:has(input:checked) { background: var(--brand-ink); color: var(--surface); }
+.yes-no-radio label:has(input:focus-visible) { outline: 3px solid var(--focus-ring); outline-offset: -3px; }
+
+/* ---------- IngredientCombobox (ARIA combobox/listbox) ---------- */
+.combobox { position: relative; }
+.combobox input { width: 100%; }
+.combobox-listbox {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--sp-1));
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-2);
+}
+.combobox-option { padding: var(--sp-2) var(--sp-3); cursor: pointer; }
+.combobox-option[aria-selected="true"], .combobox-option:hover { background: var(--protein-bg); }
+
+/* ---------- Dialog (native) ---------- */
+dialog {
+  /* The global reset zeroes margin on every element, which defeats the UA stylesheet's
+     `dialog:modal { margin: auto }` centering — restore it explicitly. */
+  margin: auto;
+  width: min(760px, calc(100vw - 2 * var(--sp-4)));
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-2);
+}
+
+dialog::backdrop { background: var(--overlay); }
+
+dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
+
+.detail-header { margin-bottom: var(--sp-3); }
+.detail-header h3 { color: var(--brand-ink); margin-bottom: var(--sp-2); }
+.detail-meta { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-5); }
+.detail-meta .tag { background: var(--ok-bg); }
+
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); }
+
+.detail-panel { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--sp-4); }
+.detail-panel h4 { color: var(--brand-ink); margin-bottom: var(--sp-2); font-size: var(--fs-4); }
+.detail-panel ul, .detail-panel ol { padding-left: var(--sp-4); display: grid; gap: var(--sp-2); line-height: 1.5; }
+.detail-panel p { line-height: 1.6; color: var(--ink); }
+
+.modal-footer { margin-top: var(--sp-5); text-align: right; }
+
+.delete-confirm-copy { color: var(--ink-muted); line-height: 1.6; margin: var(--sp-3) 0 0; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); margin-top: var(--sp-4); }
+.full-width { grid-column: 1 / -1; }
+.form-actions { display: flex; justify-content: flex-end; gap: var(--sp-3); margin-top: var(--sp-5); }
+
+/* ---------- Toast ---------- */
+.snackbar {
+  position: fixed;
+  left: 50%;
+  bottom: var(--sp-6);
+  transform: translateX(-50%) translateY(16px);
+  background: var(--ink);
+  color: var(--surface);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-slow) var(--motion-ease), transform var(--motion-slow) var(--motion-ease);
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.snackbar.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+.snackbar.error { background: var(--danger); }
+.snackbar.success { background: var(--ok); }
+.snackbar .toast-action { background: none; border: 0; color: inherit; font-weight: 700; text-decoration: underline; }
+
+/* ---------- Tabs ---------- */
+.tabs { display: flex; gap: var(--sp-2); border-bottom: 1px solid var(--line); }
+.tabs [role="tab"] {
+  background: none;
+  border: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font-weight: 600;
+  color: var(--ink-muted);
+  border-bottom: 3px solid transparent;
+  min-height: 44px;
+}
+.tabs [role="tab"][aria-selected="true"] { color: var(--brand-ink); border-bottom-color: var(--brand-ink); }
+
+/* ---------- EmptyState ---------- */
+.empty-state { padding: var(--sp-6) var(--sp-4); text-align: center; color: var(--ink-muted); display: grid; gap: var(--sp-3); justify-items: center; }
+.empty-state .primary-button, .empty-state .ghost-button { margin-top: var(--sp-2); }
+
+/* ---------- Skeleton ---------- */
+.skeleton { background: linear-gradient(90deg, var(--line) 25%, var(--surface-raised) 37%, var(--line) 63%); background-size: 400% 100%; border-radius: var(--radius-control); animation: skeleton-shimmer 1.4s ease infinite; }
+@keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background: var(--line); } }
+
+/* ---------- StatusRegion (aria-live) ---------- */
+.status-region { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- App shell ---------- */
+.site-header { display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-6); }
+
+.site-nav { display: flex; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
+
+.site-nav a {
+  color: var(--brand-ink);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
+
+.site-nav a:hover, .site-nav a[aria-current="page"] { border-color: var(--brand); background: var(--protein-bg); }
+
+header.page-header { text-align: center; margin-bottom: var(--sp-6); }
+
+.eyebrow {
+  display: inline-block;
+  font-size: var(--fs-1);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+  font-weight: 600;
+  padding: var(--sp-1) var(--sp-4);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--sp-4);
+}
+
+h1 em { font-style: italic; color: var(--spice); }
+
+header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(--ink-muted); font-size: var(--fs-4); }
+
+.site-footer { text-align: center; color: var(--ink-muted); font-size: var(--fs-1); padding: var(--sp-6) 0 var(--sp-3); }
+
+.bottom-tab-bar { display: none; }
+
+@media (max-width: 760px) {
+  .site-nav { display: none; }
+  .bottom-tab-bar {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 16px var(--shadow-color);
+    z-index: 40;
+  }
+  .bottom-tab-bar a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--sp-2) var(--sp-1);
+    min-height: 56px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: var(--fs-1);
+    font-weight: 600;
+  }
+  .bottom-tab-bar a[aria-current="page"] { color: var(--brand-ink); }
+  body { padding-bottom: 72px; }
+}

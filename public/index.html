@@ -4,23 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recipe Book</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
 </head>
 <body data-page="dashboard">
+  <a class="skip-link" href="#content">Skip to content</a>
   <div class="wrap">
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="index.html" aria-current="page">Dashboard</a>
-      <a href="recipes.html">Recipes</a>
-      <a href="planner.html">Weekly Planner</a>
-    </nav>
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="index.html" aria-current="page">Dashboard</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="planner.html">Weekly Planner</a>
+        <a href="recipes.html">Ask for a recipe</a>
+      </nav>
+    </header>
 
-    <header>
+    <header class="page-header">
       <span class="eyebrow">Recipe Book</span>
       <h1>Kitchen joy,<br><em>one menu</em> at a time</h1>
       <p>Browse favourite dishes, plan the week, and keep the family mealtimes light and easy.</p>
     </header>
 
-    <main class="page-shell">
+    <main id="content" class="page-shell">
       <section class="card-grid stats-grid" id="statsGrid"></section>
 
       <section>
@@ -46,7 +53,17 @@
         <div class="card-grid recent-grid" id="recentGrid"></div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <p>Recipe Book — a family kitchen companion.</p>
+    </footer>
   </div>
+
+  <nav class="bottom-tab-bar" aria-label="Main navigation">
+    <a href="index.html" aria-current="page">Dashboard</a>
+    <a href="recipes.html">Recipes</a>
+    <a href="planner.html">Planner</a>
+  </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js" integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP" crossorigin="anonymous"></script>
   <script type="module" src="js/main.js"></script>

@@ -1,8 +1,8 @@
 // Every READ query against `recipes`. Each function takes the Supabase client explicitly so
 // tests can inject a fake one that records calls instead of hitting the network.
 
-const RECIPE_LIST_COLUMNS = 'id,name,description,cuisine,tags,serves,total_time_minutes,is_egg_free,is_vegetarian,contains_dairy';
-const DASHBOARD_COLUMNS = 'id,name,cuisine,tags,serves,is_vegetarian,is_egg_free,contains_dairy,created_at';
+const RECIPE_LIST_COLUMNS = 'id,slug,name,description,cuisine,tags,meal_types,serves,total_time_minutes,spice_level,protein_g,is_egg_free,is_vegetarian,contains_dairy,is_protein_smart,contains_nuts';
+const DASHBOARD_COLUMNS = 'id,slug,name,cuisine,tags,meal_types,serves,spice_level,protein_g,is_vegetarian,is_egg_free,contains_dairy,is_protein_smart,contains_nuts,created_at';
 
 function buildSearchFilter(value) {
   const escaped = String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');

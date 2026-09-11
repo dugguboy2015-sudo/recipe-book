@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Book | Style Guide</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/styleguide.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="sg-toolbar">
+      <h1>Design system style guide</h1>
+      <button type="button" class="ghost-button" id="themeToggle">Toggle dark theme</button>
+    </div>
+
+    <p class="sg-intro">Every component in every state, per Appendix L.3. Not linked from the app nav. Hover and focus states are live — try tabbing through and hovering.</p>
+
+    <section class="sg-section">
+      <h2>Colour tokens</h2>
+      <div class="sg-row">
+        <div><span class="sg-label">bg</span><div class="sg-swatch sg-bg-bg"></div></div>
+        <div><span class="sg-label">surface</span><div class="sg-swatch sg-bg-surface"></div></div>
+        <div><span class="sg-label">surface-raised</span><div class="sg-swatch sg-bg-surface-raised"></div></div>
+        <div><span class="sg-label">brand</span><div class="sg-swatch sg-bg-brand"></div></div>
+        <div><span class="sg-label">brand-ink</span><div class="sg-swatch sg-bg-brand-ink">Aa</div></div>
+        <div><span class="sg-label">ok</span><div class="sg-swatch sg-bg-ok">Aa</div></div>
+        <div><span class="sg-label">warn</span><div class="sg-swatch sg-bg-warn">Aa</div></div>
+        <div><span class="sg-label">danger</span><div class="sg-swatch sg-bg-danger">Aa</div></div>
+        <div><span class="sg-label">protein</span><div class="sg-swatch sg-bg-protein">Aa</div></div>
+        <div><span class="sg-label">spice</span><div class="sg-swatch sg-bg-spice">Aa</div></div>
+      </div>
+      <div class="sg-row">
+        <div><span class="sg-label">South Indian</span><div class="sg-swatch sg-bg-cuisine-south-indian">Aa</div></div>
+        <div><span class="sg-label">North Indian</span><div class="sg-swatch sg-bg-cuisine-north-indian">Aa</div></div>
+        <div><span class="sg-label">Maharashtrian</span><div class="sg-swatch sg-bg-cuisine-maharashtrian">Aa</div></div>
+        <div><span class="sg-label">Rajasthani</span><div class="sg-swatch sg-bg-cuisine-rajasthani">Aa</div></div>
+        <div><span class="sg-label">Chaat</span><div class="sg-swatch sg-bg-cuisine-chaat">Aa</div></div>
+        <div><span class="sg-label">Indo-Chinese</span><div class="sg-swatch sg-bg-cuisine-indo-chinese">Aa</div></div>
+        <div><span class="sg-label">Gujarati</span><div class="sg-swatch sg-bg-cuisine-gujarati">Aa</div></div>
+        <div><span class="sg-label">Fusion</span><div class="sg-swatch sg-bg-cuisine-fusion">Aa</div></div>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Type scale</h2>
+      <div class="sg-row sg-col">
+        <span class="sg-fs-8">fs-8 · 48px</span>
+        <span class="sg-fs-7">fs-7 · 36px</span>
+        <span class="sg-fs-6">fs-6 · 28px</span>
+        <span class="sg-fs-5">fs-5 · 22px</span>
+        <span class="sg-fs-4">fs-4 · 18px</span>
+        <span class="sg-fs-3">fs-3 · 16px (body)</span>
+        <span class="sg-fs-2">fs-2 · 14px</span>
+        <span class="sg-fs-1">fs-1 · 12px</span>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Buttons</h2>
+      <div class="sg-row">
+        <div><span class="sg-label">Primary / default / hover / focus</span><button class="primary-button">Save recipe</button></div>
+        <div><span class="sg-label">Primary / disabled</span><button class="primary-button" disabled>Save recipe</button></div>
+        <div><span class="sg-label">Primary / loading</span><button class="primary-button is-busy">Save recipe</button></div>
+        <div><span class="sg-label">Secondary / danger</span><button class="secondary-button">Delete</button></div>
+        <div><span class="sg-label">Ghost</span><button class="ghost-button">Cancel</button></div>
+        <div><span class="sg-label">Ghost / disabled</span><button class="ghost-button" disabled>Cancel</button></div>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>IconButton</h2>
+      <div class="sg-row">
+        <button class="icon-button edit-button" aria-label="Edit">✎</button>
+        <button class="icon-button delete-button" aria-label="Delete">🗑</button>
+        <button class="icon-button" aria-label="Disabled" disabled>✎</button>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Chip</h2>
+      <div class="chip-group">
+        <button type="button" class="chip">Filter chip</button>
+        <button type="button" class="chip active">Active chip</button>
+        <span class="chip removable">Removable <button type="button" class="chip-remove" aria-label="Remove">×</button></span>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Badge</h2>
+      <div class="badge-list">
+        <span class="badge veg">Vegetarian</span>
+        <span class="badge egg">Egg-free</span>
+        <span class="badge dairy">Dairy-free</span>
+        <span class="badge protein-smart">Protein-smart</span>
+        <span class="badge packed-lunch">Packed lunch</span>
+        <span class="badge nut-free">Nut-free</span>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>SpiceMeter</h2>
+      <div class="sg-row">
+        <span class="spice-meter" role="img" aria-label="Spice 1 of 5"><span class="chilli lit">🌶</span><span class="chilli">🌶</span><span class="chilli">🌶</span><span class="chilli">🌶</span><span class="chilli">🌶</span></span>
+        <span class="spice-meter" role="img" aria-label="Spice 4 of 5"><span class="chilli lit">🌶</span><span class="chilli lit">🌶</span><span class="chilli lit">🌶</span><span class="chilli lit">🌶</span><span class="chilli">🌶</span></span>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>RecipeCard</h2>
+      <div class="sg-grid" id="recipeCardDemo"></div>
+    </section>
+
+    <section class="sg-section">
+      <h2>NutritionPanel</h2>
+      <table class="nutrition-panel">
+        <caption>Per serving, % of adult reference intake</caption>
+        <thead><tr><th>Nutrient</th><th>Amount</th><th>% RI</th></tr></thead>
+        <tbody>
+          <tr><td>Calories</td><td>430 kcal</td><td>22%</td></tr>
+          <tr><td>Protein</td><td>18 g</td><td>36%</td></tr>
+          <tr><td>Sugars</td><td>6 g</td><td><span class="ri-bar"><span class="ri-bar-fill green sg-w-7"></span></span></td></tr>
+          <tr><td>Saturates</td><td>9 g</td><td><span class="ri-bar"><span class="ri-bar-fill amber sg-w-45"></span></span></td></tr>
+          <tr><td>Salt</td><td>2.1 g</td><td><span class="ri-bar"><span class="ri-bar-fill red sg-w-35"></span></span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="sg-section">
+      <h2>ServingsStepper</h2>
+      <div class="servings-stepper">
+        <button type="button" id="stepperMinus" aria-label="Fewer servings">−</button>
+        <output id="stepperValue">4</output>
+        <button type="button" id="stepperPlus" aria-label="More servings">+</button>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>FormField</h2>
+      <div class="sg-grid">
+        <label class="field">
+          <span>Recipe name</span>
+          <input type="text" placeholder="e.g. Kanda Poha" />
+        </label>
+        <label class="field">
+          <span>Recipe name</span>
+          <input type="text" class="input-error" value="" />
+          <small class="field-error">Recipe name is required.</small>
+        </label>
+        <label class="field">
+          <span>Servings <span class="hint">(optional)</span></span>
+          <input type="number" disabled placeholder="4" />
+        </label>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>YesNoRadio</h2>
+      <div class="yes-no-radio">
+        <label><input type="radio" name="sgYesNo" checked /><span>Yes</span></label>
+        <label><input type="radio" name="sgYesNo" /><span>No</span></label>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>IngredientCombobox</h2>
+      <div class="combobox">
+        <label class="field"><span>Ingredient</span>
+          <input type="text" role="combobox" aria-expanded="true" aria-controls="sgListbox" value="pan" />
+        </label>
+        <ul class="combobox-listbox" id="sgListbox" role="listbox">
+          <li class="combobox-option" role="option" aria-selected="true">Paneer</li>
+          <li class="combobox-option" role="option">Panko</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Dialog</h2>
+      <button type="button" class="primary-button" id="openSgDialog">Open example dialog</button>
+      <dialog id="sgDialog" class="recipe-detail confirmation-panel" aria-labelledby="sgDialogTitle">
+        <div class="detail-header"><h3 id="sgDialogTitle">Example dialog</h3></div>
+        <p>Native &lt;dialog&gt;: Escape closes it, focus is trapped, and closing restores focus to the button that opened it.</p>
+        <div class="form-actions">
+          <button type="button" class="ghost-button" id="closeSgDialog">Close</button>
+        </div>
+      </dialog>
+    </section>
+
+    <section class="sg-section">
+      <h2>Toast</h2>
+      <div class="sg-row">
+        <button type="button" class="ghost-button" id="showSgToastSuccess">Show success toast</button>
+        <button type="button" class="ghost-button" id="showSgToastError">Show error toast</button>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Tabs</h2>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" id="sgTab1">Ingredients</button>
+        <button type="button" role="tab" aria-selected="false" id="sgTab2">Steps</button>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>EmptyState</h2>
+      <div class="empty-state">
+        <p>Your week is empty.</p>
+        <button type="button" class="primary-button">Auto-fill it</button>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>Skeleton</h2>
+      <div class="sg-row sg-stack">
+        <div class="skeleton sg-h-24 sg-w-60"></div>
+        <div class="skeleton sg-h-16"></div>
+        <div class="skeleton sg-h-16 sg-w-80"></div>
+      </div>
+    </section>
+
+    <section class="sg-section">
+      <h2>StatusRegion</h2>
+      <p class="sg-note">A visually hidden <code>aria-live</code> region for screen-reader announcements (e.g. "12 recipes found"). Not visible by design — see <code>.status-region</code> in components.css.</p>
+      <div class="status-region" aria-live="polite">12 recipes found</div>
+    </section>
+  </div>
+
+  <div id="snackbar" class="snackbar" aria-live="polite"></div>
+
+  <script type="module" src="js/styleguide.js"></script>
+</body>
+</html>
