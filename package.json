@@ -16,6 +16,7 @@
     "smoke": "node scripts/smoke.mjs",
     "preflight": "node scripts/preflight.mjs",
     "backup": "node scripts/backup.mjs",
+    "restore": "node scripts/restore.mjs",
     "migrate": "node scripts/migrate.mjs",
     "sql": "node scripts/sql.mjs",
     "secrets:push": "node scripts/set-secrets.mjs",

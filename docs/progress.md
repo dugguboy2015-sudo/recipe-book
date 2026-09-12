@@ -297,3 +297,77 @@
   6. **Found and fixed in passing:** `.planner-card` (Phase 11's week-header/week-review cards) had no padding defined anywhere — rendered flush against its own border; added `padding: var(--sp-4)` to the shared `.metric-card, .info-card, .planner-card` rule. The planner's Shuffle/Keep/Remove buttons were 32px tall (below the 44px touch-target guideline) — bumped to 40px, a measured improvement given how many sit side-by-side on one compact slot card; the servings-stepper's circular buttons (32px, shared with the recipe modal) were left as-is rather than reflowing two different layouts.
   7. Visual review: screenshots at 375px and 1280px, light and dark, across dashboard/recipes/planner via the browser tool — cohesive, no layout issues, monogram thumbnails and tip banners render correctly at both sizes.
 - Notes for next phase: Phase 13 (documentation, operations, final verification) is next — the last content phase before the optional Phase 14 (still skipped, `ENABLE_SHOPPING_LIST=false`). The standing local-dev `[ai]`-binding limitation (blocking `wrangler pages dev`, `scripts/eval-generate.mjs`, and any real Workers AI/Gemini call) is still unresolved and worth a line in `docs/operations.md`'s troubleshooting section. `task_cf7d7dfc` (backfill `is_protein_smart`) is still open.
+
+---
+
+## Phase 13 — Documentation, operations, final verification — DONE
+
+- Date: 2026-09-12
+- Branch / PR: phase-13-docs / [#27](https://github.com/dugguboy2015-sudo/recipe-book/pull/27)
+- Migrations applied: none
+- Backup: not required (no data-affecting changes)
+- Tasks completed:
+  - 13.1 **`README.md`** fully rewritten from a v1 beginner-project description (referenced files — `styles.css`, `js/app.js`, `js/supabase.js` — that haven't existed since Phase 4) to the actual v2 architecture, local setup, deploy model, migrations, and free-tier limits, plus the 13.8 additions (changing `config/household.json`, what protein-smart means, the nutrition-estimate disclaimer).
+  - 13.2 **`docs/operations.md`** (new): changing limits, rotating all four secrets (including `IP_HASH_SALT`, not previously documented anywhere), `scripts/restore.mjs` (new — see deviation below), un-deleting a recipe, reading the audit log, AI usage reporting, the Workers-AI-exhausted fallback behavior, plus the 13.8 additions (reviewing unreviewed ingredients, re-estimating nutrition, where planner learning lives), and a troubleshooting section for the standing local-dev limitation.
+  - 13.3 **`docs/architecture.md`** (new): the full data model (9 tables, 6 views, 5 functions — enumerated from a live, read-only introspection query, not guessed from migration files), the write and generate pipelines in sequence, a trust-boundary table, and "Adding auth later" (owner column + `auth.uid()` RLS, a `meal_plan_entries` table replacing the browser-only planner, skipping Turnstile for signed-in users), plus the 13.8 additions (ingredient model, `save_recipe`'s transaction in detail, the planner engine, how the shopping list would build on the existing ingredient model).
+  - 13.4 **`CLAUDE.md`** updated for the final state: points at the three docs above instead of "continue from the first phase not marked DONE," and adds two notes future work will need — the no-bundler "importing one export costs the whole file" cost (Phase 12's finding) and the DOM-code-is-tested-live-not-in-Vitest convention this project settled into from Phase 6 onward.
+  - 13.5 **Final verification**, all against live production:
+    - `npm run check` — lint, 290 unit tests, secret scan, CSS lint, contrast: all pass
+    - A.0 RLS audit (3 queries: tables without RLS, views without `security_invoker`, non-SELECT anon/authenticated grants) — all three return zero rows
+    - Read-only production smoke — 7/7
+    - The 0.9 lockdown probes, re-run against production with the publishable key: `PATCH`/`POST`/`DELETE` on `recipes` → 401, `code: "42501"`; `GET ?select=id` → 200 with exactly 30 rows; `GET ?select=id&is_deleted=eq.true` → 200 `[]` — identical to Phase 0's original result, confirming the lockdown has held through all 13 phases
+    - `GET /api/recipes/generate/quota` → 200, `{remainingToday:18, remainingForYou:5, resetsAt:<next UTC midnight>, proteinSmartShare:0}`
+  - 13.6 **This final report**, below.
+  - 13.7 `gh release create v2.0.0 --generate-notes` (after this PR merges — see the commit this entry ships in).
+- Deviations from spec / findings while building this:
+  1. **`scripts/restore.mjs` needed to be built, not just documented** — 13.2 names it as a tool that should exist ("a new `scripts/restore.mjs`"), but it didn't. Built per spec: dry-run by default (reports insert/update/unchanged counts from comparing a backup's `recipes.json` against live `updated_at` values), requires **both** `--apply` and `--yes` to write, upserts via `POST .../recipes` with `Prefer: resolution=merge-duplicates`. Required a small, backward-compatible addition to `scripts/lib/supabase.mjs`'s `rest()` helper (an optional `prefer` override, default unchanged) so the upsert could set a non-default `Prefer` header without touching its other four callers. Verified live: a dry run against a real September 11 backup correctly reported "0 insert, 32 update" (every row's `updated_at` has since changed from Phases 9–12's edits); `--apply` alone (no `--yes`) correctly refused and wrote nothing. Never ran `--apply --yes` for real — doing so against that stale backup would have overwritten five phases of real progress, which is exactly the mistake the two-flag guard exists to prevent.
+  2. **Scope note for `scripts/restore.mjs` and `npm run backup`**: both operate on the `recipes` table's own columns only. Neither backs up nor restores `recipe_ingredients` (the structured ingredient rows) — that table has existed since Phase 3 but was never added to `backup.mjs`, and extending it was out of this phase's stated scope (13.2 names `restore.mjs`, not a `recipe_ingredients` backup). Documented as an explicit scope limitation in `docs/operations.md` rather than silently implying full coverage.
+  3. **Found while writing the "un-deleting a recipe" section: `scripts/sql.mjs` cannot run write queries at all, by design, not by accident.** Its own guard reads "Refusing to run a non-SELECT query without `--read-only`" — worded as if `--read-only` were a bypass flag — but that same flag sets the Supabase Management API's session to an actual read-only transaction, so any non-`SELECT` statement then fails at the database level (confirmed live: `update public.schema_migrations set filename=filename where false` → `25006: cannot execute UPDATE in a read-only transaction`). Re-reading `CLAUDE.md`'s hard constraint #5 confirms this is intentional — `npm run sql -- --read-only` is meant to be read-only-only, full stop; ad-hoc writes against production are supposed to be impossible outside a real migration file. Not changed. `docs/operations.md`'s un-delete section documents the two paths that do work (the restore API endpoint, or a proper `migrations/*.sql` file) and explicitly says not to reach for `npm run sql` for a write.
+  4. **`recipe_generations` and `recipe_audit_log` are both still completely empty in production** (`count(*) = 0`, confirmed live during this phase) — no real AI generation and no real create/edit/delete has ever succeeded against production across all 13 phases, for the same reason every phase from 9 onward recorded: Turnstile correctly blocks every automated-browser attempt (working as designed), and no manual human test was performed either. `recipes` itself is still exactly the Phase 0 baseline — 32 rows, 30 visible, 2 soft-deleted (ids 38/39). This means the write and generate pipelines are thoroughly unit-tested against mocked/scripted responses and verified structurally live (Turnstile genuinely invoked, correct error states, correct non-AI branches), but **no code path that depends on a real model response or a real successful write has ever actually executed in production.** Carried forward from every earlier phase's own recommendation: a manual create, a manual edit, and a manual AI generation from an ordinary (non-automated) browser would close this loop; nothing in the codebase itself is blocking it, only the tooling available to build and verify it autonomously.
+  5. Two findings flagged in earlier phases remain open, unchanged by this phase: `task_a2836fde` (the `time_note` template-junk text on all 30 recipes, and recipe #3's missing first method stage — Phase 9) and `task_cf7d7dfc` (`is_protein_smart` is `false` for all 30 live recipes, so the planner's 60%-repair mechanism — verified correct in Phase 11's unit tests — always hits its shortfall path in practice; re-confirmed this phase via the quota endpoint's live `proteinSmartShare: 0`). Both are data-repair work, not code defects, and both were deliberately left for a separate session rather than fixed inline, per the standing project convention of not scope-creeping a phase to cover unrelated data quality.
+  6. **Appendix H final status** (traceability IDs from the original review; see `improvement_plan.md` for the finding text):
+
+     | ID | Status | Evidence |
+     |---|---|---|
+     | SEC-1 | Fixed | `migrations/000_lockdown.sql`; re-verified this phase (0.9 probes, unchanged since Phase 0) |
+     | SEC-2 | Deferred by owner | Mitigated: Turnstile + per-IP limits + audit log + soft delete/undo (Phase 6); no accounts, by owner decision |
+     | SEC-3 | Fixed | Phase 1: pinned CDN script with SRI, CSP header |
+     | SEC-4 | Deferred (low) | Sequential integer ids unchanged; no user-facing exposure identified |
+     | DATA-1 | Fixed | Dietary booleans `NOT NULL` with no default anywhere (DB/Function/form); `save_recipe`'s dietary cross-check (Phase 3, 7, 9) |
+     | DATA-2 | Fixed | `is_deleted NOT NULL DEFAULT false` (Phase 2) |
+     | DATA-3 | Fixed | `cuisines` lookup + FK, Chaat/British added (Phase 2, 8) |
+     | DATA-4 | Fixed | `similar_recipes()` duplicate pre-check (Phase 2, 6, 9) |
+     | DATA-5 | Fixed | `set_updated_at()` trigger (Phase 2) |
+     | DATA-6 | Fixed | `reconcileTimes` (Phase 2, 9) |
+     | DATA-7 | Fixed | `meal_types` column + Packed Lunch (Phase 2, 7) |
+     | DATA-8 | Fixed | `recipe_dietary_derived`, ingredient-derived flags (Phase 3) |
+     | BUG-1 | Fixed | `recipe_stats` view, 2-request dashboard (Phase 8) |
+     | BUG-2 | Fixed | Bounded queries everywhere except the explicit `planner_candidates` exception (Phase 8) |
+     | BUG-3 | Fixed | Create resets to page 1, edit doesn't (Phase 6) |
+     | BUG-4 | Fixed | Distinct error state vs. empty state (Phase 8) |
+     | BUG-5 | Fixed | (Phase 4) |
+     | BUG-6 | Fixed | Server-side `searchRecipes`, no preload cap (Phase 8, 11) |
+     | BUG-7 | Fixed | `fetchPlannerRecipesByIds` resolves names at render (Phase 11) |
+     | BUG-8 | Fixed | One filter model (Phase 8) |
+     | BUG-9 | Fixed | `.maybeSingle()` (Phase 6) |
+     | BUG-10 | Fixed | Structured `recipe_ingredients` (Phase 3, 6, 7) |
+     | UX-1 | Fixed | Real `<button>`/keyboard-reachable cards (Phase 5) |
+     | UX-2 | Fixed | Native `<dialog>` + focus fixes (Phase 5, 7, 12) |
+     | UX-3 | Fixed | Every writable column has a form field (Phase 7) |
+     | UX-4 | Fixed | Picker dialog replaces `window.alert` (Phase 11) |
+     | UX-5 | Fixed | 480/760/1100 breakpoints, dark theme, `:focus-visible` (Phase 5, 12) |
+     | ENG-1 | Fixed | Pages Functions server layer (Phase 1, 6) |
+     | ENG-2 | Fixed | Split into `pages/`, `components/`, `lib/`, `shared/` (Phase 4) |
+     | ENG-3 | Fixed | ESLint, Vitest, `npm run check`, CI (Phase 1) |
+     | ENG-4 | Fixed | One shared recipe modal (Phase 4) |
+     | R-PROFILE | Fixed | `config/household.json` feeds prompt/validation/planner/UI (Phase 2, 9) |
+     | R-HEALTH | Fixed (mechanism); data gap open | J.1–J.5, `is_protein_smart`, goal logic, 60%-repair all built and unit-tested; live data gap is `task_cf7d7dfc` (see above) |
+     | R-INGREDIENTS | Fixed | `ingredients`/`recipe_ingredients`/`units`/aliases (Phase 3, 6, 7) |
+     | R-SERVINGS | Fixed | Per-serves quantities, scaling, per-planner-entry servings (Phase 3, 7, 11) |
+     | R-ONDEMAND | Fixed | Generate endpoint + ask-from-anywhere (Phase 9, 10); see deviation 4 above for real-model-call caveat |
+     | R-PLANNER | Fixed | Appendix K engine, week review, auto-fill (Phase 11) |
+     | R-UI | Fixed | Design system, style guide, `lint-css` (Phase 5, 12) |
+     | R-SHOPPING | Deferred (owner setting) | `ENABLE_SHOPPING_LIST=false`; data model ready (Phase 3) |
+  7. **AI usage totals** (`recipe_generations`, all-time): 0 calls, 0 neurons spent, 0 saved — see deviation 4.
+- Preview smoke: PASS https://phase-13-docs.recipe-book-9eo.pages.dev (7/7)   Production smoke: PASS https://recipe-book-9eo.pages.dev (7/7)
+- Notes: this is the last content phase. Phase 14 (shopping list) remains skipped per `ENABLE_SHOPPING_LIST=false` — `docs/architecture.md` §6 and `docs/progress.md`'s Phase 3 entries already describe what it would build on. The single highest-value follow-up for a human (not an automated agent) to do next is exactly what deviation 4 above describes: one real manual create, one real manual edit, and one real manual AI generation from an ordinary browser, to finally exercise the code paths that have only ever been verified against mocked responses and structural checks.
