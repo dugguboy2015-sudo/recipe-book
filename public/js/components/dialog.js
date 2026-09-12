@@ -7,6 +7,14 @@ export function wireDialog(dialog, { onClose } = {}) {
   function open() {
     lastFocused = document.activeElement;
     dialog.showModal();
+    // showModal() is supposed to autofocus the dialog's first focusable control, but that isn't
+    // reliable here (observed: focus stays on <body>, one Tab press away from the dialog's own
+    // content) — set it explicitly so a keyboard user lands inside immediately, not one Tab short.
+    if (!dialog.contains(document.activeElement)) {
+      const focusTarget = dialog.querySelector('[autofocus]')
+        || dialog.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      (focusTarget || dialog).focus();
+    }
   }
 
   function close() {
