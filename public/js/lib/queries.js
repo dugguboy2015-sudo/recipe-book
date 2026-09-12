@@ -84,6 +84,37 @@ export async function fetchRecentRecipes(client, limit = 3) {
   return { ok: true, data: data || [], error: null };
 }
 
+const PLANNER_CANDIDATE_COLUMNS = 'id,name,slug,cuisine,meal_types,total_time_minutes,is_protein_smart,spice_level';
+
+/**
+ * planner_candidates (012_derived_flags.sql): the bounded (limit 500 in the view itself) recipe
+ * pool the planner's scoring engine (shared/planner-engine.js, Appendix K) chooses from — one
+ * query per auto-fill/shuffle, not a full-table read.
+ */
+export async function fetchPlannerCandidates(client) {
+  const { data, error } = await client.from('planner_candidates').select(PLANNER_CANDIDATE_COLUMNS);
+  if (error) {
+    console.error(error);
+    return { ok: false, data: [], error };
+  }
+  return { ok: true, data: data || [], error: null };
+}
+
+/**
+ * Resolves planned recipe ids to display data at render time (task 11.2) — an id missing from the
+ * result (deleted since it was planned) renders as "Recipe no longer available" in the UI.
+ */
+export async function fetchPlannerRecipesByIds(client, ids) {
+  const unique = [...new Set((ids || []).filter((id) => id != null))];
+  if (unique.length === 0) return { ok: true, data: [], error: null };
+  const { data, error } = await client.from('planner_candidates').select(PLANNER_CANDIDATE_COLUMNS).in('id', unique);
+  if (error) {
+    console.error(error);
+    return { ok: false, data: [], error };
+  }
+  return { ok: true, data: data || [], error: null };
+}
+
 /** cuisine_counts (007_read_views.sql): every cuisine with its live recipe count, for the filter facet (BUG-2). */
 export async function fetchCuisineCounts(client) {
   const { data, error } = await client.from('cuisine_counts').select('cuisine,sort_order,recipes').order('sort_order', { ascending: true });
