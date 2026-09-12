@@ -10,7 +10,8 @@ import { MEAL_TYPES } from '../shared/recipe-rules.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
-import { loadPlanner, persistPlanner, assignRecipeToDay } from '../lib/planner-store.js';
+import { loadPlanState, persistPlan, addEntry, applyPrefEvent, persistPrefs } from '../lib/planner-store.js';
+import { getHousehold } from '../lib/household.js';
 
 function defaultFilters() {
   return {
@@ -224,10 +225,11 @@ export async function initRecipesPage() {
           showSnackbar(`Add to ${pendingSlot.day}'s ${pendingSlot.slot}?`, 'success', {
             label: 'Add',
             duration: 10000,
-            onClick: () => {
-              const planner = loadPlanner();
-              assignRecipeToDay(planner, pendingSlot.day, pendingSlot.slot, { id: savedAiRecipe.id, name: savedAiRecipe.name });
-              persistPlanner(planner);
+            onClick: async () => {
+              const household = await getHousehold().catch(() => null);
+              const { plan, prefs } = loadPlanState();
+              persistPlan(addEntry(plan, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, household?.default_servings || 4, 'manual'));
+              persistPrefs(applyPrefEvent(prefs, savedAiRecipe.id, 'manual', plan.weekOf));
               showSnackbar(`Added to ${pendingSlot.day}'s ${pendingSlot.slot}.`, 'success');
             },
           });

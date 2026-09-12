@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { searchRecipes, fetchRecipeStats, fetchRecentRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeById } from '../../public/js/lib/queries.js';
+import {
+  searchRecipes, fetchRecipeStats, fetchRecentRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions,
+  fetchRecipeById, fetchPlannerCandidates, fetchPlannerRecipesByIds,
+} from '../../public/js/lib/queries.js';
 
 function createFakeClient(response) {
   const queries = [];
@@ -161,5 +164,35 @@ describe('fetchRecipeById', () => {
     const client = createFakeClient({ data: null, error: { message: 'not found' } });
     const result = await fetchRecipeById(client, 999);
     expect(result).toBeNull();
+  });
+});
+
+describe('fetchPlannerCandidates', () => {
+  it('reads the bounded planner_candidates view with no extra filters', async () => {
+    const client = createFakeClient({ data: [{ id: 1, name: 'Dal' }], error: null });
+    const result = await fetchPlannerCandidates(client);
+    expect(result).toEqual({ ok: true, data: [{ id: 1, name: 'Dal' }], error: null });
+    expect(client.queries[0].table).toBe('planner_candidates');
+  });
+
+  it('returns ok:false on error', async () => {
+    const client = createFakeClient({ data: null, error: { message: 'down' } });
+    const result = await fetchPlannerCandidates(client);
+    expect(result).toEqual({ ok: false, data: [], error: { message: 'down' } });
+  });
+});
+
+describe('fetchPlannerRecipesByIds', () => {
+  it('short-circuits with no query for an empty id list', async () => {
+    const client = createFakeClient({ data: [], error: null });
+    const result = await fetchPlannerRecipesByIds(client, []);
+    expect(result).toEqual({ ok: true, data: [], error: null });
+    expect(client.queries.length).toBe(0);
+  });
+
+  it('dedupes and filters nullish ids before querying in()', async () => {
+    const client = createFakeClient({ data: [{ id: 5 }], error: null });
+    await fetchPlannerRecipesByIds(client, [5, 5, null, undefined]);
+    expect(callsFor(client, 'in')).toEqual([{ method: 'in', args: ['id', [5]] }]);
   });
 });
