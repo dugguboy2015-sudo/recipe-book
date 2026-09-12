@@ -27,13 +27,17 @@ const SLOT_PROMPTS = {
   Dessert: 'a lighter vegetarian dessert',
 };
 
+function pluralize(n, singular, plural) {
+  return n === 1 ? singular : plural;
+}
+
 const NEEDS_PROMPTS = {
-  Breakfast: (n) => `${n} tasty, protein-forward vegetarian breakfasts`,
-  'Packed Lunch': (n) => `${n} protein-rich vegetarian packed lunches, good cold`,
-  Lunch: (n) => `${n} satisfying vegetarian lunches`,
-  Dinner: (n) => `${n} flavourful vegetarian dinners`,
-  Snacks: (n) => `${n} healthy vegetarian snacks`,
-  Dessert: (n) => `${n} lighter vegetarian desserts`,
+  Breakfast: (n) => `${n} tasty, protein-forward vegetarian ${pluralize(n, 'breakfast', 'breakfasts')}`,
+  'Packed Lunch': (n) => `${n} protein-rich vegetarian ${pluralize(n, 'packed lunch', 'packed lunches')}, good cold`,
+  Lunch: (n) => `${n} satisfying vegetarian ${pluralize(n, 'lunch', 'lunches')}`,
+  Dinner: (n) => `${n} flavourful vegetarian ${pluralize(n, 'dinner', 'dinners')}`,
+  Snacks: (n) => `${n} healthy vegetarian ${pluralize(n, 'snack', 'snacks')}`,
+  Dessert: (n) => `${n} lighter vegetarian ${pluralize(n, 'dessert', 'desserts')}`,
 };
 
 const state = {
