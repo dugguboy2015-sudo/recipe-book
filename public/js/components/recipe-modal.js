@@ -11,7 +11,7 @@ import { percentRI, trafficLightClass, nearestWidthClass } from '../shared/nutri
 import { getHousehold } from '../lib/household.js';
 import { openCookMode } from './cook-mode.js';
 import {
-  DAYS, SLOTS, loadPlanState, persistPlan, addEntry, applyPrefEvent, persistPrefs,
+  DAYS, SLOTS, loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf,
 } from '../lib/planner-store.js';
 
 const NUTRITION_ROWS = [
@@ -220,9 +220,10 @@ export function mountRecipeModal() {
     if (!current) return;
     const day = document.getElementById('modalPlannerDay').value;
     const slot = document.getElementById('modalPlannerSlot').value;
-    const { plan, prefs } = loadPlanState();
-    persistPlan(addEntry(plan, day, slot, current.recipe.id, current.targetServings, 'manual'));
-    persistPrefs(applyPrefEvent(prefs, current.recipe.id, 'manual', plan.weekOf));
+    const { store, prefs } = loadPlanState();
+    const weekOf = mondayOf(); // this quick picker is day-of-week only (no week navigation), so it always targets the current week
+    persistStore(addEntryToWeek(store, weekOf, day, slot, current.recipe.id, current.targetServings, 'manual'));
+    persistPrefs(applyPrefEvent(prefs, current.recipe.id, 'manual', weekOf));
     showSnackbar(`Added to ${day} ${slot}.`, 'success');
   });
 

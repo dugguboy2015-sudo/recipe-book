@@ -1,25 +1,42 @@
-// Small pure helpers shared between the planner's week header and the dashboard's "This week"
-// card (Appendix L.4), so both compute "today", "tomorrow" and the protein-smart share the same
-// way instead of drifting apart.
+// Small pure/near-pure helpers shared between the planner's header, its day/week/month views, and
+// the dashboard's "This week" card. Date math here is deliberately cross-week-boundary-safe (e.g.
+// "tomorrow" can belong to a different week than "today") now that the store holds many weeks, not
+// just one — see lib/planner-store.js for the multi-week schema these read from.
 
 import { DAYS, PROTEIN_SMART_SLOTS } from './planner-constants.js';
+import { getWeekDays, mondayOf } from '../lib/planner-store.js';
 
-/** Monday-first weekday index (0=Monday..6=Sunday) for a JS Date. */
-function weekdayIndex(date) {
-  return (date.getDay() + 6) % 7;
+export function parseLocalDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
 }
 
-export function todayName(now = new Date()) {
-  return DAYS[weekdayIndex(now)];
+function isoOfDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export function tomorrowName(now = new Date()) {
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return DAYS[weekdayIndex(tomorrow)];
+export function todayIso(now = new Date()) {
+  return isoOfDate(now);
 }
 
-/** @returns {number|null} the fraction (0-1) of this week's Packed Lunch/Lunch/Dinner entries that are protein-smart, or null if none are resolved yet. */
+export function addDaysIso(iso, n) {
+  const date = parseLocalDate(iso);
+  date.setDate(date.getDate() + n);
+  return isoOfDate(date);
+}
+
+/** Monday-first weekday name (DAYS order) for an ISO date. */
+export function dayNameForIso(iso) {
+  return DAYS[(parseLocalDate(iso).getDay() + 6) % 7];
+}
+
+/** The planned entries for one exact calendar date, resolving whichever week it falls in. */
+export function entriesOnDate(store, iso) {
+  const days = getWeekDays(store, mondayOf(parseLocalDate(iso)));
+  return days[dayNameForIso(iso)] || [];
+}
+
+/** @returns {number|null} the fraction (0-1) of a week's Packed Lunch/Lunch/Dinner entries that are protein-smart, or null if none are resolved yet. */
 export function computeProteinSmartShare(planDays, resolvedById) {
   const flags = [];
   for (const day of DAYS) {
@@ -32,8 +49,4 @@ export function computeProteinSmartShare(planDays, resolvedById) {
   }
   if (flags.length === 0) return null;
   return flags.filter(Boolean).length / flags.length;
-}
-
-export function entriesForDay(planDays, day) {
-  return planDays[day] || [];
 }

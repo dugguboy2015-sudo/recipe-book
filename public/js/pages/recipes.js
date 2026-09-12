@@ -9,7 +9,7 @@ import { MEAL_TYPES } from '../shared/html.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
-import { loadPlanState, persistPlan, addEntry, applyPrefEvent, persistPrefs } from '../lib/planner-store.js';
+import { loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf } from '../lib/planner-store.js';
 import { getHousehold } from '../lib/household.js';
 
 function defaultFilters() {
@@ -232,9 +232,13 @@ export async function initRecipesPage() {
                 duration: 10000,
                 onClick: async () => {
                   const household = await getHousehold().catch(() => null);
-                  const { plan, prefs } = loadPlanState();
-                  persistPlan(addEntry(plan, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, household?.default_servings || 4, 'manual'));
-                  persistPrefs(applyPrefEvent(prefs, savedAiRecipe.id, 'manual', plan.weekOf));
+                  const { store, prefs } = loadPlanState();
+                  // pendingSlot carries the week it was requested for (the planner may have been
+                  // showing a future week when "Suggest something new" was clicked); fall back to
+                  // the current week for older pending-slot entries saved before this existed.
+                  const weekOf = pendingSlot.weekOf || mondayOf();
+                  persistStore(addEntryToWeek(store, weekOf, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, household?.default_servings || 4, 'manual'));
+                  persistPrefs(applyPrefEvent(prefs, savedAiRecipe.id, 'manual', weekOf));
                   showSnackbar(`Added to ${pendingSlot.day}'s ${pendingSlot.slot}.`, 'success');
                 },
               });
