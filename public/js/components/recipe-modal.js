@@ -8,7 +8,9 @@ import { scaleQuantity, displayQuantity, formatQuantity } from '../shared/units.
 import { percentRI, trafficLightClass, nearestWidthClass } from '../shared/nutrition-ri.js';
 import { getHousehold } from '../lib/household.js';
 import { openCookMode } from './cook-mode.js';
-import { DAYS, MEAL_SLOTS, loadPlanner, persistPlanner, assignRecipeToDay } from '../lib/planner-store.js';
+import {
+  DAYS, SLOTS, loadPlanState, persistPlan, addEntry, applyPrefEvent, persistPrefs,
+} from '../lib/planner-store.js';
 
 const NUTRITION_ROWS = [
   ['calories_kcal', 'Calories', 'kcal'],
@@ -181,7 +183,7 @@ function renderNotes(recipe) {
 
 function renderPlannerPickers() {
   document.getElementById('modalPlannerDay').innerHTML = DAYS.map((day) => `<option value="${day}">${day}</option>`).join('');
-  document.getElementById('modalPlannerSlot').innerHTML = MEAL_SLOTS.map((slot) => `<option value="${slot}">${slot}</option>`).join('');
+  document.getElementById('modalPlannerSlot').innerHTML = SLOTS.map((slot) => `<option value="${slot}">${slot}</option>`).join('');
 }
 
 export function mountRecipeModal() {
@@ -217,9 +219,9 @@ export function mountRecipeModal() {
     if (!current) return;
     const day = document.getElementById('modalPlannerDay').value;
     const slot = document.getElementById('modalPlannerSlot').value;
-    const planner = loadPlanner();
-    assignRecipeToDay(planner, day, slot, { id: current.recipe.id, name: current.recipe.name }, current.targetServings);
-    persistPlanner(planner);
+    const { plan, prefs } = loadPlanState();
+    persistPlan(addEntry(plan, day, slot, current.recipe.id, current.targetServings, 'manual'));
+    persistPrefs(applyPrefEvent(prefs, current.recipe.id, 'manual', plan.weekOf));
     showSnackbar(`Added to ${day} ${slot}.`, 'success');
   });
 

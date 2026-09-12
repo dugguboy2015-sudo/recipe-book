@@ -40,7 +40,7 @@ function daysBetween(isoA, isoB) {
 }
 
 function statsFor(prefs, recipeId) {
-  return prefs?.recipes?.[String(recipeId)] || { manual: 0, kept: 0, removed: 0, loved: 0, notAgain: 0, lastPlanned: null };
+  return prefs?.recipes?.[String(recipeId)] || { manual: 0, kept: 0, removed: 0, loved: 0, notAgain: 0, lastPlanned: null, lastNotAgain: null };
 }
 
 function interactionsFor(stats) {
@@ -120,8 +120,12 @@ function isSlotEnabled(autoSlots, slot, day) {
   return false;
 }
 
-function isNotAgain(prefs, recipeId) {
-  return statsFor(prefs, recipeId).notAgain > 0;
+/** K.1: a "Not again" mark excludes a recipe for 8 weeks, not forever. */
+function isNotAgainExcluded(prefs, recipeId, weekOf) {
+  const stats = statsFor(prefs, recipeId);
+  if (stats.notAgain <= 0) return false;
+  if (!stats.lastNotAgain) return true; // no timestamp recorded — be conservative and keep excluding
+  return daysBetween(stats.lastNotAgain, weekOf) < NOT_AGAIN_EXCLUSION_WEEKS * 7;
 }
 
 function usesThisWeek(plan, recipeId) {
@@ -132,10 +136,10 @@ function dinnerCuisineCount(plan, recipesById, cuisine) {
   return DAYS.reduce((count, day) => count + (plan[day] || []).filter((e) => e.slot === 'Dinner' && recipesById[e.recipeId]?.cuisine === cuisine).length, 0);
 }
 
-function eligibleCandidates(recipes, { slot, plan, prefs, recipesById }) {
+function eligibleCandidates(recipes, { slot, plan, prefs, recipesById, weekOf }) {
   return recipes.filter((r) => {
     if (slot === 'Packed Lunch' && !(r.meal_types || []).includes('Packed Lunch')) return false;
-    if (isNotAgain(prefs, r.id)) return false;
+    if (isNotAgainExcluded(prefs, r.id, weekOf)) return false;
     const uses = usesThisWeek(plan, r.id);
     if (slot === 'Breakfast') {
       if (uses >= 2) return false; // Breakfast may repeat once, never more
@@ -189,7 +193,7 @@ export function planWeek({ recipes, plan, prefs, household, weekOf }) {
     if (!isSlotEnabled(prefs?.settings?.autoSlots, slot, day)) continue;
     if ((workingPlan[day] || []).some((e) => e.slot === slot)) continue; // not empty — never touch
 
-    const candidates = eligibleCandidates(recipes, { slot, plan: workingPlan, prefs, recipesById });
+    const candidates = eligibleCandidates(recipes, { slot, plan: workingPlan, prefs, recipesById, weekOf });
     if (candidates.length === 0) {
       shortfallCounts[slot] = (shortfallCounts[slot] || 0) + 1;
       continue;
@@ -241,7 +245,7 @@ function repairForProteinSmartTarget(workingPlan, recipes, recipesById, { prefs,
 
     const otherPlanWithoutWorst = cloneDays(workingPlan);
     otherPlanWithoutWorst[worst.day] = otherPlanWithoutWorst[worst.day].filter((_, i) => i !== worst.index);
-    const replacementCandidates = eligibleCandidates(recipes, { slot: worst.entry.slot, plan: otherPlanWithoutWorst, prefs, recipesById })
+    const replacementCandidates = eligibleCandidates(recipes, { slot: worst.entry.slot, plan: otherPlanWithoutWorst, prefs, recipesById, weekOf })
       .filter((r) => r.is_protein_smart);
 
     if (replacementCandidates.length === 0) {
@@ -262,4 +266,27 @@ function repairForProteinSmartTarget(workingPlan, recipes, recipesById, { prefs,
       source: 'auto', reasons: topReasons(replacement, { prefs, household }),
     });
   }
+}
+
+/**
+ * K.3's Shuffle button: picks the next-best candidate for one existing entry's (day, slot),
+ * excluding the recipe already there. Returns a replacement entry, or null if nothing else fits.
+ */
+export function shuffleEntry({ plan, day, slot, recipeId, servings, recipes, prefs, household, weekOf }) {
+  const recipesById = Object.fromEntries(recipes.map((r) => [r.id, r]));
+  const planWithoutEntry = cloneDays(plan);
+  planWithoutEntry[day] = (planWithoutEntry[day] || []).filter((e) => !(e.slot === slot && e.recipeId === recipeId));
+
+  const candidates = eligibleCandidates(recipes, { slot, plan: planWithoutEntry, prefs, recipesById, weekOf })
+    .filter((r) => r.id !== recipeId);
+  if (candidates.length === 0) return null;
+
+  const plannedRecipesById = Object.fromEntries(
+    DAYS.flatMap((d) => planWithoutEntry[d] || []).map((e) => [e.recipeId, recipesById[e.recipeId]]).filter(([, r]) => r),
+  );
+  const best = candidates
+    .map((r) => ({ recipe: r, score: computeScore({ recipe: r, slot, day, plannedRecipesById, prefs, household, weekOf }) }))
+    .sort((a, b) => b.score - a.score)[0].recipe;
+
+  return { recipeId: best.id, slot, servings, source: 'auto', reasons: topReasons(best, { prefs, household }) };
 }

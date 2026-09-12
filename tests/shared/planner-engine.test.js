@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAYS, computeScore, planWeek } from '../../public/js/shared/planner-engine.js';
+import { DAYS, computeScore, planWeek, shuffleEntry } from '../../public/js/shared/planner-engine.js';
 
 const household = {
   default_servings: 4,
@@ -94,11 +94,20 @@ describe('planWeek', () => {
     expect(result.needs).toContainEqual({ slot: 'Dinner', count: 6 });
   });
 
-  it('excludes a "not again" recipe from auto-fill entirely', () => {
+  it('excludes a "not again" recipe from auto-fill for 8 weeks', () => {
     const prefs = emptyPrefs({ Breakfast: true, 'Packed Lunch': true, Dinner: true, Lunch: 'weekends' });
-    prefs.recipes['5'] = { manual: 0, kept: 0, removed: 0, loved: 0, notAgain: 1, lastPlanned: null };
+    prefs.recipes['5'] = { manual: 0, kept: 0, removed: 0, loved: 0, notAgain: 1, lastPlanned: null, lastNotAgain: '2026-09-07' };
     const result = planWeek({ recipes: MAIN_RECIPES, plan: emptyPlan(), prefs, household, weekOf: WEEK_OF });
     expect(allEntries(result.plan).some((e) => e.recipeId === 5)).toBe(false);
+  });
+
+  it('lets a "not again" recipe back in once 8 weeks have passed', () => {
+    const prefs = emptyPrefs({ Dinner: true });
+    // Only one Dinner-eligible recipe exists (id 5): if the exclusion never expired, Dinner slots
+    // would all be reported as shortfalls instead of filled.
+    prefs.recipes['5'] = { manual: 0, kept: 0, removed: 0, loved: 0, notAgain: 1, lastPlanned: null, lastNotAgain: '2026-06-01' };
+    const result = planWeek({ recipes: [MAIN_RECIPES[4]], plan: emptyPlan(), prefs, household, weekOf: WEEK_OF });
+    expect(allEntries(result.plan).some((e) => e.recipeId === 5)).toBe(true);
   });
 
   it('fills Packed Lunch only on weekdays and only from Packed-Lunch-tagged recipes', () => {
@@ -109,6 +118,32 @@ describe('planWeek', () => {
       const recipe = MAIN_RECIPES.find((r) => r.id === entry.recipeId);
       expect(recipe.meal_types).toContain('Packed Lunch');
     }
+  });
+});
+
+describe('shuffleEntry', () => {
+  it('replaces an entry with the next-best eligible candidate, excluding the current recipe', () => {
+    const plan = emptyPlan();
+    plan.Tuesday = [{ recipeId: 4, slot: 'Dinner', servings: 4, source: 'auto', reasons: [] }];
+    const replacement = shuffleEntry({
+      plan, day: 'Tuesday', slot: 'Dinner', recipeId: 4, servings: 4,
+      recipes: MAIN_RECIPES, prefs: emptyPrefs({}), household, weekOf: WEEK_OF,
+    });
+    expect(replacement).not.toBeNull();
+    expect(replacement.recipeId).not.toBe(4);
+    expect(replacement.source).toBe('auto');
+    expect(MAIN_RECIPES.find((r) => r.id === replacement.recipeId).meal_types).toContain('Dinner');
+  });
+
+  it('returns null when no other candidate is eligible', () => {
+    const onlyOption = { id: 1, name: 'Only Dinner Option', cuisine: 'North Indian', meal_types: ['Dinner'], total_time_minutes: 30, is_protein_smart: true };
+    const plan = emptyPlan();
+    plan.Tuesday = [{ recipeId: 1, slot: 'Dinner', servings: 4, source: 'auto', reasons: [] }];
+    const replacement = shuffleEntry({
+      plan, day: 'Tuesday', slot: 'Dinner', recipeId: 1, servings: 4,
+      recipes: [onlyOption], prefs: emptyPrefs({}), household, weekOf: WEEK_OF,
+    });
+    expect(replacement).toBeNull();
   });
 });
 
