@@ -2,12 +2,13 @@ export function isJwtKey(key) {
   return key.startsWith('eyJ');
 }
 
-export async function rest(env, path, { method = 'GET', body, secret = false } = {}) {
+export async function rest(env, path, { method = 'GET', body, secret = false, prefer } = {}) {
   const key = secret ? env.SUPABASE_SECRET_KEY : env.SUPABASE_PUBLISHABLE_KEY;
   const headers = { apikey: key, 'Content-Type': 'application/json' };
   if (secret && isJwtKey(key)) headers.Authorization = `Bearer ${key}`;
   if (!secret) headers.Authorization = `Bearer ${key}`;
-  if (method !== 'GET' && method !== 'DELETE') headers.Prefer = 'return=representation';
+  if (prefer) headers.Prefer = prefer;
+  else if (method !== 'GET' && method !== 'DELETE') headers.Prefer = 'return=representation';
 
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${path}`, {
     method,

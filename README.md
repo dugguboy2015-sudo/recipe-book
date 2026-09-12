@@ -1,125 +1,146 @@
 # Recipe Book
 
-A simple recipe website where you can browse food ideas, filter recipes, and plan a week of meals.
+A family recipe manager, weekly planner, and AI recipe generator — built as a static site on
+Cloudflare Pages with a Supabase Postgres backend. No build step, no framework, no user accounts.
 
-## What is this app?
-This app helps someone look through recipes and decide what to cook. It has:
+Live at **https://recipe-book-9eo.pages.dev**.
 
-- a dashboard with recipe stats
-- a recipe page to search and filter meals
-- a weekly planner to choose dishes for each day
+## What it does
 
-It is made with:
+- **Browse and search** a recipe collection by cuisine, tag, meal type, and dietary fit
+  (vegetarian, egg-free, dairy-free, protein-smart, nut-free, spice level), with per-serving
+  nutrition estimates and % reference-intake bars.
+- **Ask for a recipe**: describe what you want in plain language and an AI model (Cloudflare
+  Workers AI, with a Gemini fallback) drafts one — ingredients, method, nutrition estimate — for a
+  human to review and save. The AI never writes to the database directly; it only ever returns a
+  draft.
+- **Plan the week**: a browser-only planner that learns from what you keep, remove, and rate.
+  "Auto-fill my week" scores the catalogue against your household's preferences (favourite
+  cuisines, a 60%-protein-smart target, recency, novelty) and fills empty slots; Shuffle and Keep
+  let you steer it. Everything is saved to `localStorage` — there's no server-side planner state —
+  and Export/Import move a plan between devices.
+- Recipes scale to any number of servings (ingredients are structured rows with per-recipe
+  `serves`, not flat text), and every recipe records who it's safe for via three dietary flags that
+  are never defaulted — a missing answer is always treated as "don't know," never "safe."
 
-- HTML = the building blocks
-- CSS = the colors, layout, and design
-- JavaScript = the buttons, search, and logic
-- Supabase = the place where recipe data is stored
+Nutrition figures are computed estimates, not medical advice, and are always labelled as such.
+"Protein-smart" (a generated flag reflecting your `config/household.json` protein goal) is a
+convenience label for meal planning, not a nutritional guarantee.
 
-Think of it like a digital recipe notebook that lives in the browser.
+## Architecture
 
-## What pages are inside?
+```
+Browser (static, native ES modules, no build step)
+  ├── READS  ───────────────────────────────▶ Supabase PostgREST (anon key: SELECT only, is_deleted=false)
+  │                                            views: recipe_stats, cuisine_counts, tag_counts, planner_candidates
+  └── WRITES + AI ──▶ Cloudflare Pages Functions (/api/*)
+                        ├─ origin check → Turnstile verify → rate limit (counts recent rows in Postgres)
+                        ├─ shared validation (public/js/shared/recipe-rules.js)
+                        ├─ save_recipe() RPC with the SECRET key ─▶ recipes, recipe_ingredients, recipe_audit_log
+                        └─ /api/recipes/generate
+                              ├─ similar_recipes() pre-check (no tokens spent on near-duplicates)
+                              ├─ Workers AI (binding "AI", Llama 3.3 70B, JSON schema mode)
+                              ├─ fallback: Gemini Flash (optional, free tier)
+                              ├─ validate + dietary cross-check + time reconcile
+                              └─ log to recipe_generations → return a DRAFT (never writes a recipe)
+```
 
-### 1. Dashboard
-This is the home page. It shows:
-- total recipes
-- most popular cuisine
-- vegetarian recipes
-- egg-free recipes
-- recently added dishes
+See [`docs/architecture.md`](docs/architecture.md) for the full data model, trust boundaries, and
+the two pipelines in detail.
 
-### 2. Recipes page
-This page lets you:
-- search for a recipe
-- pick a cuisine
-- choose tags like "easy" or "family favorite"
-- filter by vegetarian, egg-free, or dairy-free meals
-- open the full recipe details in a popup window
+## Local setup
 
-### 3. Weekly Planner
-This page helps you plan meals for the week. You can:
-- pick a recipe
-- choose a day
-- add it to that day's plan
-- remove it if you change your mind
+You need Node 20+, a Supabase project, and Cloudflare/Turnstile/Google AI Studio accounts — all on
+their free tiers.
 
-The planner is saved in your browser so it stays there when you refresh the page.
+```bash
+git clone <this repo>
+cd recipe-book
+cp .env.local.example .env.local   # fill in the values described inline — never commit this file
+npm install
+npm run dev:vars                    # turns .env.local into .dev.vars for local Functions
+npm run dev                         # wrangler pages dev — serves public/ + functions/api/* at :8788
+```
 
-## How the app works
-The app loads recipe information from Supabase, which is a cloud database service.
+`npm run preflight` checks every credential in `.env.local` actually works before you rely on it.
 
-Here is the idea:
+> **Known limitation:** `npm run dev` cannot currently start on every machine — `wrangler.toml`'s
+> `[ai]` binding tries to establish a remote Workers AI session before serving any route, which
+> needs a broader Workers Scripts token scope than a Pages-only token has. If `npm run dev` hangs
+> or fails immediately, this is why; iterate against a Cloudflare Pages preview URL instead (every
+> PR gets one automatically). See `docs/operations.md`'s troubleshooting section.
 
-- your browser opens the website
-- JavaScript asks Supabase for recipe data
-- Supabase sends the recipe list back
-- the page shows the data in cards and filters
+Run `npm run check` before every commit — it runs lint, the unit test suite, a secrets scan, and
+CSS/contrast lint in one go.
 
-## Project files
+## Deploys
 
-- index.html — dashboard page
-- recipes.html — recipe search and filter page
-- planner.html — weekly meal plan page
-- styles.css — all the styling and colors
-- js/app.js — the main app logic
-- js/supabase.js — connects the app to Supabase
+Cloudflare Pages is git-connected: **pushing to `main` deploys to production**, and every other
+branch/PR gets its own preview URL automatically. There is no separate deploy step or CI/CD
+pipeline to trigger by hand.
 
-## How to run it locally
-You do not need a big setup to try this project.
+## Database migrations
 
-### Option 1: Open the files directly
-1. Download or clone this project to your computer.
-2. Open the project folder.
-3. Double-click index.html in your file explorer.
-4. The app should open in your browser.
+SQL only ever reaches production through `migrations/*.sql`, applied in filename order by
+`npm run migrate` (dry-run with `npm run migrate -- --dry-run`). Migrations are expand/contract:
+a migration never removes or renames something the code currently live on `main` still reads —
+that cleanup happens in a later migration, after the code that stops reading it has already
+deployed. Run `npm run backup` before applying anything to production.
 
-This is the easiest way for beginners.
+## Configuration
 
-### Option 2: Use a local web server (recommended)
-This is a nicer way to run the app, especially if you are editing files.
+[`config/household.json`](config/household.json) is the single source of truth for who the app
+cooks for — diet, favourite cuisines, protein goal, serving defaults. It drives the AI prompt,
+draft validation, form warnings, the planner engine, and dashboard copy. To change it: edit the
+file, run `npm run check` (which verifies `public/config/household.json` is a synced copy — the
+sync happens automatically via `scripts/sync-config.mjs`), then merge; the next deploy picks it up
+with no other steps.
 
-1. Open the project in VS Code.
-2. Install the Live Server extension if you do not already have it.
-3. Right-click index.html.
-4. Click Open with Live Server.
-5. Your browser will open the app.
+## Free-tier limits
 
-### 3. Make sure you have internet access
-The app uses Supabase and the Google Fonts library, so your browser needs internet to load those resources.
+Everything runs on free tiers by design (Cloudflare Pages + Functions + Workers AI + Turnstile,
+Supabase, GitHub Actions, Google AI Studio). The two limits you're likely to actually hit:
 
-## What you need on your computer
-- a browser like Chrome, Edge, or Firefox
-- VS Code (optional, but helpful)
-- Live Server extension (optional but recommended)
+- **AI generations**: `GEN_GLOBAL_DAILY` (default 18) per day site-wide, `GEN_PER_IP_DAILY`
+  (default 5) per visitor per day, both UTC-day windows. Once hit, `/api/recipes/generate` returns
+  429 with a "come back after midnight UTC" message instead of failing silently — the AI dialog
+  shows this to the user directly. Workers AI's own daily neuron allocation is a separate, larger
+  ceiling; if that runs out first, the endpoint automatically falls back to Gemini when
+  `GEMINI_API_KEY` is set.
+- **Writes**: `WRITES_PER_IP_HOURLY` (default 30) per visitor per hour, covering create/edit/delete
+  together.
 
-## Troubleshooting
-If the app does not load:
+Raising any of these is a `wrangler.toml` `[vars]` edit + merge, no redeploy trigger needed beyond
+the push itself — see `docs/operations.md`.
 
-- check that you opened the correct folder
-- make sure the browser has internet access
-- refresh the page
-- open the browser console if you want to see errors
+## Project layout
 
-If you see no recipe data, it may be because the Supabase connection is not working or the project is missing the expected database connection details.
+```
+public/            the static site Cloudflare Pages serves (no build step; native ES modules only)
+  js/               front-end logic — pages/, components/, lib/, shared/ (see CLAUDE.md for the split)
+  css/              tokens.css (design tokens) → base.css → components.css → pages.css
+  styleguide.html   every design-system component in every state, both themes (not in the nav)
+functions/api/      Cloudflare Pages Functions — the only code that ever sees the Supabase secret key
+migrations/         SQL, applied only via scripts/migrate.mjs, in filename order, never edited once applied
+scripts/            tooling — preflight, backup, restore, migrate, sql, check-secrets, smoke, dev:vars
+config/household.json   the household profile (see Configuration, above)
+docs/               architecture.md, operations.md, progress.md (one entry per build phase), parity-checklist.md
+```
 
-## Why this is a good beginner project
-This project teaches:
+## Testing
 
-- how websites are built with HTML, CSS, and JavaScript
-- how to connect a web app to a database
-- how to make filters and search
-- how to build a simple planner for real tasks
+`npm test` runs the Vitest suite (pure logic and mocked Functions/DOM-adjacent code — no real
+network or AI calls in CI). UI behavior that genuinely needs a DOM or a live Turnstile challenge is
+verified by hand against a real Cloudflare Pages preview instead; see `docs/progress.md` for what
+was checked at each phase.
 
-It is a great project for learning how front-end web apps work.
+## Further reading
 
-## Quick start summary
-1. open the project folder
-2. run index.html or use Live Server
-3. browse recipes
-4. search and filter meals
-5. plan meals for the week
-
-## Final idea
-This project is like a digital recipe box. It helps people find meals, learn what foods fit their needs, and plan what to cook during the week.
-
-If you are learning web development, this is a fun project to explore and improve.
+- [`docs/architecture.md`](docs/architecture.md) — data model, trust boundaries, the write and
+  generate pipelines, and how auth could be added later.
+- [`docs/operations.md`](docs/operations.md) — changing limits, rotating secrets, restoring from
+  backup, un-deleting a recipe, reading the audit log, and AI usage reporting.
+- [`docs/progress.md`](docs/progress.md) — the build log: one entry per phase, with acceptance
+  results and deviations from the original spec.
+- [`CLAUDE.md`](CLAUDE.md) — project conventions and hard constraints for anyone (human or agent)
+  extending this codebase.
