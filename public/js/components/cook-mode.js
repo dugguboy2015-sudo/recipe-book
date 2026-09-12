@@ -1,4 +1,4 @@
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml } from '../shared/html.js';
 
 let activeWakeLock = null;
 

@@ -1,4 +1,4 @@
-export { escapeHtml } from '../shared/recipe-rules.js';
+export { escapeHtml } from '../shared/html.js';
 
 export function $(selector, root = document) {
   return root.querySelector(selector);

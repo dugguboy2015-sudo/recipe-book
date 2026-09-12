@@ -16,7 +16,7 @@ import {
 } from '../lib/planner-store.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
-import { MEAL_TYPES } from '../shared/recipe-rules.js';
+import { MEAL_TYPES } from '../shared/html.js';
 
 const SLOT_PROMPTS = {
   Breakfast: 'a tasty, protein-forward vegetarian breakfast',

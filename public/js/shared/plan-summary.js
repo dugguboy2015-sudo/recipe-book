@@ -2,7 +2,7 @@
 // card (Appendix L.4), so both compute "today", "tomorrow" and the protein-smart share the same
 // way instead of drifting apart.
 
-import { DAYS, PROTEIN_SMART_SLOTS } from './planner-engine.js';
+import { DAYS, PROTEIN_SMART_SLOTS } from './planner-constants.js';
 
 /** Monday-first weekday index (0=Monday..6=Sunday) for a JS Date. */
 function weekdayIndex(date) {

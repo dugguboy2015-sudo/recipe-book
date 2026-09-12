@@ -2,7 +2,7 @@
 // target serving count. Pulled out of recipe-modal.js so the dashboard's "Cook" shortcut (task
 // 12.1) can build the same markup without opening the full recipe modal first.
 
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml } from './html.js';
 import { scaleQuantity, displayQuantity, formatQuantity } from './units.js';
 
 function ingredientLineText(item, targetServings, fromServes) {

@@ -1,4 +1,4 @@
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml } from '../shared/html.js';
 import { supabase } from '../lib/supabase-client.js';
 import { fetchRecipeStats, fetchRecentRecipes, fetchPlannerRecipesByIds, fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';

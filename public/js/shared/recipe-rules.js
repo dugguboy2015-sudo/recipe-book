@@ -1,7 +1,12 @@
 // Pure functions, no DOM and no network. Imported by the browser (/js/shared/recipe-rules.js)
 // and by Pages Functions (../../public/js/shared/recipe-rules.js, bundled by wrangler).
 
-export const MEAL_TYPES = ['Breakfast', 'Packed Lunch', 'Lunch', 'Dinner', 'Snacks', 'Dessert'];
+// Re-exported from shared/html.js so existing imports of MEAL_TYPES/escapeHtml from this module
+// keep working, and imported normally too since normalizeRecipeInput below uses MEAL_TYPES
+// directly — see that file for why they moved (only the browser side cares; Functions are
+// bundled/tree-shaken by wrangler regardless).
+import { MEAL_TYPES, escapeHtml } from './html.js';
+export { MEAL_TYPES, escapeHtml };
 
 export const LIMITS = {
   name: [2, 120], description: 600, note: 1000, timeNote: 200,
@@ -28,15 +33,6 @@ const NUTRITION_FIELDS = ['calories_kcal', 'protein_g', 'carbs_g', 'sugars_g', '
 
 export function slugify(name) {
   return String(name ?? '').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/^-+|-+$/g, '');
-}
-
-export function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 const UNICODE_FRACTIONS = { '½': 0.5, '⅓': 1 / 3, '⅔': 2 / 3, '¼': 0.25, '¾': 0.75 };

@@ -1,4 +1,4 @@
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml } from '../shared/html.js';
 import { fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
 import { normalizeRecipe, dietaryBadges, spiceMeter } from './recipe-card.js';
 import { monogramSvg } from './monogram.js';

@@ -3,10 +3,9 @@ import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeBySlug } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
-import { createRecipeForm } from '../components/recipe-form.js';
 import { wireDialog } from '../components/dialog.js';
 import { deleteRecipe, restoreRecipe } from '../lib/api.js';
-import { MEAL_TYPES } from '../shared/recipe-rules.js';
+import { MEAL_TYPES } from '../shared/html.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
@@ -70,7 +69,7 @@ export async function initRecipesPage() {
   if (generatePanelContainer) {
     createGenerateFlow({
       container: generatePanelContainer,
-      onDraftReady: (draft, generationId, warnings, goalInfo) => recipeForm.openDraft(draft, generationId, warnings, goalInfo),
+      onDraftReady: async (draft, generationId, warnings, goalInfo) => (await loadRecipeForm()).openDraft(draft, generationId, warnings, goalInfo),
     });
   }
   document.getElementById('scrollToGeneratePanel')?.addEventListener('click', () => {
@@ -177,16 +176,16 @@ export async function initRecipesPage() {
     recipeGrid.querySelectorAll('.recipe-card').forEach((card) => {
       card.addEventListener('click', (event) => {
         if (event.target.closest('[data-action]')) return;
-        openRecipeModal(supabase, Number(card.dataset.id), { onEdit: (id) => recipeForm.openEdit(id), onDelete: openDeleteConfirm });
+        openRecipeModal(supabase, Number(card.dataset.id), { onEdit: async (id) => (await loadRecipeForm()).openEdit(id), onDelete: openDeleteConfirm });
       });
     });
 
     recipeGrid.querySelectorAll('[data-action]').forEach((button) => {
-      button.addEventListener('click', (event) => {
+      button.addEventListener('click', async (event) => {
         event.stopPropagation();
         const id = Number(button.dataset.id);
         if (button.dataset.action === 'edit') {
-          recipeForm.openEdit(id);
+          (await loadRecipeForm()).openEdit(id);
         } else if (button.dataset.action === 'delete') {
           openDeleteConfirm(id);
         }
@@ -211,32 +210,41 @@ export async function initRecipesPage() {
     renderCards(state.recipes);
   }
 
-  const recipeForm = createRecipeForm({
-    client: supabase,
-    onSaved: async (isEdit, savedAiRecipe) => {
-      // 6.6: only a create resets to page 1 (BUG-3) — an edit stays on the current page.
-      if (!isEdit) state.page = 1;
-      await refreshRecipes();
+  // recipe-form.js (+ ingredient-editor.js/method-editor.js) is ~46KB and only needed once the
+  // user actually opens Add/Edit/a generated draft — not for merely browsing the list, so it's
+  // loaded on first use instead of up front (task 12.7's per-page performance budget).
+  let recipeFormPromise = null;
+  function loadRecipeForm() {
+    if (!recipeFormPromise) {
+      recipeFormPromise = import('../components/recipe-form.js').then((mod) => mod.createRecipeForm({
+        client: supabase,
+        onSaved: async (isEdit, savedAiRecipe) => {
+          // 6.6: only a create resets to page 1 (BUG-3) — an edit stays on the current page.
+          if (!isEdit) state.page = 1;
+          await refreshRecipes();
 
-      // 10.5: a recipe generated for a specific empty planner slot offers to go straight there.
-      if (savedAiRecipe) {
-        const pendingSlot = takePendingPlannerSlot();
-        if (pendingSlot) {
-          showSnackbar(`Add to ${pendingSlot.day}'s ${pendingSlot.slot}?`, 'success', {
-            label: 'Add',
-            duration: 10000,
-            onClick: async () => {
-              const household = await getHousehold().catch(() => null);
-              const { plan, prefs } = loadPlanState();
-              persistPlan(addEntry(plan, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, household?.default_servings || 4, 'manual'));
-              persistPrefs(applyPrefEvent(prefs, savedAiRecipe.id, 'manual', plan.weekOf));
-              showSnackbar(`Added to ${pendingSlot.day}'s ${pendingSlot.slot}.`, 'success');
-            },
-          });
-        }
-      }
-    },
-  });
+          // 10.5: a recipe generated for a specific empty planner slot offers to go straight there.
+          if (savedAiRecipe) {
+            const pendingSlot = takePendingPlannerSlot();
+            if (pendingSlot) {
+              showSnackbar(`Add to ${pendingSlot.day}'s ${pendingSlot.slot}?`, 'success', {
+                label: 'Add',
+                duration: 10000,
+                onClick: async () => {
+                  const household = await getHousehold().catch(() => null);
+                  const { plan, prefs } = loadPlanState();
+                  persistPlan(addEntry(plan, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, household?.default_servings || 4, 'manual'));
+                  persistPrefs(applyPrefEvent(prefs, savedAiRecipe.id, 'manual', plan.weekOf));
+                  showSnackbar(`Added to ${pendingSlot.day}'s ${pendingSlot.slot}.`, 'success');
+                },
+              });
+            }
+          }
+        },
+      }));
+    }
+    return recipeFormPromise;
+  }
 
   const addRecipeButton = document.getElementById('addRecipeButton');
   const deleteConfirmModal = document.getElementById('deleteConfirmModal');
@@ -284,7 +292,7 @@ export async function initRecipesPage() {
     await refreshRecipes();
   }
 
-  addRecipeButton?.addEventListener('click', () => recipeForm.openAdd());
+  addRecipeButton?.addEventListener('click', async () => (await loadRecipeForm()).openAdd());
   cancelDeleteRecipe?.addEventListener('click', closeDeleteConfirm);
   confirmDeleteRecipe?.addEventListener('click', confirmSoftDelete);
 
@@ -352,7 +360,7 @@ export async function initRecipesPage() {
       const requestedServes = Number(initialParams.get('serves'));
       openRecipeModal(supabase, deepLinkRecipe.id, {
         serves: Number.isFinite(requestedServes) && requestedServes > 0 ? requestedServes : undefined,
-        onEdit: (id) => recipeForm.openEdit(id),
+        onEdit: async (id) => (await loadRecipeForm()).openEdit(id),
         onDelete: openDeleteConfirm,
       });
     } else {
@@ -364,7 +372,7 @@ export async function initRecipesPage() {
   if (initialParams.get('review') === '1') {
     const pending = takePendingDraft();
     if (pending) {
-      recipeForm.openDraft(pending.draft, pending.generationId, pending.warnings, pending.goalInfo);
+      (await loadRecipeForm()).openDraft(pending.draft, pending.generationId, pending.warnings, pending.goalInfo);
     }
   }
 }

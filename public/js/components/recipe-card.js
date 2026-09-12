@@ -1,4 +1,4 @@
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml } from '../shared/html.js';
 import { monogramSvg } from './monogram.js';
 
 export function normalizeRecipe(recipe) {
