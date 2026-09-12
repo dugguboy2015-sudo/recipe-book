@@ -223,7 +223,7 @@
 /* ---------- FormField ---------- */
 .field { display: grid; gap: var(--sp-1); color: var(--brand-ink); font-weight: 600; }
 .field span { font-size: var(--fs-2); }
-.field .hint { color: var(--ink-muted); font-weight: 400; font-size: var(--fs-1); }
+.hint { color: var(--ink-muted); font-weight: 400; font-size: var(--fs-1); }
 
 .field input, .field textarea, .field select {
   width: 100%;

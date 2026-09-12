@@ -168,6 +168,7 @@ export function loadPlanState({ defaultServings = 4 } = {}) {
         storageAvailable = wrote;
       } else {
         plan = defaultPlan(today);
+        storageAvailable = safeSet(PLAN_KEY_V2, JSON.stringify(plan)); // proves storage actually works, not just that nothing was found
       }
     }
 
@@ -175,6 +176,11 @@ export function loadPlanState({ defaultServings = 4 } = {}) {
     if (hasWeekRolledOver(plan.weekOf, today)) {
       const endedWeekOf = plan.weekOf;
       const endedEntries = DAYS.flatMap((day) => (plan.days[day] || []).map((e) => ({ ...e, day })));
+      // K.1: an auto-filled entry that survived to week's end counts as "kept" — one still there
+      // hasn't already been removed/replaced (those fire their own 'removed' event immediately).
+      for (const entry of endedEntries) {
+        if (entry.source === 'auto') prefs = applyPrefEvent(prefs, entry.recipeId, 'kept', endedWeekOf);
+      }
       prefs = archiveWeek(prefs, plan);
       persistPrefs(prefs);
       plan = defaultPlan(today);

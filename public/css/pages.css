@@ -151,7 +151,40 @@
 .slot-card { border: 1px dashed var(--line); border-radius: var(--radius-control); padding: var(--sp-2); background: var(--surface); display: grid; gap: var(--sp-2); }
 .slot-empty { font-size: var(--fs-2); color: var(--ink-muted); padding: var(--sp-1) 0; }
 .slot-recipe { font-weight: 700; color: var(--ink); line-height: 1.4; }
+.slot-recipe-link { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--brand-ink); text-align: left; text-decoration: underline; cursor: pointer; }
+.slot-unavailable { font-style: italic; color: var(--ink-muted); }
 .remove-slot { background: var(--danger); color: var(--surface); border: 0; padding: var(--sp-2); border-radius: var(--radius-control); font-size: var(--fs-1); min-height: 32px; }
+.slot-card-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.slot-reasons { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.slot-reasons .chip { font-size: var(--fs-1); padding: 2px var(--sp-2); }
+
+/* ---------- Planner week header (Appendix K.3/K.6) ---------- */
+.week-header-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); align-items: start; }
+.protein-share p { margin-top: var(--sp-2); font-weight: 600; color: var(--ink); }
+.progress-bar { position: relative; display: block; height: 10px; border-radius: var(--radius-pill); background: var(--line); width: 100%; overflow: visible; }
+.progress-bar-fill { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--brand); overflow: hidden; }
+.progress-bar-target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+.target-marker-60 { left: 60%; }
+.tomorrow-packed-lunch, .cuisine-mix { font-size: var(--fs-2); color: var(--ink-muted); }
+.tomorrow-packed-lunch strong, .cuisine-mix strong { color: var(--ink); }
+.cuisine-mix .chip-group { margin-top: var(--sp-2); }
+
+.auto-fill-settings-grid { display: grid; gap: var(--sp-3); }
+.auto-fill-setting-row { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); }
+.auto-fill-setting-row label { font-weight: 600; }
+
+/* ---------- Week review card ---------- */
+.week-review-card { margin-bottom: var(--sp-5); }
+.week-review-list { display: grid; gap: var(--sp-2); margin: var(--sp-3) 0; }
+.week-review-row { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); flex-wrap: wrap; padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.week-review-row-buttons { display: flex; gap: var(--sp-2); }
+
+/* ---------- Planner picker dialog ---------- */
+.picker-list { display: grid; gap: var(--sp-2); margin: var(--sp-4) 0; max-height: 40vh; overflow-y: auto; }
+.picker-row { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); border: 1px solid var(--line); border-radius: var(--radius-control); padding: var(--sp-2) var(--sp-3); }
+.picker-toggle { display: flex; align-items: center; gap: var(--sp-2); font-weight: 600; }
+
+.browse-show-more { display: block; width: 100%; margin-top: var(--sp-3); }
 
 @media (max-width: 760px) {
   .planner-shell { grid-template-columns: 1fr; }
