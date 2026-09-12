@@ -1,4 +1,3 @@
-import { createGenerateFlow } from './generate-flow.js';
 import { wireDialog } from './dialog.js';
 
 const DRAFT_KEY = 'recipeBook.pendingDraft';
@@ -57,9 +56,14 @@ const DIALOG_HTML = `
 
 let dialogHandle = null;
 
-function openAskDialog(options = {}) {
+async function openAskDialog(options = {}) {
+  // Opens immediately for instant feedback; generate-flow.js (~10KB, only needed once this
+  // dialog is actually used) loads on demand instead of costing every page that mounts this
+  // dialog (task 12.7's per-page performance budget).
+  dialogHandle?.open();
   const container = document.getElementById('askRecipeFlowContainer');
   if (container) {
+    const { createGenerateFlow } = await import('./generate-flow.js');
     createGenerateFlow({
       container,
       ...options,
@@ -69,8 +73,8 @@ function openAskDialog(options = {}) {
         window.location.href = 'recipes.html?review=1';
       },
     });
+    document.getElementById('generatePrompt')?.focus();
   }
-  dialogHandle?.open();
 }
 
 /**

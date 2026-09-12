@@ -2,13 +2,14 @@
 // functions over recipes/plan/prefs/household data the caller already has. Storage itself
 // (localStorage read/write) lives in lib/planner-store.js; this module never touches it.
 
-export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-export const WEEKEND_DAYS = ['Saturday', 'Sunday'];
-export const SLOTS = ['Breakfast', 'Packed Lunch', 'Lunch', 'Dinner', 'Snacks', 'Dessert'];
-export const PROTEIN_SMART_SLOTS = ['Packed Lunch', 'Lunch', 'Dinner'];
-export const NOT_AGAIN_EXCLUSION_WEEKS = 8;
-export const HISTORY_WEEKS_KEPT = 12;
+// Re-exported from planner-constants.js so existing imports of DAYS/SLOTS/etc. from this module
+// keep working unchanged — see that file for why the split exists.
+export {
+  DAYS, WEEKDAYS, WEEKEND_DAYS, SLOTS, PROTEIN_SMART_SLOTS, NOT_AGAIN_EXCLUSION_WEEKS, HISTORY_WEEKS_KEPT,
+} from './planner-constants.js';
+import {
+  DAYS, WEEKDAYS, WEEKEND_DAYS, PROTEIN_SMART_SLOTS, NOT_AGAIN_EXCLUSION_WEEKS,
+} from './planner-constants.js';
 
 const REASON_TEXT = {
   highProtein: 'High protein',

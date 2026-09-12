@@ -1,10 +1,12 @@
-import { escapeHtml } from '../shared/recipe-rules.js';
+import { escapeHtml } from '../shared/html.js';
 import { fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
 import { normalizeRecipe, dietaryBadges, spiceMeter } from './recipe-card.js';
 import { monogramSvg } from './monogram.js';
 import { wireDialog } from './dialog.js';
 import { showSnackbar } from '../lib/dom.js';
 import { scaleQuantity, displayQuantity, formatQuantity } from '../shared/units.js';
+import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
+import { mountTip } from './tips.js';
 import { percentRI, trafficLightClass, nearestWidthClass } from '../shared/nutrition-ri.js';
 import { getHousehold } from '../lib/household.js';
 import { openCookMode } from './cook-mode.js';
@@ -45,6 +47,7 @@ const MODAL_HTML = `
       </div>
       <button type="button" class="chip" id="modalFamilyServingsChip"></button>
     </div>
+    <div id="servingsTip"></div>
 
     <div class="time-breakdown" id="modalTimeBreakdown"></div>
 
@@ -129,10 +132,7 @@ function renderIngredients(targetServings) {
 
 function ingredientsAsPlainHtml(targetServings) {
   const { recipe, ingredientGroups } = current;
-  return ingredientGroups.map((group) => `
-    <strong>${escapeHtml(group.group)}</strong>
-    <ul>${group.items.map((item) => `<li>${escapeHtml(ingredientLineText(item, targetServings, recipe.serves || 4))}</li>`).join('')}</ul>
-  `).join('');
+  return formatIngredientsHtml(ingredientGroups, targetServings, recipe.serves || 4);
 }
 
 function renderServings(targetServings) {
@@ -198,6 +198,7 @@ export function mountRecipeModal() {
   dialogHandle = wireDialog(dialog);
   document.getElementById('closeModal')?.addEventListener('click', () => dialogHandle.close());
   renderPlannerPickers();
+  mountTip(document.getElementById('servingsTip'), 'servings');
 
   document.getElementById('modalServingsMinus')?.addEventListener('click', () => {
     if (!current || current.targetServings <= 1) return;

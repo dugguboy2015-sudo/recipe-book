@@ -3,7 +3,7 @@
 // wrappers so the former can be unit tested directly (this project verifies DOM/browser-API code
 // live in the browser instead, per established convention — see docs/progress.md).
 
-import { DAYS, SLOTS, HISTORY_WEEKS_KEPT } from '../shared/planner-engine.js';
+import { DAYS, SLOTS, HISTORY_WEEKS_KEPT } from '../shared/planner-constants.js';
 
 export { DAYS, SLOTS };
 

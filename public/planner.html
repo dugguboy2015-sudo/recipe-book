@@ -21,12 +21,12 @@
       </nav>
     </header>
 
-    <header class="page-header">
-      <span class="eyebrow">Weekly Kitchen Planner</span>
-      <h1>Plan the week,<br><em>without the chaos</em></h1>
-    </header>
-
     <main id="content">
+      <header class="page-header">
+        <span class="eyebrow">Weekly Kitchen Planner</span>
+        <h1>Plan the week,<br><em>without the chaos</em></h1>
+      </header>
+
       <section class="planner-card week-header" id="plannerWeekHeader">
         <div class="week-header-row">
           <div class="protein-share">
@@ -50,6 +50,7 @@
           <input type="file" id="importPlanInput" accept="application/json" hidden />
           <button type="button" class="secondary-button" id="resetWeek">Reset week</button>
         </div>
+        <div id="autoFillTip"></div>
       </section>
 
       <section class="planner-card week-review-card" id="weekReviewCard" hidden>
