@@ -28,6 +28,25 @@
     </header>
 
     <main id="content" class="page-shell">
+      <section class="planner-card this-week-card" id="thisWeekCard">
+        <div class="content-head">
+          <h2 id="dashboardGreeting">This week</h2>
+        </div>
+        <div id="thisWeekBody"></div>
+      </section>
+
+      <section class="planner-card ask-inline-card">
+        <div class="content-head">
+          <h2>Ask for a recipe</h2>
+        </div>
+        <form id="dashAskForm" class="ask-inline-form">
+          <label class="sr-only" for="dashAskInput">Describe the recipe you want</label>
+          <input type="text" id="dashAskInput" placeholder="e.g. a quick protein-rich breakfast" autocomplete="off" />
+          <button type="submit" class="primary-button">Ask</button>
+        </form>
+        <div id="askRecipeTip"></div>
+      </section>
+
       <section class="card-grid stats-grid" id="statsGrid"></section>
 
       <section>

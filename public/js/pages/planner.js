@@ -3,16 +3,19 @@ import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes, fetchPlannerCandidates, fetchPlannerRecipesByIds } from '../lib/queries.js';
 import { normalizeRecipe } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
+import { monogramSvg } from '../components/monogram.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
-import { planWeek, shuffleEntry, WEEKDAYS, PROTEIN_SMART_SLOTS } from '../shared/planner-engine.js';
+import { planWeek, shuffleEntry, WEEKDAYS } from '../shared/planner-engine.js';
+import { computeProteinSmartShare, tomorrowName } from '../shared/plan-summary.js';
 import {
   DAYS, SLOTS, loadPlanState, persistPlan, persistPrefs, addEntry, removeEntry, keepEntry,
   replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
   parseImportedPlanData, resetPlan,
 } from '../lib/planner-store.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
+import { mountTip } from '../components/tips.js';
 import { MEAL_TYPES } from '../shared/recipe-rules.js';
 
 const SLOT_PROMPTS = {
@@ -116,30 +119,19 @@ export async function initPlannerPage() {
   }
 
   function renderWeekHeader() {
-    const smartFlags = [];
-    for (const day of DAYS) {
-      for (const entry of state.plan.days[day] || []) {
-        if (!PROTEIN_SMART_SLOTS.includes(entry.slot)) continue;
-        const recipe = state.resolvedById.get(entry.recipeId);
-        if (!recipe) continue;
-        smartFlags.push(Boolean(recipe.is_protein_smart));
-      }
-    }
-    if (smartFlags.length === 0) {
+    const share = computeProteinSmartShare(state.plan.days, state.resolvedById);
+    if (share === null) {
       proteinShareText.textContent = 'Protein-smart: no meals planned yet';
       proteinShareBar.className = 'progress-bar-fill w-pct-0';
     } else {
-      const pct = Math.round((smartFlags.filter(Boolean).length / smartFlags.length) * 100);
+      const pct = Math.round(share * 100);
       proteinShareText.textContent = `Protein-smart: ${pct}% of this week's meals`;
       proteinShareBar.className = `progress-bar-fill ${nearestWidthClass(pct)}`;
     }
 
     // "Tomorrow" only resolves within this Mon-Sun plan; on a Sunday, tomorrow belongs to next
     // week's (not-yet-created) plan, so it simply shows as not planned yet.
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowDay = DAYS[(tomorrow.getDay() + 6) % 7];
-    const packedEntry = (state.plan.days[tomorrowDay] || []).find((e) => e.slot === 'Packed Lunch');
+    const packedEntry = (state.plan.days[tomorrowName()] || []).find((e) => e.slot === 'Packed Lunch');
     const packedRecipe = packedEntry && state.resolvedById.get(packedEntry.recipeId);
     tomorrowPackedLunch.innerHTML = packedRecipe
       ? `Tomorrow's packed lunch: <strong>${escapeHtml(packedRecipe.name)}</strong>`
@@ -250,7 +242,10 @@ export async function initPlannerPage() {
       : '';
     return `
       <div class="slot-card">
-        <button type="button" class="slot-recipe-link" data-open-recipe="${entry.recipeId}" data-servings="${entry.servings}">${escapeHtml(recipe.name)}</button>
+        <div class="slot-card-header">
+          <div class="slot-card-art" aria-hidden="true">${monogramSvg(recipe)}</div>
+          <button type="button" class="slot-recipe-link" data-open-recipe="${entry.recipeId}" data-servings="${entry.servings}">${escapeHtml(recipe.name)}</button>
+        </div>
         ${reasonsMarkup}
         <div class="servings-stepper">
           <button type="button" data-servings="minus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" aria-label="Fewer servings">−</button>
@@ -529,7 +524,12 @@ export async function initPlannerPage() {
         },
       });
     } else if (result.added.length) {
-      showSnackbar(`Week auto-filled — ${Math.round(result.proteinSmartShare * 100)}% protein-smart.`, 'success');
+      const pct = Math.round(result.proteinSmartShare * 100);
+      // L.4's celebration toast: a gentle nod when the week clears the 60% protein-smart target.
+      showSnackbar(
+        result.proteinSmartShare >= 0.6 ? `🎉 Week auto-filled — ${pct}% protein-smart!` : `Week auto-filled — ${pct}% protein-smart.`,
+        'success',
+      );
     } else {
       showSnackbar('Nothing to fill — every enabled slot already has a plan.', 'success');
     }
@@ -601,5 +601,6 @@ export async function initPlannerPage() {
 
   renderAll();
   renderAutoFillSettings();
+  mountTip(document.getElementById('autoFillTip'), 'autoFill');
   await search('');
 }
