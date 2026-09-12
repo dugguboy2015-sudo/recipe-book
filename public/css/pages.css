@@ -58,7 +58,15 @@
 .filter-disclosure summary { color: var(--brand-ink); cursor: pointer; font-weight: 600; list-style-position: inside; min-height: 44px; display: flex; align-items: center; }
 .filter-disclosure[open] summary { margin-bottom: var(--sp-3); }
 .filter-hint { color: var(--ink-muted); font-size: var(--fs-1); font-weight: 400; margin-left: var(--sp-2); }
-.actions-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: flex-end; }
+.actions-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+
+/* Two visually distinct clusters instead of one undifferentiated line — was previously broken by
+   a <details> settings disclosure sitting inline here, which stretched every sibling button to
+   its expanded height under this container's default align-items:stretch. Settings now lives in
+   its own dialog (see #autoFillSettingsDialog); align-items:center above is a defensive fix for
+   any future addition, not a workaround for that specific bug any more. */
+.actions-cluster { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
+.actions-primary { margin-right: auto; }
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: var(--sp-3); margin-top: var(--sp-5); }
 
@@ -169,6 +177,52 @@
 .slot-card-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .slot-reasons { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
 .slot-reasons .chip { font-size: var(--fs-1); padding: 2px var(--sp-2); }
+
+/* ---------- Planner nav row (Day/Week/Month) ---------- */
+.planner-nav-row { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-4); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+.nav-controls { display: flex; align-items: center; gap: var(--sp-2); }
+.nav-controls .icon-button { width: 36px; height: 36px; font-size: var(--fs-4); }
+.nav-label { font-weight: 700; color: var(--brand-ink); min-width: 14ch; text-align: center; }
+.today-badge { display: inline-block; background: var(--brand-ink); color: var(--surface); font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.04em; border-radius: var(--radius-pill); padding: 2px var(--sp-2); margin-left: var(--sp-2); vertical-align: middle; }
+
+/* ---------- Day view ---------- */
+.day-view-slots { display: grid; gap: var(--sp-3); max-width: 480px; }
+.day-view-slots .meal-slot { min-height: 0; }
+
+/* ---------- Month view (calendar) ---------- */
+.month-calendar { border: 1px solid var(--line); border-radius: var(--radius-card); overflow: hidden; }
+.month-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--surface-raised); }
+.month-grid-header div { padding: var(--sp-2); text-align: center; font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.month-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); }
+.month-cell {
+  aspect-ratio: 1 / 1;
+  min-height: 64px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--motion-ease);
+}
+.month-grid-body .month-cell:nth-child(7n+1) { border-left: 0; }
+.month-cell:hover { background: var(--protein-bg); }
+.month-cell.outside { color: var(--ink-muted); background: var(--surface-raised); }
+.month-cell.today .month-cell-date { background: var(--brand-ink); color: var(--surface); border-radius: 50%; }
+.month-cell-date { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; font-weight: 700; }
+.month-cell-dots { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+.month-cell-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+
+@media (max-width: 480px) {
+  .month-cell { min-height: 44px; padding: var(--sp-1); }
+  .month-cell-dots { display: none; } /* not enough room; the date + today/outside styling is still informative */
+}
 
 /* ---------- Planner week header (Appendix K.3/K.6) ---------- */
 .week-header-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); align-items: start; }

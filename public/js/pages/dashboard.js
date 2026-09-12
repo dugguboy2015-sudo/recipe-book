@@ -9,8 +9,8 @@ import { monogramSvg } from '../components/monogram.js';
 import { openCookMode } from '../components/cook-mode.js';
 import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { getHousehold } from '../lib/household.js';
-import { loadPlanState, DAYS } from '../lib/planner-store.js';
-import { computeProteinSmartShare, todayName, tomorrowName } from '../shared/plan-summary.js';
+import { loadPlanState, DAYS, getWeekDays, mondayOf } from '../lib/planner-store.js';
+import { computeProteinSmartShare, todayIso, addDaysIso, entriesOnDate } from '../shared/plan-summary.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 
 function greeting(now = new Date()) {
@@ -81,7 +81,7 @@ function renderSkeleton() {
   if (thisWeekBody) thisWeekBody.innerHTML = '<div class="skeleton metric-card-skeleton"></div>';
 }
 
-function mealRowHtml(day, entry, recipe) {
+function mealRowHtml(entry, recipe) {
   if (!recipe) return '';
   return `
     <div class="today-meal-row">
@@ -118,9 +118,10 @@ export async function initDashboardPage() {
   async function renderThisWeek() {
     if (!thisWeekBody) return;
     const household = await getHousehold().catch(() => null);
-    const { plan } = loadPlanState({ defaultServings: household?.default_servings || 4 });
+    const { store } = loadPlanState({ defaultServings: household?.default_servings || 4 });
+    const thisWeekDays = getWeekDays(store, mondayOf());
 
-    if (isWeekEmpty(plan.days)) {
+    if (isWeekEmpty(thisWeekDays)) {
       thisWeekBody.innerHTML = `
         <div class="empty-state">
           <p>Your week is empty.</p>
@@ -130,23 +131,25 @@ export async function initDashboardPage() {
       return;
     }
 
-    const plannedIds = [...new Set(DAYS.flatMap((day) => (plan.days[day] || []).map((e) => e.recipeId)))];
+    const plannedIds = [...new Set(DAYS.flatMap((day) => (thisWeekDays[day] || []).map((e) => e.recipeId)))];
     const resolved = await fetchPlannerRecipesByIds(supabase, plannedIds);
     const resolvedById = new Map(resolved.data.map((row) => [row.id, row]));
 
-    const share = computeProteinSmartShare(plan.days, resolvedById);
+    const share = computeProteinSmartShare(thisWeekDays, resolvedById);
     const shareText = share === null ? 'Protein-smart: no meals resolved yet' : `Protein-smart: ${Math.round(share * 100)}% of this week's meals`;
     const shareClass = share === null ? 'w-pct-0' : nearestWidthClass(Math.round(share * 100));
 
-    const packedEntry = (plan.days[tomorrowName()] || []).find((e) => e.slot === 'Packed Lunch');
+    // Resolved by exact date (not just "this week's Tuesday"), so it's correct even right at a
+    // week boundary — e.g. tomorrow from a Sunday belongs to next week, not this one.
+    const packedEntry = entriesOnDate(store, addDaysIso(todayIso(), 1)).find((e) => e.slot === 'Packed Lunch');
     const packedRecipe = packedEntry && resolvedById.get(packedEntry.recipeId);
     const tomorrowHtml = packedRecipe
       ? `Tomorrow's packed lunch: <strong>${escapeHtml(packedRecipe.name)}</strong>`
       : "Tomorrow's packed lunch: <strong>not planned yet</strong>";
 
-    const todayEntries = (plan.days[todayName()] || []).filter((e) => resolvedById.has(e.recipeId));
+    const todayEntries = entriesOnDate(store, todayIso()).filter((e) => resolvedById.has(e.recipeId));
     const todayHtml = todayEntries.length
-      ? todayEntries.map((entry) => mealRowHtml(todayName(), entry, resolvedById.get(entry.recipeId))).join('')
+      ? todayEntries.map((entry) => mealRowHtml(entry, resolvedById.get(entry.recipeId))).join('')
       : '<p class="hint">Nothing planned for today.</p>';
 
     thisWeekBody.innerHTML = `

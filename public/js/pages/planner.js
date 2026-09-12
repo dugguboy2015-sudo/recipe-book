@@ -8,15 +8,54 @@ import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 import { planWeek, shuffleEntry, WEEKDAYS } from '../shared/planner-engine.js';
-import { computeProteinSmartShare, tomorrowName } from '../shared/plan-summary.js';
 import {
-  DAYS, SLOTS, loadPlanState, persistPlan, persistPrefs, addEntry, removeEntry, keepEntry,
+  DAYS, SLOTS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
   replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
-  parseImportedPlanData, resetPlan,
+  parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf,
 } from '../lib/planner-store.js';
+import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare } from '../shared/plan-summary.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
 import { MEAL_TYPES } from '../shared/html.js';
+
+const VIEW_MODE_KEY = 'recipeBook.plannerViewMode';
+const VIEW_MODES = ['day', 'week', 'month'];
+
+function loadViewMode() {
+  try {
+    const value = localStorage.getItem(VIEW_MODE_KEY);
+    return VIEW_MODES.includes(value) ? value : 'week';
+  } catch {
+    return 'week';
+  }
+}
+function persistViewMode(mode) {
+  try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch { /* best-effort */ }
+}
+
+function isoOfDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/** Every date shown in a month's calendar grid (leading/trailing days from adjacent months included, to fill complete Mon-Sun rows). */
+function monthGridDates(anchorIso) {
+  const anchor = parseLocalDate(anchorIso);
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth();
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Monday = 0 .. Sunday = 6
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+  const rows = Math.ceil((firstWeekday + totalDaysInMonth) / 7);
+  const gridStart = new Date(year, month, 1 - firstWeekday);
+  return Array.from({ length: rows * 7 }, (_, i) => {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+    return d;
+  });
+}
+
+function pluralize(n, singular, plural) {
+  return n === 1 ? singular : plural;
+}
 
 const SLOT_PROMPTS = {
   Breakfast: 'a tasty, protein-forward vegetarian breakfast',
@@ -26,10 +65,6 @@ const SLOT_PROMPTS = {
   Snacks: 'a healthy vegetarian snack',
   Dessert: 'a lighter vegetarian dessert',
 };
-
-function pluralize(n, singular, plural) {
-  return n === 1 ? singular : plural;
-}
 
 const NEEDS_PROMPTS = {
   Breakfast: (n) => `${n} tasty, protein-forward vegetarian ${pluralize(n, 'breakfast', 'breakfasts')}`,
@@ -46,32 +81,72 @@ const state = {
   browseTerm: '',
   browsePage: 1,
   browseTotalCount: 0,
-  plan: null,
+  store: null,
   prefs: null,
   weekReview: null,
   storageAvailable: true,
   candidates: [], // the bounded planner_candidates pool, for planWeek/shuffleEntry
-  resolvedById: new Map(), // planned-recipe display data, resolved by id (task 11.2)
+  resolvedById: new Map(), // planned-recipe display data, resolved by id
   household: null,
-  pickerContext: null, // { day, slot } while the add-recipe picker dialog is open
+  pickerContext: null, // { weekOf, day, slot } while the add-recipe picker dialog is open
+  viewMode: 'week', // 'day' | 'week' | 'month'
+  selectedDate: todayIso(), // the navigation anchor (an exact ISO date, not just a weekday name)
 };
 
-function findEntry(day, slot, recipeId) {
-  return (state.plan.days[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
+function selectedWeekOf() {
+  return mondayOf(parseLocalDate(state.selectedDate));
 }
 
-async function ensureResolvedForCurrentPlan() {
-  const ids = new Set();
-  for (const day of DAYS) for (const entry of state.plan.days[day] || []) ids.add(entry.recipeId);
-  if (state.weekReview) for (const entry of state.weekReview.entries) ids.add(entry.recipeId);
-  const missing = [...ids].filter((id) => !state.resolvedById.has(id));
+function isoOfDayInWeek(weekOf, dayName) {
+  return addDaysIso(weekOf, DAYS.indexOf(dayName));
+}
+
+function mutateWeek(weekOf, days) {
+  state.store = setWeekDays(state.store, weekOf, days);
+  persistStore(state.store);
+}
+
+function idsForWeek(weekOf) {
+  const days = getWeekDays(state.store, weekOf);
+  return DAYS.flatMap((day) => (days[day] || []).map((e) => e.recipeId));
+}
+
+async function ensureResolvedIds(ids) {
+  const missing = [...new Set(ids)].filter((id) => id != null && !state.resolvedById.has(id));
   if (missing.length === 0) return;
   const result = await fetchPlannerRecipesByIds(supabase, missing);
   for (const row of result.data) state.resolvedById.set(row.id, row);
 }
 
+async function ensureResolvedForView() {
+  let ids;
+  if (state.viewMode === 'month') {
+    const weeksNeeded = new Set(monthGridDates(state.selectedDate).map((d) => mondayOf(d)));
+    ids = [...weeksNeeded].flatMap((weekOf) => idsForWeek(weekOf));
+  } else {
+    ids = idsForWeek(selectedWeekOf());
+  }
+  if (state.weekReview) ids = [...ids, ...state.weekReview.entries.map((e) => e.recipeId)];
+  await ensureResolvedIds(ids);
+}
+
 export async function initPlannerPage() {
+  const plannerHeading = document.getElementById('plannerHeading');
+  const navPrev = document.getElementById('navPrev');
+  const navNext = document.getElementById('navNext');
+  const navToday = document.getElementById('navToday');
+  const navLabel = document.getElementById('navLabel');
+  const dayTab = document.getElementById('dayTab');
+  const weekTab = document.getElementById('weekTab');
+  const monthTab = document.getElementById('monthTab');
+
+  const weekView = document.getElementById('weekView');
+  const dayView = document.getElementById('dayView');
+  const monthView = document.getElementById('monthView');
   const plannerGrid = document.getElementById('plannerGrid');
+  const dayViewSlots = document.getElementById('dayViewSlots');
+  const monthCalendar = document.getElementById('monthCalendar');
+
   const plannerList = document.getElementById('plannerList');
   const plannerSearch = document.getElementById('plannerSearch');
   const selectedRecipeSummary = document.getElementById('selectedRecipeSummary');
@@ -83,6 +158,7 @@ export async function initPlannerPage() {
   const cuisineMix = document.getElementById('cuisineMix');
   const autoFillSettingsGrid = document.getElementById('autoFillSettingsGrid');
   const autoFillWeek = document.getElementById('autoFillWeek');
+  const autoFillSettingsButton = document.getElementById('autoFillSettingsButton');
   const plannerStorageWarning = document.getElementById('plannerStorageWarning');
 
   const weekReviewCard = document.getElementById('weekReviewCard');
@@ -93,19 +169,22 @@ export async function initPlannerPage() {
   const importPlanButton = document.getElementById('importPlanButton');
   const importPlanInput = document.getElementById('importPlanInput');
   const resetWeekButton = document.getElementById('resetWeek');
+  const resetWeekConfirmCopy = document.getElementById('resetWeekConfirmCopy');
 
-  if (!plannerGrid || !plannerList || !plannerSearch || !selectedRecipeSummary) return;
+  if (!plannerGrid || !plannerList || !plannerSearch || !selectedRecipeSummary || !dayViewSlots || !monthCalendar) return;
 
   mountRecipeModal();
   const askDialog = mountAskDialog();
   const pickerDialog = wireDialog(document.getElementById('plannerPickerDialog'));
   const resetDialog = wireDialog(document.getElementById('resetWeekConfirm'));
   const importDialog = wireDialog(document.getElementById('importPlanConfirm'));
+  const autoFillSettingsDialog = wireDialog(document.getElementById('autoFillSettingsDialog'));
   let pendingImport = null;
 
+  state.viewMode = loadViewMode();
   state.household = await getHousehold().catch(() => null);
   const loaded = loadPlanState({ defaultServings: state.household?.default_servings || 4 });
-  state.plan = loaded.plan;
+  state.store = loaded.store;
   state.prefs = loaded.prefs;
   state.weekReview = loaded.weekReview;
   state.storageAvailable = loaded.storageAvailable;
@@ -114,16 +193,50 @@ export async function initPlannerPage() {
   const candidatesResult = await fetchPlannerCandidates(supabase);
   state.candidates = candidatesResult.data;
   for (const row of state.candidates) state.resolvedById.set(row.id, row);
-  await ensureResolvedForCurrentPlan();
 
-  function renderAll() {
-    renderWeekHeader();
-    renderWeekReview();
-    renderPlannerBoard();
+  function formatHeading() {
+    if (state.viewMode === 'day') {
+      const label = state.selectedDate === todayIso() ? 'Today' : parseLocalDate(state.selectedDate).toLocaleDateString(undefined, { weekday: 'long' });
+      return `${label}'s meals`;
+    }
+    if (state.viewMode === 'week') {
+      return selectedWeekOf() === mondayOf() ? "This week's meals" : "That week's meals";
+    }
+    return parseLocalDate(state.selectedDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   }
 
-  function renderWeekHeader() {
-    const share = computeProteinSmartShare(state.plan.days, state.resolvedById);
+  function formatNavLabel() {
+    if (state.viewMode === 'day') {
+      return parseLocalDate(state.selectedDate).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+    }
+    if (state.viewMode === 'week') {
+      const start = parseLocalDate(selectedWeekOf());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      return `Week of ${start.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`;
+    }
+    return parseLocalDate(state.selectedDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  }
+
+  function updateTabsUI() {
+    [[dayTab, 'day'], [weekTab, 'week'], [monthTab, 'month']].forEach(([tab, mode]) => {
+      tab?.setAttribute('aria-selected', String(mode === state.viewMode));
+    });
+  }
+
+  function toggleViewContainers() {
+    weekView.hidden = state.viewMode !== 'week';
+    dayView.hidden = state.viewMode !== 'day';
+    monthView.hidden = state.viewMode !== 'month';
+    // Month is navigate-and-glance only — editing (auto-fill included) always happens in Day/Week.
+    autoFillWeek.hidden = state.viewMode === 'month';
+    autoFillSettingsButton.hidden = state.viewMode === 'month';
+  }
+
+  function renderHeaderStats() {
+    const weekOf = selectedWeekOf();
+    const days = getWeekDays(state.store, weekOf);
+    const share = computeProteinSmartShare(days, state.resolvedById);
     if (share === null) {
       proteinShareText.textContent = 'Protein-smart: no meals planned yet';
       proteinShareBar.className = 'progress-bar-fill w-pct-0';
@@ -133,9 +246,10 @@ export async function initPlannerPage() {
       proteinShareBar.className = `progress-bar-fill ${nearestWidthClass(pct)}`;
     }
 
-    // "Tomorrow" only resolves within this Mon-Sun plan; on a Sunday, tomorrow belongs to next
-    // week's (not-yet-created) plan, so it simply shows as not planned yet.
-    const packedEntry = (state.plan.days[tomorrowName()] || []).find((e) => e.slot === 'Packed Lunch');
+    // Always real tomorrow (not "the day after whatever's selected") — correctly resolves across
+    // a week boundary now that any week is independently addressable.
+    const tomorrowIso = addDaysIso(todayIso(), 1);
+    const packedEntry = entriesOnDate(state.store, tomorrowIso).find((e) => e.slot === 'Packed Lunch');
     const packedRecipe = packedEntry && state.resolvedById.get(packedEntry.recipeId);
     tomorrowPackedLunch.innerHTML = packedRecipe
       ? `Tomorrow's packed lunch: <strong>${escapeHtml(packedRecipe.name)}</strong>`
@@ -143,7 +257,7 @@ export async function initPlannerPage() {
 
     const cuisineCounts = new Map();
     for (const day of DAYS) {
-      for (const entry of state.plan.days[day] || []) {
+      for (const entry of days[day] || []) {
         const recipe = state.resolvedById.get(entry.recipeId);
         if (!recipe?.cuisine) continue;
         cuisineCounts.set(recipe.cuisine, (cuisineCounts.get(recipe.cuisine) || 0) + 1);
@@ -214,8 +328,8 @@ export async function initPlannerPage() {
         const entry = state.weekReview.entries[index];
         if (!entry) return;
         const action = button.dataset.reviewAction;
-        if (action === 'loved') state.prefs = applyPrefEvent(state.prefs, entry.recipeId, 'loved', state.plan.weekOf);
-        else if (action === 'notAgain') state.prefs = applyPrefEvent(state.prefs, entry.recipeId, 'notAgain', state.plan.weekOf);
+        if (action === 'loved') state.prefs = applyPrefEvent(state.prefs, entry.recipeId, 'loved', state.weekReview.weekOf);
+        else if (action === 'notAgain') state.prefs = applyPrefEvent(state.prefs, entry.recipeId, 'notAgain', state.weekReview.weekOf);
         persistPrefs(state.prefs);
         state.weekReview.entries.splice(index, 1);
         renderWeekReview();
@@ -223,13 +337,13 @@ export async function initPlannerPage() {
     });
   }
 
-  function renderSlotCard(day, entry) {
+  function renderSlotCard(weekOf, day, entry) {
     const recipe = state.resolvedById.get(entry.recipeId);
     if (!recipe) {
       return `
         <div class="slot-card">
           <div class="slot-unavailable">Recipe no longer available</div>
-          <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}">Remove</button>
+          <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}">Remove</button>
         </div>
       `;
     }
@@ -239,8 +353,8 @@ export async function initPlannerPage() {
     const autoActions = entry.source === 'auto'
       ? `
         <div class="slot-card-actions">
-          <button type="button" class="small-button" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}">Shuffle</button>
-          <button type="button" class="small-button" data-keep-day="${day}" data-keep-slot="${entry.slot}" data-keep-id="${entry.recipeId}">Keep</button>
+          <button type="button" class="small-button" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}" data-week-of="${weekOf}">Shuffle</button>
+          <button type="button" class="small-button" data-keep-day="${day}" data-keep-slot="${entry.slot}" data-keep-id="${entry.recipeId}" data-week-of="${weekOf}">Keep</button>
         </div>
       `
       : '';
@@ -252,140 +366,233 @@ export async function initPlannerPage() {
         </div>
         ${reasonsMarkup}
         <div class="servings-stepper">
-          <button type="button" data-servings="minus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" aria-label="Fewer servings">−</button>
+          <button type="button" data-servings="minus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="Fewer servings">−</button>
           <output>${entry.servings}</output>
-          <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" aria-label="More servings">+</button>
+          <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="More servings">+</button>
         </div>
         ${autoActions}
-        <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}">Remove</button>
+        <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}">Remove</button>
       </div>
     `;
   }
 
-  function renderPlannerBoard() {
-    plannerGrid.innerHTML = DAYS.map((day) => {
-      const daySlots = SLOTS.filter((slot) => slot !== 'Packed Lunch' || WEEKDAYS.includes(day));
-      const slotsMarkup = daySlots.map((slot) => {
-        const entries = (state.plan.days[day] || []).filter((e) => e.slot === slot);
-        return `
-          <div class="meal-slot ${entries.length ? 'filled' : ''}" data-day="${day}" data-slot="${slot}">
-            <div class="meal-slot-header">
-              <strong>${slot}</strong>
-              <button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}" aria-label="Add recipe to ${slot} on ${day}">+</button>
-            </div>
-            ${entries.length ? entries.map((entry) => renderSlotCard(day, entry)).join('') : '<div class="slot-empty">No recipe planned</div>'}
-          </div>
-        `;
-      }).join('');
+  function slotsForDay(day) {
+    return SLOTS.filter((slot) => slot !== 'Packed Lunch' || WEEKDAYS.includes(day));
+  }
 
+  function renderMealSlot(weekOf, day, slot, days) {
+    const entries = (days[day] || []).filter((e) => e.slot === slot);
+    return `
+      <div class="meal-slot ${entries.length ? 'filled' : ''}" data-day="${day}" data-slot="${slot}">
+        <div class="meal-slot-header">
+          <strong>${slot}</strong>
+          <button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}" aria-label="Add recipe to ${slot} on ${day}">+</button>
+        </div>
+        ${entries.length ? entries.map((entry) => renderSlotCard(weekOf, day, entry)).join('') : '<div class="slot-empty">No recipe planned</div>'}
+      </div>
+    `;
+  }
+
+  function renderWeekView() {
+    const weekOf = selectedWeekOf();
+    const days = getWeekDays(state.store, weekOf);
+    plannerGrid.innerHTML = DAYS.map((day) => {
+      const slotsMarkup = slotsForDay(day).map((slot) => renderMealSlot(weekOf, day, slot, days)).join('');
+      const isToday = isoOfDayInWeek(weekOf, day) === todayIso();
       return `
         <div class="planner-day" data-day="${day}">
-          <h3>${day}</h3>
+          <h3>${day}${isToday ? ' <span class="today-badge">Today</span>' : ''}</h3>
           <div class="day-slot-group">${slotsMarkup}</div>
         </div>
       `;
     }).join('');
-
-    wirePlannerBoardEvents();
+    wirePlannerBoardEvents(plannerGrid);
   }
 
-  function addRecipeToSlot(day, slot, recipeId, servings, source) {
-    const before = state.plan.days[day] || [];
-    if (before.some((e) => e.slot === slot && e.recipeId === recipeId)) {
+  function renderDayView() {
+    const iso = state.selectedDate;
+    const weekOf = mondayOf(parseLocalDate(iso));
+    const dayName = dayNameForIso(iso);
+    const days = getWeekDays(state.store, weekOf);
+    dayViewSlots.innerHTML = slotsForDay(dayName).map((slot) => renderMealSlot(weekOf, dayName, slot, days)).join('');
+    wirePlannerBoardEvents(dayViewSlots);
+  }
+
+  function renderMonthView() {
+    const dates = monthGridDates(state.selectedDate);
+    const currentMonth = parseLocalDate(state.selectedDate).getMonth();
+    const today = todayIso();
+    monthCalendar.innerHTML = `
+      <div class="month-grid-header">${DAYS.map((d) => `<div>${d.slice(0, 3)}</div>`).join('')}</div>
+      <div class="month-grid-body">
+        ${dates.map((d) => {
+          const iso = isoOfDate(d);
+          const classes = ['month-cell'];
+          if (d.getMonth() !== currentMonth) classes.push('outside');
+          if (iso === today) classes.push('today');
+          const entries = entriesOnDate(state.store, iso);
+          const dots = entries.length ? `<div class="month-cell-dots">${entries.map(() => '<span class="month-cell-dot"></span>').join('')}</div>` : '';
+          return `
+            <button type="button" class="${classes.join(' ')}" data-goto-date="${iso}" aria-label="${d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}">
+              <span class="month-cell-date">${d.getDate()}</span>
+              ${dots}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+    monthCalendar.querySelectorAll('[data-goto-date]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.selectedDate = button.dataset.gotoDate;
+        setViewMode('day');
+      });
+    });
+  }
+
+  function renderView() {
+    if (state.viewMode === 'week') renderWeekView();
+    else if (state.viewMode === 'day') renderDayView();
+    else renderMonthView();
+  }
+
+  async function renderAll() {
+    updateTabsUI();
+    toggleViewContainers();
+    plannerHeading.textContent = formatHeading();
+    navLabel.textContent = formatNavLabel();
+    navToday.textContent = state.viewMode === 'day' ? 'Today' : state.viewMode === 'week' ? 'This week' : 'This month';
+    await ensureResolvedForView();
+    renderHeaderStats();
+    renderWeekReview();
+    renderView();
+  }
+
+  function setViewMode(mode) {
+    state.viewMode = mode;
+    persistViewMode(mode);
+    renderAll();
+  }
+
+  function navigate(direction) {
+    if (state.viewMode === 'day') {
+      state.selectedDate = addDaysIso(state.selectedDate, direction);
+    } else if (state.viewMode === 'week') {
+      state.selectedDate = addDaysIso(state.selectedDate, direction * 7);
+    } else {
+      const d = parseLocalDate(state.selectedDate);
+      d.setDate(1); // avoid month-length overflow (e.g. Jan 31 + 1 month skipping to March)
+      d.setMonth(d.getMonth() + direction);
+      state.selectedDate = isoOfDate(d);
+    }
+    renderAll();
+  }
+
+  dayTab?.addEventListener('click', () => setViewMode('day'));
+  weekTab?.addEventListener('click', () => setViewMode('week'));
+  monthTab?.addEventListener('click', () => setViewMode('month'));
+  navPrev?.addEventListener('click', () => navigate(-1));
+  navNext?.addEventListener('click', () => navigate(1));
+  navToday?.addEventListener('click', () => { state.selectedDate = todayIso(); renderAll(); });
+
+  function addRecipeToSlot(weekOf, day, slot, recipeId, servings, source) {
+    const days = getWeekDays(state.store, weekOf);
+    if ((days[day] || []).some((e) => e.slot === slot && e.recipeId === recipeId)) {
       showSnackbar('Already planned.', 'error');
       return;
     }
-    state.plan = addEntry(state.plan, day, slot, recipeId, servings ?? state.household?.default_servings ?? 4, source);
-    persistPlan(state.plan);
+    mutateWeek(weekOf, addEntry(days, day, slot, recipeId, servings ?? state.household?.default_servings ?? 4, source));
     if (source === 'manual') {
-      state.prefs = applyPrefEvent(state.prefs, recipeId, 'manual', state.plan.weekOf);
+      state.prefs = applyPrefEvent(state.prefs, recipeId, 'manual', weekOf);
       persistPrefs(state.prefs);
     }
-    ensureResolvedForCurrentPlan().then(() => { renderWeekHeader(); renderPlannerBoard(); });
+    ensureResolvedIds([recipeId]).then(() => { renderHeaderStats(); renderView(); });
   }
 
-  function wirePlannerBoardEvents() {
-    plannerGrid.querySelectorAll('[data-day-add]').forEach((button) => {
+  function wirePlannerBoardEvents(container) {
+    container.querySelectorAll('[data-day-add]').forEach((button) => {
       button.addEventListener('click', () => {
         const day = button.dataset.dayAdd;
         const slot = button.dataset.slot;
+        const weekOf = selectedWeekOf();
         if (state.selectedRecipe) {
-          addRecipeToSlot(day, slot, state.selectedRecipe.id, undefined, 'manual');
+          addRecipeToSlot(weekOf, day, slot, state.selectedRecipe.id, undefined, 'manual');
         } else {
-          openPicker(day, slot);
+          openPicker(weekOf, day, slot);
         }
       });
     });
 
-    plannerGrid.querySelectorAll('[data-open-recipe]').forEach((button) => {
+    container.querySelectorAll('[data-open-recipe]').forEach((button) => {
       button.addEventListener('click', () => {
         openRecipeModal(supabase, Number(button.dataset.openRecipe), { serves: Number(button.dataset.servings) });
       });
     });
 
-    plannerGrid.querySelectorAll('[data-servings]').forEach((button) => {
+    container.querySelectorAll('[data-servings]').forEach((button) => {
       button.addEventListener('click', () => {
-        const { day, slot, id } = button.dataset;
+        const { day, slot, id, weekOf } = button.dataset;
         const recipeId = Number(id);
-        const entry = findEntry(day, slot, recipeId);
+        const days = getWeekDays(state.store, weekOf);
+        const entry = (days[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
         if (!entry) return;
         const next = button.dataset.servings === 'minus' ? entry.servings - 1 : entry.servings + 1;
         if (next < 1) return;
-        state.plan = updateServings(state.plan, day, slot, recipeId, next);
-        persistPlan(state.plan);
-        renderPlannerBoard();
+        mutateWeek(weekOf, updateServings(days, day, slot, recipeId, next));
+        renderView();
       });
     });
 
-    plannerGrid.querySelectorAll('[data-shuffle-day]').forEach((button) => {
+    container.querySelectorAll('[data-shuffle-day]').forEach((button) => {
       button.addEventListener('click', () => {
         const day = button.dataset.shuffleDay;
         const slot = button.dataset.shuffleSlot;
         const recipeId = Number(button.dataset.shuffleId);
-        const entry = findEntry(day, slot, recipeId);
+        const weekOf = button.dataset.weekOf;
+        const days = getWeekDays(state.store, weekOf);
+        const entry = (days[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
         if (!entry) return;
         const replacement = shuffleEntry({
-          plan: state.plan.days, day, slot, recipeId, servings: entry.servings,
-          recipes: state.candidates, prefs: state.prefs, household: state.household, weekOf: state.plan.weekOf,
+          plan: days, day, slot, recipeId, servings: entry.servings,
+          recipes: state.candidates, prefs: state.prefs, household: state.household, weekOf,
         });
         if (!replacement) {
           showSnackbar('No other recipe fits this slot right now.', 'error');
           return;
         }
-        state.prefs = applyPrefEvent(state.prefs, recipeId, 'removed', state.plan.weekOf);
+        state.prefs = applyPrefEvent(state.prefs, recipeId, 'removed', weekOf);
         persistPrefs(state.prefs);
-        state.plan = replaceEntry(state.plan, day, slot, recipeId, replacement);
-        persistPlan(state.plan);
-        ensureResolvedForCurrentPlan().then(() => { renderWeekHeader(); renderPlannerBoard(); });
+        mutateWeek(weekOf, replaceEntry(days, day, slot, recipeId, replacement));
+        ensureResolvedIds([replacement.recipeId]).then(() => { renderHeaderStats(); renderView(); });
       });
     });
 
-    plannerGrid.querySelectorAll('[data-keep-day]').forEach((button) => {
+    container.querySelectorAll('[data-keep-day]').forEach((button) => {
       button.addEventListener('click', () => {
         const day = button.dataset.keepDay;
         const slot = button.dataset.keepSlot;
         const recipeId = Number(button.dataset.keepId);
-        state.plan = keepEntry(state.plan, day, slot, recipeId);
-        persistPlan(state.plan);
-        renderPlannerBoard();
+        const weekOf = button.dataset.weekOf;
+        mutateWeek(weekOf, keepEntry(getWeekDays(state.store, weekOf), day, slot, recipeId));
+        renderView();
         showSnackbar('Kept — auto-fill will leave this alone.', 'success');
       });
     });
 
-    plannerGrid.querySelectorAll('[data-remove-day]').forEach((button) => {
+    container.querySelectorAll('[data-remove-day]').forEach((button) => {
       button.addEventListener('click', () => {
         const day = button.dataset.removeDay;
         const slot = button.dataset.removeSlot;
         const recipeId = Number(button.dataset.removeId);
-        const entry = findEntry(day, slot, recipeId);
+        const weekOf = button.dataset.weekOf;
+        const days = getWeekDays(state.store, weekOf);
+        const entry = (days[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
         if (entry?.source === 'auto') {
-          state.prefs = applyPrefEvent(state.prefs, recipeId, 'removed', state.plan.weekOf);
+          state.prefs = applyPrefEvent(state.prefs, recipeId, 'removed', weekOf);
           persistPrefs(state.prefs);
         }
-        state.plan = removeEntry(state.plan, day, slot, recipeId);
-        persistPlan(state.plan);
-        renderWeekHeader();
-        renderPlannerBoard();
+        mutateWeek(weekOf, removeEntry(days, day, slot, recipeId));
+        renderHeaderStats();
+        renderView();
       });
     });
   }
@@ -462,8 +669,8 @@ export async function initPlannerPage() {
   const pickerSuggestNew = document.getElementById('pickerSuggestNew');
   const plannerPickerTitle = document.getElementById('plannerPickerTitle');
 
-  function openPicker(day, slot) {
-    state.pickerContext = { day, slot };
+  function openPicker(weekOf, day, slot) {
+    state.pickerContext = { weekOf, day, slot };
     plannerPickerTitle.textContent = `Add to ${slot}, ${day}`;
     pickerShowAll.checked = false;
     loadPickerResults();
@@ -471,7 +678,7 @@ export async function initPlannerPage() {
   }
 
   async function loadPickerResults() {
-    const { day, slot } = state.pickerContext;
+    const { weekOf, day, slot } = state.pickerContext;
     pickerList.innerHTML = '<div class="skeleton browser-item-skeleton"></div>';
     const filters = pickerShowAll.checked ? {} : { mealTypes: [slot] };
     const result = await searchRecipes(supabase, filters, { page: 1, pageSize: 20 });
@@ -479,7 +686,8 @@ export async function initPlannerPage() {
       pickerList.innerHTML = '<div class="empty-state">Couldn\'t load recipes.</div>';
       return;
     }
-    const alreadyPlannedIds = new Set((state.plan.days[day] || []).filter((e) => e.slot === slot).map((e) => e.recipeId));
+    const days = getWeekDays(state.store, weekOf);
+    const alreadyPlannedIds = new Set((days[day] || []).filter((e) => e.slot === slot).map((e) => e.recipeId));
     pickerList.innerHTML = result.data.length
       ? result.data.map((recipe) => `
         <div class="picker-row">
@@ -493,7 +701,7 @@ export async function initPlannerPage() {
 
     pickerList.querySelectorAll('[data-picker-add]').forEach((button) => {
       button.addEventListener('click', () => {
-        addRecipeToSlot(day, slot, Number(button.dataset.pickerAdd), undefined, 'manual');
+        addRecipeToSlot(weekOf, day, slot, Number(button.dataset.pickerAdd), undefined, 'manual');
         pickerDialog.close();
       });
     });
@@ -501,21 +709,27 @@ export async function initPlannerPage() {
 
   pickerShowAll.addEventListener('change', loadPickerResults);
   pickerSuggestNew.addEventListener('click', () => {
-    const { day, slot } = state.pickerContext;
-    storePendingPlannerSlot({ day, slot });
+    const { weekOf, day, slot } = state.pickerContext;
+    storePendingPlannerSlot({ weekOf, day, slot });
     pickerDialog.close();
     askDialog.open({ initialPrompt: SLOT_PROMPTS[slot] || SLOT_PROMPTS.Dinner, mealType: MEAL_TYPES.includes(slot) ? slot : undefined });
   });
   document.getElementById('closePlannerPicker')?.addEventListener('click', () => pickerDialog.close());
 
-  // ---------- Auto-fill (task 11.4 / Appendix K.3) ----------
+  // ---------- Auto-fill settings dialog (fixes the stretched-action-bar bug: settings used to be
+  // an inline <details> sibling of these buttons in a flex row with default align-items:stretch) ----------
+  autoFillSettingsButton?.addEventListener('click', () => autoFillSettingsDialog.open());
+  document.getElementById('closeAutoFillSettings')?.addEventListener('click', () => autoFillSettingsDialog.close());
+
+  // ---------- Auto-fill (task 11.4 / Appendix K.3) — operates on whichever week is selected ----------
   autoFillWeek.addEventListener('click', async () => {
-    const result = planWeek({ recipes: state.candidates, plan: state.plan.days, prefs: state.prefs, household: state.household, weekOf: state.plan.weekOf });
-    state.plan = { ...state.plan, days: result.plan };
-    persistPlan(state.plan);
-    await ensureResolvedForCurrentPlan();
-    renderWeekHeader();
-    renderPlannerBoard();
+    const weekOf = selectedWeekOf();
+    const days = getWeekDays(state.store, weekOf);
+    const result = planWeek({ recipes: state.candidates, plan: days, prefs: state.prefs, household: state.household, weekOf });
+    mutateWeek(weekOf, result.plan);
+    await ensureResolvedIds(idsForWeek(weekOf));
+    renderHeaderStats();
+    renderView();
 
     if (result.needs.length) {
       const shortfall = result.needs[0];
@@ -548,23 +762,28 @@ export async function initPlannerPage() {
   });
 
   // ---------- Reset / Export / Import (task 11.8) ----------
-  resetWeekButton.addEventListener('click', () => resetDialog.open());
+  resetWeekButton.addEventListener('click', () => {
+    if (resetWeekConfirmCopy) resetWeekConfirmCopy.textContent = `This clears every recipe planned for ${formatNavLabel()}. It can't be undone.`;
+    resetDialog.open();
+  });
   document.getElementById('cancelResetWeek')?.addEventListener('click', () => resetDialog.close());
   document.getElementById('confirmResetWeek')?.addEventListener('click', () => {
-    state.plan = resetPlan();
-    persistPlan(state.plan);
+    const weekOf = selectedWeekOf();
+    state.store = resetWeekDays(state.store, weekOf);
+    persistStore(state.store);
     resetDialog.close();
-    renderAll();
+    renderHeaderStats();
+    renderView();
     showSnackbar('Week reset.', 'success');
   });
 
   exportPlanButton.addEventListener('click', () => {
-    const data = exportPlanData(state.plan, state.prefs);
+    const data = exportPlanData(state.store, state.prefs);
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `recipe-plan-${state.plan.weekOf}.json`;
+    link.download = `recipe-plan-${todayIso()}.json`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -590,20 +809,19 @@ export async function initPlannerPage() {
   document.getElementById('cancelImportPlan')?.addEventListener('click', () => { pendingImport = null; importDialog.close(); });
   document.getElementById('confirmImportPlan')?.addEventListener('click', async () => {
     if (!pendingImport) return;
-    state.plan = pendingImport.plan;
+    state.store = pendingImport.store;
     state.prefs = pendingImport.prefs;
     state.weekReview = null;
-    persistPlan(state.plan);
+    persistStore(state.store);
     persistPrefs(state.prefs);
     pendingImport = null;
     importDialog.close();
-    await ensureResolvedForCurrentPlan();
-    renderAll();
+    await renderAll();
     renderAutoFillSettings();
     showSnackbar('Plan imported.', 'success');
   });
 
-  renderAll();
+  await renderAll();
   renderAutoFillSettings();
   mountTip(document.getElementById('autoFillTip'), 'autoFill');
   await search('');

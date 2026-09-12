@@ -28,6 +28,20 @@
       </header>
 
       <section class="planner-card week-header" id="plannerWeekHeader">
+        <div class="planner-nav-row">
+          <div class="tabs" role="tablist" aria-label="Planner view">
+            <button type="button" role="tab" id="dayTab" aria-selected="false" aria-controls="dayView">Day</button>
+            <button type="button" role="tab" id="weekTab" aria-selected="true" aria-controls="weekView">Week</button>
+            <button type="button" role="tab" id="monthTab" aria-selected="false" aria-controls="monthView">Month</button>
+          </div>
+          <div class="nav-controls">
+            <button type="button" class="icon-button" id="navPrev" aria-label="Previous">‹</button>
+            <span id="navLabel" class="nav-label"></span>
+            <button type="button" class="icon-button" id="navNext" aria-label="Next">›</button>
+            <button type="button" class="ghost-button" id="navToday">Today</button>
+          </div>
+        </div>
+
         <div class="week-header-row">
           <div class="protein-share">
             <div class="progress-bar" aria-hidden="true">
@@ -39,16 +53,18 @@
           <div class="tomorrow-packed-lunch" id="tomorrowPackedLunch"></div>
           <div class="cuisine-mix" id="cuisineMix"></div>
         </div>
+
         <div class="actions-row">
-          <button type="button" class="primary-button" id="autoFillWeek">Auto-fill my week</button>
-          <details class="form-section auto-fill-settings">
-            <summary>Auto-fill settings</summary>
-            <div class="auto-fill-settings-grid" id="autoFillSettingsGrid"></div>
-          </details>
-          <button type="button" class="ghost-button" id="exportPlan">Export</button>
-          <button type="button" class="ghost-button" id="importPlanButton">Import</button>
-          <input type="file" id="importPlanInput" accept="application/json" hidden />
-          <button type="button" class="secondary-button" id="resetWeek">Reset week</button>
+          <div class="actions-cluster actions-primary">
+            <button type="button" class="primary-button" id="autoFillWeek">Auto-fill this week</button>
+            <button type="button" class="icon-button" id="autoFillSettingsButton" aria-label="Auto-fill settings">⚙</button>
+          </div>
+          <div class="actions-cluster actions-secondary">
+            <button type="button" class="ghost-button" id="exportPlan">Export</button>
+            <button type="button" class="ghost-button" id="importPlanButton">Import</button>
+            <input type="file" id="importPlanInput" accept="application/json" hidden />
+            <button type="button" class="secondary-button" id="resetWeek">Reset this week</button>
+          </div>
         </div>
         <div id="autoFillTip"></div>
       </section>
@@ -74,15 +90,32 @@
 
         <section class="planner-board">
           <div class="content-head">
-            <h2>Week plan</h2>
+            <h2 id="plannerHeading">This week's meals</h2>
           </div>
           <p class="hint" id="plannerStorageWarning" hidden>Your plan can't be saved in this browser.</p>
-          <div id="plannerGrid" class="planner-grid"></div>
+
+          <div id="weekView">
+            <div id="plannerGrid" class="planner-grid" role="tabpanel" aria-labelledby="weekTab"></div>
+          </div>
+          <div id="dayView" hidden>
+            <div id="dayViewSlots" class="day-view-slots" role="tabpanel" aria-labelledby="dayTab"></div>
+          </div>
+          <div id="monthView" hidden>
+            <div id="monthCalendar" class="month-calendar" role="tabpanel" aria-labelledby="monthTab"></div>
+          </div>
         </section>
       </div>
 
       <p class="hint">Plans are saved in this browser only. Download a copy to move them to another device.</p>
     </main>
+
+    <dialog id="autoFillSettingsDialog" class="recipe-detail confirmation-panel" aria-labelledby="autoFillSettingsTitle">
+      <div class="detail-header"><h3 id="autoFillSettingsTitle">Auto-fill settings</h3></div>
+      <div class="auto-fill-settings-grid" id="autoFillSettingsGrid"></div>
+      <div class="modal-footer">
+        <button type="button" class="ghost-button" id="closeAutoFillSettings">Close</button>
+      </div>
+    </dialog>
 
     <dialog id="plannerPickerDialog" class="recipe-detail add-recipe-panel" aria-labelledby="plannerPickerTitle">
       <div class="detail-header"><h3 id="plannerPickerTitle">Add a recipe</h3></div>
@@ -101,7 +134,7 @@
 
     <dialog id="resetWeekConfirm" class="recipe-detail confirmation-panel" aria-labelledby="resetWeekConfirmTitle">
       <div class="detail-header"><h3 id="resetWeekConfirmTitle">Reset this week's plan</h3></div>
-      <p class="delete-confirm-copy">This clears every recipe planned for this week. It can't be undone.</p>
+      <p class="delete-confirm-copy" id="resetWeekConfirmCopy">This clears every recipe planned for this week. It can't be undone.</p>
       <div class="form-actions">
         <button type="button" class="ghost-button" id="cancelResetWeek">Cancel</button>
         <button type="button" class="secondary-button" id="confirmResetWeek">Reset week</button>
@@ -109,8 +142,8 @@
     </dialog>
 
     <dialog id="importPlanConfirm" class="recipe-detail confirmation-panel" aria-labelledby="importPlanConfirmTitle">
-      <div class="detail-header"><h3 id="importPlanConfirmTitle">Replace your current plan?</h3></div>
-      <p class="delete-confirm-copy">Importing this file replaces this week's plan and your recipe preferences. It can't be undone.</p>
+      <div class="detail-header"><h3 id="importPlanConfirmTitle">Replace your plan?</h3></div>
+      <p class="delete-confirm-copy">Importing this file replaces every week you've planned and your recipe preferences. It can't be undone.</p>
       <div class="form-actions">
         <button type="button" class="ghost-button" id="cancelImportPlan">Cancel</button>
         <button type="button" class="secondary-button" id="confirmImportPlan">Import</button>

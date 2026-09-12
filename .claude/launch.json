@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "public", "--listen", "8080"],
+      "port": 8080
+    }
+  ]
+}
