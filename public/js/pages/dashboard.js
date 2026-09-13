@@ -31,8 +31,6 @@ function renderStats(stats) {
   statsGrid.innerHTML = `
     <article class="metric-card"><div class="label">Total recipes</div><div class="value">${stats.total}</div><div class="sub">Across the full collection</div></article>
     <article class="metric-card"><div class="label">Top cuisine</div><div class="value">${escapeHtml(stats.top_cuisine || 'N/A')}</div><div class="sub">${stats.top_cuisine_count || 0} recipes</div></article>
-    <article class="metric-card"><div class="label">Vegetarian</div><div class="value">${stats.vegetarian}</div><div class="sub">Family-friendly picks</div></article>
-    <article class="metric-card"><div class="label">Egg-free</div><div class="value">${stats.egg_free}</div><div class="sub">Easy meal options</div></article>
     <article class="metric-card"><div class="label">Protein-smart</div><div class="value">${stats.protein_smart}</div><div class="sub">${stats.protein_smart} of ${stats.total} recipes are protein-smart</div></article>
   `;
 }
@@ -76,7 +74,7 @@ function renderSkeleton() {
   const statsGrid = document.getElementById('statsGrid');
   const recentGrid = document.getElementById('recentGrid');
   const thisWeekBody = document.getElementById('thisWeekBody');
-  if (statsGrid) statsGrid.innerHTML = Array.from({ length: 5 }).map(() => '<div class="skeleton metric-card-skeleton"></div>').join('');
+  if (statsGrid) statsGrid.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton metric-card-skeleton"></div>').join('');
   if (recentGrid) recentGrid.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
   if (thisWeekBody) thisWeekBody.innerHTML = '<div class="skeleton metric-card-skeleton"></div>';
 }
