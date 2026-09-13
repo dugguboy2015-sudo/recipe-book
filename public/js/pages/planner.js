@@ -328,23 +328,21 @@ export async function initPlannerPage() {
 
   function renderSlotCard(weekOf, day, entry) {
     const recipe = state.resolvedById.get(entry.recipeId);
+    const removeButton = `<button type="button" class="icon-button delete-button" data-tooltip="Remove" aria-label="Remove" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}">🗑</button>`;
     if (!recipe) {
       return `
         <div class="slot-card">
           <div class="slot-unavailable">Recipe no longer available</div>
-          <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}">Remove</button>
+          <div class="slot-card-actions">${removeButton}</div>
         </div>
       `;
     }
-    const reasonsMarkup = entry.source === 'auto' && entry.reasons?.length
-      ? `<div class="slot-reasons">${entry.reasons.map((reason) => `<span class="chip">${escapeHtml(reason)}</span>`).join('')}</div>`
-      : '';
+    // reasons (why planWeek picked this recipe) stay on the entry for scoring/debugging — showing
+    // them as chips on every card was more clutter than signal, so they're no longer rendered.
     const autoActions = entry.source === 'auto'
       ? `
-        <div class="slot-card-actions">
-          <button type="button" class="small-button" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}" data-week-of="${weekOf}">Shuffle</button>
-          <button type="button" class="small-button" data-keep-day="${day}" data-keep-slot="${entry.slot}" data-keep-id="${entry.recipeId}" data-week-of="${weekOf}">Keep</button>
-        </div>
+        <button type="button" class="icon-button" data-tooltip="Shuffle" aria-label="Shuffle" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}" data-week-of="${weekOf}">🔀</button>
+        <button type="button" class="icon-button" data-tooltip="Keep" aria-label="Keep" data-keep-day="${day}" data-keep-slot="${entry.slot}" data-keep-id="${entry.recipeId}" data-week-of="${weekOf}">📌</button>
       `
       : '';
     return `
@@ -353,14 +351,15 @@ export async function initPlannerPage() {
           <div class="slot-card-art" aria-hidden="true">${monogramSvg(recipe)}</div>
           <button type="button" class="slot-recipe-link" data-open-recipe="${entry.recipeId}" data-servings="${entry.servings}">${escapeHtml(recipe.name)}</button>
         </div>
-        ${reasonsMarkup}
         <div class="servings-stepper">
           <button type="button" data-servings="minus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="Fewer servings">−</button>
           <output>${entry.servings}</output>
           <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="More servings">+</button>
         </div>
-        ${autoActions}
-        <button type="button" class="remove-slot" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}">Remove</button>
+        <div class="slot-card-actions">
+          ${autoActions}
+          ${removeButton}
+        </div>
       </div>
     `;
   }
