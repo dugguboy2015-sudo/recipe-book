@@ -81,6 +81,16 @@
     </section>
 
     <section class="sg-section">
+      <h2>IconButton with tooltip</h2>
+      <p class="sg-note">Hover or keyboard-focus an icon-only button to see its label. Opt in with <code>data-tooltip</code>; keep <code>aria-label</code> too, since the tooltip is visual only.</p>
+      <div class="sg-row">
+        <button class="icon-button" data-tooltip="Shuffle" aria-label="Shuffle">🔀</button>
+        <button class="icon-button" data-tooltip="Keep" aria-label="Keep">📌</button>
+        <button class="icon-button delete-button" data-tooltip="Remove" aria-label="Remove">🗑</button>
+      </div>
+    </section>
+
+    <section class="sg-section">
       <h2>Chip</h2>
       <div class="chip-group">
         <button type="button" class="chip">Filter chip</button>

@@ -64,6 +64,29 @@
 .icon-button.delete-button { color: var(--danger); }
 .icon-button.delete-button:hover { background: var(--danger-bg); }
 
+/* Tooltip: a hover/keyboard-focus label for icon-only controls, opt-in via data-tooltip so it
+   never changes an icon-button that doesn't ask for it. */
+[data-tooltip] { position: relative; }
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + var(--sp-2));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--motion-ease);
+  z-index: 5;
+}
+[data-tooltip]:hover::after, [data-tooltip]:focus-visible::after { opacity: 1; }
+
 /* ---------- Chip (filter / toggle / removable) ---------- */
 .chip {
   background: var(--surface-raised);
