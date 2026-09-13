@@ -1,7 +1,6 @@
-import { escapeHtml, debounce, showSnackbar } from '../lib/dom.js';
+import { escapeHtml, showSnackbar } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes, fetchPlannerCandidates, fetchPlannerRecipesByIds } from '../lib/queries.js';
-import { normalizeRecipe } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { monogramSvg } from '../components/monogram.js';
 import { wireDialog } from '../components/dialog.js';
@@ -76,11 +75,6 @@ const NEEDS_PROMPTS = {
 };
 
 const state = {
-  recipes: [], // browse-panel search results
-  selectedRecipe: null,
-  browseTerm: '',
-  browsePage: 1,
-  browseTotalCount: 0,
   store: null,
   prefs: null,
   weekReview: null,
@@ -147,11 +141,6 @@ export async function initPlannerPage() {
   const dayViewSlots = document.getElementById('dayViewSlots');
   const monthCalendar = document.getElementById('monthCalendar');
 
-  const plannerList = document.getElementById('plannerList');
-  const plannerSearch = document.getElementById('plannerSearch');
-  const selectedRecipeSummary = document.getElementById('selectedRecipeSummary');
-  const browseShowMore = document.getElementById('browseShowMore');
-
   const proteinShareBar = document.getElementById('proteinShareBar');
   const proteinShareText = document.getElementById('proteinShareText');
   const tomorrowPackedLunch = document.getElementById('tomorrowPackedLunch');
@@ -171,7 +160,7 @@ export async function initPlannerPage() {
   const resetWeekButton = document.getElementById('resetWeek');
   const resetWeekConfirmCopy = document.getElementById('resetWeekConfirmCopy');
 
-  if (!plannerGrid || !plannerList || !plannerSearch || !selectedRecipeSummary || !dayViewSlots || !monthCalendar) return;
+  if (!plannerGrid || !dayViewSlots || !monthCalendar) return;
 
   mountRecipeModal();
   const askDialog = mountAskDialog();
@@ -513,12 +502,7 @@ export async function initPlannerPage() {
       button.addEventListener('click', () => {
         const day = button.dataset.dayAdd;
         const slot = button.dataset.slot;
-        const weekOf = selectedWeekOf();
-        if (state.selectedRecipe) {
-          addRecipeToSlot(weekOf, day, slot, state.selectedRecipe.id, undefined, 'manual');
-        } else {
-          openPicker(weekOf, day, slot);
-        }
+        openPicker(selectedWeekOf(), day, slot);
       });
     });
 
@@ -597,73 +581,7 @@ export async function initPlannerPage() {
     });
   }
 
-  function renderPlannerRecipes() {
-    selectedRecipeSummary.textContent = state.selectedRecipe ? `Selected: ${state.selectedRecipe.name}` : 'No recipe selected';
-    selectedRecipeSummary.classList.toggle('has-selection', Boolean(state.selectedRecipe));
-
-    if (!state.recipes.length) {
-      plannerList.innerHTML = '<div class="empty-state">No matching recipes.</div>';
-      browseShowMore.hidden = true;
-      return;
-    }
-
-    plannerList.innerHTML = state.recipes.map((recipe) => `
-      <div class="browser-item${state.selectedRecipe && state.selectedRecipe.id === recipe.id ? ' active' : ''}" data-id="${recipe.id}">
-        <strong>${escapeHtml(recipe.name)}</strong>
-        <small>${escapeHtml(recipe.cuisine || 'General')}</small>
-      </div>
-    `).join('');
-
-    plannerList.querySelectorAll('.browser-item').forEach((item) => {
-      item.addEventListener('click', () => {
-        const selected = state.recipes.find((recipe) => recipe.id === Number(item.dataset.id));
-        if (!selected) return;
-        state.selectedRecipe = selected;
-        renderPlannerRecipes();
-      });
-    });
-
-    browseShowMore.hidden = state.recipes.length >= state.browseTotalCount;
-  }
-
-  function renderPlannerError() {
-    plannerList.innerHTML = `
-      <div class="empty-state">
-        <p>Couldn't load recipes. Check your connection.</p>
-        <button type="button" class="primary-button" id="plannerRetry">Retry</button>
-      </div>
-    `;
-    browseShowMore.hidden = true;
-    document.getElementById('plannerRetry')?.addEventListener('click', () => search(plannerSearch.value));
-  }
-
-  // BUG-6/8.5: the same searchRecipes() the recipes page uses, server-side, so a match beyond
-  // one page is still found. `append` powers the "Show more" button (task 11.3).
-  async function search(term, { append = false } = {}) {
-    state.browseTerm = term;
-    if (!append) {
-      plannerList.innerHTML = Array.from({ length: 6 }).map(() => '<div class="skeleton browser-item-skeleton"></div>').join('');
-      state.browsePage = 1;
-    }
-    const result = await searchRecipes(supabase, { term }, { page: state.browsePage, pageSize: 12 });
-    if (!result.ok) {
-      renderPlannerError();
-      return;
-    }
-    const normalized = result.data.map(normalizeRecipe);
-    state.recipes = append ? [...state.recipes, ...normalized] : normalized;
-    state.browseTotalCount = result.totalCount;
-    renderPlannerRecipes();
-  }
-
-  const debouncedSearch = debounce(() => search(plannerSearch.value.trim()), 300);
-  plannerSearch.addEventListener('input', debouncedSearch);
-  browseShowMore.addEventListener('click', () => {
-    state.browsePage += 1;
-    search(state.browseTerm, { append: true });
-  });
-
-  // ---------- Picker dialog (task 11.3: "+" with nothing selected) ----------
+  // ---------- Picker dialog (the only way to add a recipe to a slot) ----------
   const pickerList = document.getElementById('pickerList');
   const pickerShowAll = document.getElementById('pickerShowAll');
   const pickerSuggestNew = document.getElementById('pickerSuggestNew');
@@ -824,5 +742,4 @@ export async function initPlannerPage() {
   await renderAll();
   renderAutoFillSettings();
   mountTip(document.getElementById('autoFillTip'), 'autoFill');
-  await search('');
 }
