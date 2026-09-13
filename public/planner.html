@@ -77,34 +77,22 @@
         <div class="week-review-list" id="weekReviewList"></div>
       </section>
 
-      <div class="planner-shell">
-        <aside class="planner-browser">
-          <div class="content-head">
-            <h2>Recipe browse</h2>
-          </div>
-          <input id="plannerSearch" class="search-box" type="search" placeholder="Search recipes to add" />
-          <div id="selectedRecipeSummary" class="selected-recipe-summary">No recipe selected</div>
-          <div id="plannerList" class="browser-list"></div>
-          <button type="button" class="secondary-button browse-show-more" id="browseShowMore" hidden>Show more</button>
-        </aside>
+      <section class="planner-board">
+        <div class="content-head">
+          <h2 id="plannerHeading">This week's meals</h2>
+        </div>
+        <p class="hint" id="plannerStorageWarning" hidden>Your plan can't be saved in this browser.</p>
 
-        <section class="planner-board">
-          <div class="content-head">
-            <h2 id="plannerHeading">This week's meals</h2>
-          </div>
-          <p class="hint" id="plannerStorageWarning" hidden>Your plan can't be saved in this browser.</p>
-
-          <div id="weekView">
-            <div id="plannerGrid" class="planner-grid" role="tabpanel" aria-labelledby="weekTab"></div>
-          </div>
-          <div id="dayView" hidden>
-            <div id="dayViewSlots" class="day-view-slots" role="tabpanel" aria-labelledby="dayTab"></div>
-          </div>
-          <div id="monthView" hidden>
-            <div id="monthCalendar" class="month-calendar" role="tabpanel" aria-labelledby="monthTab"></div>
-          </div>
-        </section>
-      </div>
+        <div id="weekView">
+          <div id="plannerGrid" class="planner-grid" role="tabpanel" aria-labelledby="weekTab"></div>
+        </div>
+        <div id="dayView" hidden>
+          <div id="dayViewSlots" class="day-view-slots" role="tabpanel" aria-labelledby="dayTab"></div>
+        </div>
+        <div id="monthView" hidden>
+          <div id="monthCalendar" class="month-calendar" role="tabpanel" aria-labelledby="monthTab"></div>
+        </div>
+      </section>
 
       <p class="hint">Plans are saved in this browser only. Download a copy to move them to another device.</p>
     </main>

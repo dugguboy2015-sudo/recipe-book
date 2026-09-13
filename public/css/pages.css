@@ -113,43 +113,13 @@
 }
 
 /* ---------- Planner ---------- */
-.planner-shell { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: var(--sp-5); }
-
-.planner-browser, .planner-board {
+.planner-board {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-2);
   padding: var(--sp-4);
 }
-
-.browser-list { display: grid; gap: var(--sp-3); margin-top: var(--sp-4); }
-
-.selected-recipe-summary {
-  margin-top: var(--sp-3);
-  padding: var(--sp-3);
-  border-radius: var(--radius-control);
-  background: var(--surface-raised);
-  border: 1px dashed var(--line);
-  color: var(--ink-muted);
-  font-weight: 600;
-}
-
-.selected-recipe-summary.has-selection { background: var(--protein-bg); color: var(--brand-ink); border-style: solid; border-color: var(--brand); }
-
-.browser-item {
-  background: var(--surface-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  padding: var(--sp-3);
-  cursor: pointer;
-  transition: border-color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease);
-}
-
-.browser-item:hover { border-color: var(--brand); transform: translateY(-1px); }
-.browser-item.active { background: var(--protein-bg); border-color: var(--brand-ink); box-shadow: 0 0 0 3px var(--ok-bg); }
-.browser-item strong { display: block; color: var(--brand-ink); margin-bottom: var(--sp-1); }
-.browser-item small { color: var(--ink-muted); }
 
 .planner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--sp-4); }
 
@@ -249,12 +219,6 @@
 .picker-list { display: grid; gap: var(--sp-2); margin: var(--sp-4) 0; max-height: 40vh; overflow-y: auto; }
 .picker-row { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); border: 1px solid var(--line); border-radius: var(--radius-control); padding: var(--sp-2) var(--sp-3); }
 .picker-toggle { display: flex; align-items: center; gap: var(--sp-2); font-weight: 600; }
-
-.browse-show-more { display: block; width: 100%; margin-top: var(--sp-3); }
-
-@media (max-width: 760px) {
-  .planner-shell { grid-template-columns: 1fr; }
-}
 
 @media (max-width: 480px) {
   .content-head { align-items: flex-start; }
