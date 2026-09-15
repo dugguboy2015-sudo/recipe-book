@@ -44,47 +44,47 @@
 
       <div id="generatePanelContainer"></div>
 
-      <section class="filter-panel">
-        <div class="filter-row">
+      <div class="recipes-row">
+        <aside class="filter-panel" id="filterPanel" aria-label="Filter recipes">
+          <div class="filter-panel-head">
+            <h2>Filters</h2>
+            <button type="button" class="ghost-button filter-panel-close" id="closeFilterSheet">Close</button>
+          </div>
+
           <label class="search-field">
             <span>Recipe name or description</span>
             <input class="search-box" id="searchInput" type="search" list="recipeSuggestions" placeholder="Start typing to search" autocomplete="off" />
             <datalist id="recipeSuggestions"></datalist>
           </label>
 
-          <label>
-            Cuisine
+          <label class="filter-group">
+            <span>Cuisine</span>
             <select id="cuisineFilter">
               <option value="">All cuisines</option>
             </select>
           </label>
-        </div>
 
-        <details class="filter-disclosure">
-          <summary>Meal type <span class="filter-hint">Optional</span></summary>
-          <div class="chip-group" id="mealTypeFilters"></div>
-        </details>
-
-        <details class="filter-disclosure">
-          <summary>Tags <span class="filter-hint">Optional</span></summary>
-          <div class="chip-group" id="tagFilters"></div>
-        </details>
-
-        <details class="filter-disclosure">
-          <summary>Dietary preferences <span class="filter-hint">Optional</span></summary>
-          <div class="chip-group" id="dietaryFilters">
-            <button class="chip" data-dietary="vegetarian" type="button">Vegetarian</button>
-            <button class="chip" data-dietary="egg-free" type="button">Egg-free</button>
-            <button class="chip" data-dietary="dairy-free" type="button">Dairy-free</button>
-            <button class="chip" data-dietary="protein-smart" type="button">Protein-smart</button>
-            <button class="chip" data-dietary="nut-free" type="button">Nut-free</button>
+          <div class="filter-group">
+            <span>Meal type</span>
+            <div class="chip-group" id="mealTypeFilters"></div>
           </div>
-        </details>
 
-        <details class="filter-disclosure">
-          <summary>Spice <span class="filter-hint">Optional</span></summary>
-          <label>
-            Spice up to
+          <div class="filter-group">
+            <span>Tags</span>
+            <div class="chip-group" id="tagFilters"></div>
+          </div>
+
+          <div class="filter-group">
+            <span>Dietary preferences</span>
+            <div class="chip-group" id="dietaryFilters">
+              <button class="chip" data-dietary="dairy-free" type="button">Dairy-free</button>
+              <button class="chip" data-dietary="protein-smart" type="button">Protein-smart</button>
+              <button class="chip" data-dietary="nut-free" type="button">Nut-free</button>
+            </div>
+          </div>
+
+          <label class="filter-group">
+            <span>Spice up to</span>
             <select id="spiceMaxFilter">
               <option value="">Any</option>
               <option value="1">1 — mild</option>
@@ -94,29 +94,33 @@
               <option value="5">5 — very hot</option>
             </select>
           </label>
-        </details>
 
-        <div class="actions-row">
-          <button type="button" class="ghost-button" id="clearFilters">Clear</button>
-        </div>
-      </section>
-
-      <section>
-        <div class="content-head">
-          <h2>Recipe collection</h2>
-          <div class="toolbar">
-            <span id="resultCount" class="notice">0 recipes</span>
+          <div class="actions-row">
+            <button type="button" class="ghost-button" id="clearFilters">Clear filters</button>
+            <button type="button" class="primary-button filter-sheet-apply" id="applyFilterSheet">Show <span id="filterSheetCount">0</span> recipes</button>
           </div>
-        </div>
+        </aside>
 
-        <div class="status-region" id="resultStatus" aria-live="polite"></div>
-        <div id="recipeGrid" class="recipe-grid"></div>
-        <div class="pagination">
-          <button type="button" class="ghost-button" id="prevPage">Previous</button>
-          <span id="pageStatus">Page 1</span>
-          <button type="button" class="ghost-button" id="nextPage">Next</button>
-        </div>
-      </section>
+        <div class="filter-panel-backdrop" id="filterSheetBackdrop"></div>
+
+        <section class="recipes-results">
+          <div class="content-head">
+            <h2>Recipe collection</h2>
+            <div class="toolbar">
+              <span id="resultCount" class="notice">0 recipes</span>
+              <button type="button" class="ghost-button filter-open-button" id="openFilterSheet">Filters</button>
+            </div>
+          </div>
+
+          <div class="status-region" id="resultStatus" aria-live="polite"></div>
+          <div id="recipeGrid" class="recipe-grid"></div>
+          <div class="pagination">
+            <button type="button" class="ghost-button" id="prevPage">Previous</button>
+            <span id="pageStatus">Page 1</span>
+            <button type="button" class="ghost-button" id="nextPage">Next</button>
+          </div>
+        </section>
+      </div>
     </main>
 
     <footer class="site-footer">

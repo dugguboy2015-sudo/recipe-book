@@ -36,14 +36,68 @@
 .search-box { min-width: 230px; }
 .search-field { min-width: 0; }
 
-.filter-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); box-shadow: var(--shadow-2); padding: var(--sp-4); display: grid; gap: var(--sp-4); }
-.filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-4); }
-.filter-row label { display: grid; gap: var(--sp-2); font-weight: 600; color: var(--brand-ink); }
-.filter-disclosure { border-top: 1px solid var(--line); padding-top: var(--sp-3); }
-.filter-disclosure summary { color: var(--brand-ink); cursor: pointer; font-weight: 600; list-style-position: inside; min-height: 44px; display: flex; align-items: center; }
-.filter-disclosure[open] summary { margin-bottom: var(--sp-3); }
-.filter-hint { color: var(--ink-muted); font-size: var(--fs-1); font-weight: 400; margin-left: var(--sp-2); }
 .actions-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+
+/* ---------- Recipe browse: filter sidebar (desktop/tablet) + bottom sheet (mobile) ---------- */
+.recipes-row { display: flex; gap: var(--sp-5); align-items: flex-start; }
+
+.filter-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-2);
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+  position: sticky;
+  top: var(--sp-5);
+}
+
+.filter-panel-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); }
+.filter-panel-close { display: none; } /* only relevant once .filter-panel becomes a mobile sheet, below */
+
+.filter-group { display: grid; gap: var(--sp-2); font-weight: 600; color: var(--brand-ink); }
+
+.filter-panel input, .filter-panel select { width: 100%; min-width: 0; }
+
+.recipes-results { flex: 1; min-width: 0; }
+
+.filter-open-button, .filter-panel-backdrop, .filter-sheet-apply { display: none; }
+
+@media (max-width: 760px) {
+  .recipes-row { display: block; } /* .filter-panel floats via fixed positioning, independent of flow */
+
+  .filter-open-button { display: inline-flex; }
+
+  .filter-panel {
+    display: none;
+    position: fixed;
+    inset: auto 0 0 0;
+    width: auto;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    border-bottom: 0;
+    box-shadow: 0 -12px 28px var(--shadow-color-raised);
+    z-index: 60;
+  }
+
+  .filter-panel.filter-sheet-open { display: grid; }
+  .filter-panel-close { display: inline-flex; }
+  .filter-sheet-apply { display: flex; width: 100%; }
+  .filter-panel .actions-row { flex-direction: column; align-items: stretch; }
+
+  .filter-panel-backdrop.filter-sheet-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 55;
+  }
+}
 
 /* Two visually distinct clusters instead of one undifferentiated line — was previously broken by
    a <details> settings disclosure sitting inline here, which stretched every sibling button to
