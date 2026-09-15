@@ -8,9 +8,23 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/pages.css" />
+  <script src="js/theme.js"></script>
 </head>
 <body data-page="dashboard">
   <a class="skip-link" href="#content">Skip to content</a>
+
+  <aside class="sidebar-nav" aria-label="Main navigation">
+    <span class="sidebar-wordmark">Recipe Book</span>
+    <nav class="sidebar-nav-links">
+      <a href="index.html" aria-current="page"><span class="icon" aria-hidden="true">🏠</span> Dashboard</a>
+      <a href="recipes.html"><span class="icon" aria-hidden="true">🍲</span> Recipes</a>
+      <a href="planner.html"><span class="icon" aria-hidden="true">🗓️</span> Weekly Planner</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="recipes.html?add=1" class="primary-button sidebar-add-recipe">Add a recipe</a>
+    </div>
+  </aside>
+
   <div class="wrap">
     <header class="site-header">
       <nav class="site-nav" aria-label="Main navigation">
@@ -19,6 +33,7 @@
         <a href="planner.html">Weekly Planner</a>
         <button type="button" data-open-ask-dialog>Ask for a recipe</button>
       </nav>
+      <button type="button" class="icon-button theme-toggle-button" id="themeToggleButton"></button>
     </header>
 
     <main id="content" class="page-shell">

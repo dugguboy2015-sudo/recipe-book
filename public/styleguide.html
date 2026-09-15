@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/styleguide.css" />
+  <script src="js/theme.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -245,6 +246,24 @@
       <h2>StatusRegion</h2>
       <p class="sg-note">A visually hidden <code>aria-live</code> region for screen-reader announcements (e.g. "12 recipes found"). Not visible by design — see <code>.status-region</code> in components.css.</p>
       <div class="status-region" aria-live="polite">12 recipes found</div>
+    </section>
+
+    <section class="sg-section">
+      <h2>App shell — sidebar navigation</h2>
+      <p class="sg-note">Shown at &ge;1100px in the app (<code>.sidebar-nav</code> in components.css); at narrower widths the same links live in the header pills or the bottom tab bar. Shrunk here to fit the style guide column.</p>
+      <div class="sg-sidebar-demo">
+        <aside class="sidebar-nav" aria-label="Main navigation demo">
+          <span class="sidebar-wordmark">Recipe Book</span>
+          <nav class="sidebar-nav-links">
+            <a href="#" aria-current="page"><span class="icon" aria-hidden="true">🏠</span> Dashboard</a>
+            <a href="#"><span class="icon" aria-hidden="true">🍲</span> Recipes</a>
+            <a href="#"><span class="icon" aria-hidden="true">🗓️</span> Weekly Planner</a>
+          </nav>
+          <div class="sidebar-footer">
+            <a href="#" class="primary-button sidebar-add-recipe">Add a recipe</a>
+          </div>
+        </aside>
+      </div>
     </section>
     </main>
   </div>

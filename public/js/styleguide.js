@@ -1,13 +1,10 @@
 import { showSnackbar } from './lib/dom.js';
 import { wireDialog } from './components/dialog.js';
 import { renderRecipeCard, normalizeRecipe } from './components/recipe-card.js';
+import { wireThemeToggle } from './components/theme-toggle.js';
 
-// Theme toggle (demo-only; the app itself follows prefers-color-scheme)
-document.getElementById('themeToggle').addEventListener('click', () => {
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const current = document.documentElement.getAttribute('data-theme') || (systemPrefersDark ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-});
+// Same shared toggle the app itself uses (js/theme.js applies the stored choice pre-paint).
+wireThemeToggle(document.getElementById('themeToggle'));
 
 // RecipeCard demo data
 const sampleRecipes = [

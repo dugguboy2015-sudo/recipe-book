@@ -250,7 +250,7 @@ export async function initRecipesPage() {
     return recipeFormPromise;
   }
 
-  const addRecipeButton = document.getElementById('addRecipeButton');
+  const addRecipeTriggers = document.querySelectorAll('[data-open-add-recipe]'); // FAB + sidebar nav
   const deleteConfirmModal = document.getElementById('deleteConfirmModal');
   const cancelDeleteRecipe = document.getElementById('cancelDeleteRecipe');
   const confirmDeleteRecipe = document.getElementById('confirmDeleteRecipe');
@@ -296,7 +296,7 @@ export async function initRecipesPage() {
     await refreshRecipes();
   }
 
-  addRecipeButton?.addEventListener('click', async () => (await loadRecipeForm()).openAdd());
+  addRecipeTriggers.forEach((button) => button.addEventListener('click', async () => (await loadRecipeForm()).openAdd()));
   cancelDeleteRecipe?.addEventListener('click', closeDeleteConfirm);
   confirmDeleteRecipe?.addEventListener('click', confirmSoftDelete);
 
@@ -378,5 +378,10 @@ export async function initRecipesPage() {
     if (pending) {
       (await loadRecipeForm()).openDraft(pending.draft, pending.generationId, pending.warnings, pending.goalInfo);
     }
+  }
+
+  // The sidebar's global "Add a recipe" link lands here from other pages via ?add=1.
+  if (initialParams.get('add') === '1') {
+    (await loadRecipeForm()).openAdd();
   }
 }

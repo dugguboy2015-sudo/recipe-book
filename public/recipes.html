@@ -8,9 +8,23 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/pages.css" />
+  <script src="js/theme.js"></script>
 </head>
 <body data-page="recipes">
   <a class="skip-link" href="#content">Skip to content</a>
+
+  <aside class="sidebar-nav" aria-label="Main navigation">
+    <span class="sidebar-wordmark">Recipe Book</span>
+    <nav class="sidebar-nav-links">
+      <a href="index.html"><span class="icon" aria-hidden="true">🏠</span> Dashboard</a>
+      <a href="recipes.html" aria-current="page"><span class="icon" aria-hidden="true">🍲</span> Recipes</a>
+      <a href="planner.html"><span class="icon" aria-hidden="true">🗓️</span> Weekly Planner</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button type="button" class="primary-button sidebar-add-recipe" data-open-add-recipe>Add a recipe</button>
+    </div>
+  </aside>
+
   <div class="wrap">
     <header class="site-header">
       <nav class="site-nav" aria-label="Main navigation">
@@ -19,6 +33,7 @@
         <a href="planner.html">Weekly Planner</a>
         <button type="button" id="scrollToGeneratePanel">Ask for a recipe</button>
       </nav>
+      <button type="button" class="icon-button theme-toggle-button" id="themeToggleButton"></button>
     </header>
 
     <main id="content" class="page-shell">
@@ -391,7 +406,7 @@
     </div>
   </dialog>
 
-  <button id="addRecipeButton" class="floating-add-button" type="button" title="Add recipe" aria-label="Add recipe">+</button>
+  <button id="addRecipeButton" class="floating-add-button" type="button" title="Add recipe" aria-label="Add recipe" data-open-add-recipe>+</button>
   <div id="snackbar" class="snackbar" aria-live="polite"></div>
   <div id="turnstileContainer"></div>
 
