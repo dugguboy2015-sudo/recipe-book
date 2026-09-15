@@ -405,6 +405,22 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 }
 .tabs [role="tab"][aria-selected="true"] { color: var(--brand-ink); border-bottom-color: var(--brand-ink); }
 
+/* ---------- Dashed add affordance (an empty meal slot, dashboard + planner) ---------- */
+.slot-add-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-control);
+  padding: var(--sp-1) var(--sp-3);
+  min-height: 44px;
+  font-size: var(--fs-2);
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+.slot-add-link:hover { border-color: var(--brand); color: var(--brand-ink); }
+
 /* ---------- EmptyState ---------- */
 .empty-state { padding: var(--sp-6) var(--sp-4); text-align: center; color: var(--ink-muted); display: grid; gap: var(--sp-3); justify-items: center; }
 .empty-state .primary-button, .empty-state .ghost-button { margin-top: var(--sp-2); }

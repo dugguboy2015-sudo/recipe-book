@@ -18,7 +18,42 @@
 .content-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); flex-wrap: wrap; }
 .content-head h2 { color: var(--brand-ink); }
 
-/* ---------- Dashboard "This week" (task 12.1) ---------- */
+/* ---------- Dashboard ---------- */
+.dashboard-grid { display: grid; gap: var(--sp-5); }
+
+@media (min-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 380px;
+    grid-template-areas: "thisweek ask" "recent stats";
+  }
+  /* align-items: stretch is the grid default — the thisweek/ask row already matches height. */
+  .dashboard-grid .this-week-card { grid-area: thisweek; }
+  .dashboard-grid .ask-inline-card { grid-area: ask; }
+  .dashboard-grid .dashboard-recent { grid-area: recent; }
+  .dashboard-grid .dashboard-stats { grid-area: stats; }
+  /* .dashboard-stats' 380px area is under the .card-grid auto-fit threshold (2 * 250px), so it
+     naturally renders as one column here with no override needed. */
+}
+
+@media (min-width: 761px) and (max-width: 1099px) {
+  .dashboard-stats { grid-template-columns: repeat(4, 1fr); }
+}
+
+.recent-grid { grid-template-columns: repeat(2, 1fr); }
+
+@media (max-width: 760px) {
+  .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+  .recent-grid { grid-template-columns: 1fr; }
+}
+
+.ask-inline-card {
+  background: linear-gradient(135deg, var(--surface), var(--ok-bg));
+  border-color: var(--brand);
+  display: flex;
+  flex-direction: column;
+}
+.ask-inline-lede { color: var(--ink-muted); font-size: var(--fs-2); margin-bottom: var(--sp-3); }
+.ask-suggestion-chips { margin-bottom: var(--sp-3); }
 .ask-inline-form { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .ask-inline-form input { flex: 1; min-width: 220px; }
 
