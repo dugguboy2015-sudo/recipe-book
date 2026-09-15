@@ -1,3 +1,5 @@
+import { wireThemeToggle } from './components/theme-toggle.js';
+
 const pageType = document.body.dataset.page || 'dashboard';
 
 const pageModules = {
@@ -7,6 +9,8 @@ const pageModules = {
 };
 
 async function initApp() {
+  wireThemeToggle(document.getElementById('themeToggleButton'));
+
   if (!window.supabase) {
     console.error('Supabase client is not available.');
     return;

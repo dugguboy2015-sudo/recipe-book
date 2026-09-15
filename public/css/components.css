@@ -422,7 +422,17 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 .status-region { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- App shell ---------- */
-.site-header { display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-6); }
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  position: relative;
+  min-height: 44px; /* keeps the theme toggle vertically placed even when .site-nav is hidden (mobile) */
+}
+
+.theme-toggle-button { position: absolute; top: 50%; right: 0; transform: translateY(-50%); }
 
 .site-nav { display: flex; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
 
@@ -494,6 +504,55 @@ header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(
   .bottom-tab-bar a[aria-current="page"] { color: var(--brand-ink); }
   body { padding-bottom: 72px; }
 }
+
+/* ---------- Desktop sidebar nav (>=1100px) ----------
+   Tablet (760-1099px) keeps .site-nav's centred pills; mobile (<760px) keeps .bottom-tab-bar above.
+   Both already exist — 1100px is the only new breakpoint this adds. */
+.sidebar-nav { display: none; }
+
+@media (min-width: 1100px) {
+  body { padding-left: 240px; }
+
+  .site-nav a { display: none; } /* page links now live in the sidebar; Ask for a recipe stays */
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-6);
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    width: 240px;
+    padding: var(--sp-6) var(--sp-5);
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    z-index: 10;
+  }
+}
+
+.sidebar-wordmark { font-family: 'Fraunces', serif; font-weight: 700; font-size: var(--fs-5); color: var(--brand-ink); }
+
+.sidebar-nav-links { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.sidebar-nav-links a {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+.sidebar-nav-links a:hover { background: var(--surface-raised); }
+.sidebar-nav-links a[aria-current="page"] { background: var(--protein-bg); color: var(--brand-ink); }
+.sidebar-nav-links .icon { font-size: var(--fs-4); }
+
+.sidebar-footer { margin-top: auto; }
+.sidebar-add-recipe { width: 100%; }
 
 /* ---------- Structured ingredient editor (task 7.1) ---------- */
 .ingredient-groups, .method-groups { display: grid; gap: var(--sp-4); margin-top: var(--sp-4); }

@@ -42,6 +42,11 @@
 .sg-fs-2 { font-size: var(--fs-2); }
 .sg-fs-1 { font-size: var(--fs-1); }
 
+/* Force the real .sidebar-nav (fixed, >=1100px-only in the app) to render inline at any width,
+   just for this demo — components.css owns every other rule it uses. */
+.sg-sidebar-demo { max-width: 240px; }
+.sg-sidebar-demo .sidebar-nav { display: flex; position: static; width: auto; height: auto; }
+
 .sg-w-7 { width: 7%; }
 .sg-w-35 { width: 35%; }
 .sg-w-45 { width: 45%; }
