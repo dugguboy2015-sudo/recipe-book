@@ -15,14 +15,13 @@ import { getHousehold } from '../lib/household.js';
 function defaultFilters() {
   return {
     search: '', cuisine: '', tags: [], mealTypes: [],
-    vegetarian: false, eggFree: false, dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null,
+    dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null,
   };
 }
 
 function toDietaryFilter(filters) {
   return {
-    vegetarian: filters.vegetarian, eggFree: filters.eggFree, dairyFree: filters.dairyFree,
-    proteinSmart: filters.proteinSmart, nutFree: filters.nutFree, spiceMax: filters.spiceMax,
+    dairyFree: filters.dairyFree, proteinSmart: filters.proteinSmart, nutFree: filters.nutFree, spiceMax: filters.spiceMax,
   };
 }
 
@@ -58,6 +57,12 @@ export async function initRecipesPage() {
   const clearFilters = document.getElementById('clearFilters');
   const mealTypeFilters = document.getElementById('mealTypeFilters');
   const spiceMaxFilter = document.getElementById('spiceMaxFilter');
+  const filterPanel = document.getElementById('filterPanel');
+  const filterSheetBackdrop = document.getElementById('filterSheetBackdrop');
+  const openFilterSheet = document.getElementById('openFilterSheet');
+  const closeFilterSheet = document.getElementById('closeFilterSheet');
+  const applyFilterSheet = document.getElementById('applyFilterSheet');
+  const filterSheetCount = document.getElementById('filterSheetCount');
 
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
@@ -118,7 +123,7 @@ export async function initRecipesPage() {
 
   document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => {
     const key = chip.dataset.dietary;
-    const stateKey = { vegetarian: 'vegetarian', 'egg-free': 'eggFree', 'dairy-free': 'dairyFree', 'protein-smart': 'proteinSmart', 'nut-free': 'nutFree' }[key];
+    const stateKey = { 'dairy-free': 'dairyFree', 'protein-smart': 'proteinSmart', 'nut-free': 'nutFree' }[key];
     if (stateKey && state.filters[stateKey]) chip.classList.add('active');
     chip.addEventListener('click', () => {
       const active = chip.classList.contains('active');
@@ -140,10 +145,14 @@ export async function initRecipesPage() {
 
   searchInput.value = state.filters.search;
 
-  function updateStatus(count) {
+  // Always the true match count (state.totalFilteredCount), not just what fits on this page —
+  // "Page X of Y" already communicates paging, so "N recipes" here and the filter sheet's
+  // "Show N recipes" agree on what N means (found in passing while wiring the sheet's live count).
+  function updateStatus() {
     const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
-    resultCount.textContent = `${count} recipes`;
-    if (resultStatus) resultStatus.textContent = `${count} recipes found`;
+    resultCount.textContent = `${state.totalFilteredCount} recipes`;
+    if (resultStatus) resultStatus.textContent = `${state.totalFilteredCount} recipes found`;
+    if (filterSheetCount) filterSheetCount.textContent = String(state.totalFilteredCount);
     pageStatus.textContent = `Page ${state.page} of ${totalPages}`;
     prevPage.disabled = state.page <= 1;
     nextPage.disabled = state.page >= totalPages;
@@ -167,7 +176,7 @@ export async function initRecipesPage() {
     recipeGrid.innerHTML = '';
     if (!recipes.length) {
       recipeGrid.innerHTML = '<div class="empty-state">No recipes match your filters.</div>';
-      updateStatus(0);
+      updateStatus();
       return;
     }
 
@@ -192,7 +201,7 @@ export async function initRecipesPage() {
       });
     });
 
-    updateStatus(recipes.length);
+    updateStatus();
   }
 
   async function refreshRecipes() {
@@ -337,6 +346,49 @@ export async function initRecipesPage() {
     document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => chip.classList.remove('active'));
     refreshRecipes();
   });
+
+  // ---------- Mobile filter sheet (task B.2): the same .filter-panel is a persistent sidebar on
+  // desktop/tablet and a bottom sheet here — opened by the "Filters" pill, dismissed by its own
+  // Close button, "Show N recipes", the backdrop, or Escape. `inert` on everything else stands in
+  // for a real focus trap (this isn't a native <dialog>, so there's no free one from showModal()).
+  if (filterPanel && filterSheetBackdrop && openFilterSheet) {
+    const inertTargets = [
+      document.querySelector('.sidebar-nav'),
+      document.querySelector('.site-header'),
+      document.querySelector('.page-header'),
+      generatePanelContainer,
+      document.querySelector('.recipes-results'),
+      document.querySelector('.site-footer'),
+      document.querySelector('.bottom-tab-bar'),
+    ].filter(Boolean);
+    let lastFocusedBeforeSheet = null;
+
+    function onSheetKeydown(event) {
+      if (event.key === 'Escape') closeSheet();
+    }
+
+    function openSheet() {
+      lastFocusedBeforeSheet = document.activeElement;
+      filterPanel.classList.add('filter-sheet-open');
+      filterSheetBackdrop.classList.add('filter-sheet-open');
+      inertTargets.forEach((el) => { el.inert = true; });
+      (filterPanel.querySelector('input, select, button') || filterPanel).focus();
+      document.addEventListener('keydown', onSheetKeydown);
+    }
+
+    function closeSheet() {
+      filterPanel.classList.remove('filter-sheet-open');
+      filterSheetBackdrop.classList.remove('filter-sheet-open');
+      inertTargets.forEach((el) => { el.inert = false; });
+      document.removeEventListener('keydown', onSheetKeydown);
+      if (lastFocusedBeforeSheet?.isConnected) lastFocusedBeforeSheet.focus();
+    }
+
+    openFilterSheet.addEventListener('click', openSheet);
+    closeFilterSheet?.addEventListener('click', closeSheet);
+    applyFilterSheet?.addEventListener('click', closeSheet);
+    filterSheetBackdrop.addEventListener('click', closeSheet);
+  }
 
   prevPage.addEventListener('click', () => {
     if (state.page > 1) {

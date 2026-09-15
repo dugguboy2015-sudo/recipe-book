@@ -19,8 +19,6 @@ function applySearchFilters(query, filters = {}) {
   for (const tag of filters.tags || []) q = q.contains('tags', [tag]);
   for (const mealType of filters.mealTypes || []) q = q.contains('meal_types', [mealType]);
   const dietary = filters.dietary || {};
-  if (dietary.vegetarian) q = q.eq('is_vegetarian', true);
-  if (dietary.eggFree) q = q.eq('is_egg_free', true);
   if (dietary.dairyFree) q = q.eq('contains_dairy', false);
   if (dietary.proteinSmart) q = q.eq('is_protein_smart', true);
   if (dietary.nutFree) q = q.eq('contains_nuts', false);
@@ -31,7 +29,7 @@ function applySearchFilters(query, filters = {}) {
 /**
  * The one search implementation (BUG-6), used by both the recipes page and the planner.
  * @param {{ term?: string, cuisine?: string, tags?: string[], mealTypes?: string[],
- *   dietary?: { vegetarian?: boolean, eggFree?: boolean, dairyFree?: boolean, proteinSmart?: boolean, nutFree?: boolean, spiceMax?: number } }} filters
+ *   dietary?: { dairyFree?: boolean, proteinSmart?: boolean, nutFree?: boolean, spiceMax?: number } }} filters
  * @param {{ page: number, pageSize: number }} pagination
  * @returns {Promise<{ok: boolean, data: object[], totalCount: number, page: number, error: object|null}>}
  */

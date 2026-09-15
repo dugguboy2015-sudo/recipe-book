@@ -9,8 +9,6 @@ export function filtersToSearchParams(filters, page) {
   if (filters.cuisine) params.set('cuisine', filters.cuisine);
   if (filters.tags?.length) params.set('tags', filters.tags.join(','));
   if (filters.mealTypes?.length) params.set('meal', filters.mealTypes.join(','));
-  if (filters.vegetarian) params.set('veg', '1');
-  if (filters.eggFree) params.set('eggfree', '1');
   if (filters.dairyFree) params.set('dairyfree', '1');
   if (filters.proteinSmart) params.set('proteinsmart', '1');
   if (filters.nutFree) params.set('nutfree', '1');
@@ -26,8 +24,6 @@ export function searchParamsToFilters(params) {
     cuisine: params.get('cuisine') || '',
     tags: params.get('tags') ? params.get('tags').split(',').filter(Boolean) : [],
     mealTypes: params.get('meal') ? params.get('meal').split(',').filter(Boolean) : [],
-    vegetarian: params.get('veg') === '1',
-    eggFree: params.get('eggfree') === '1',
     dairyFree: params.get('dairyfree') === '1',
     proteinSmart: params.get('proteinsmart') === '1',
     nutFree: params.get('nutfree') === '1',
