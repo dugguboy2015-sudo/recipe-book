@@ -405,12 +405,15 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 }
 .tabs [role="tab"][aria-selected="true"] { color: var(--brand-ink); border-bottom-color: var(--brand-ink); }
 
-/* ---------- Dashed add affordance (an empty meal slot, dashboard + planner) ---------- */
+/* ---------- Dashed add affordance (an empty meal slot, dashboard + planner) — an <a> on the
+   dashboard (links to the planner) and a <button> in the planner itself (opens the picker), so
+   this resets background/width the way a plain link never needs but a native button does. */
 .slot-add-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-left: auto;
+  background: none;
   border: 1px dashed var(--line);
   border-radius: var(--radius-control);
   padding: var(--sp-1) var(--sp-3);

@@ -197,6 +197,14 @@
 
 .planner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--sp-4); }
 
+/* Below desktop, a week reads as a week (one scrollable row) rather than reflowing into whatever
+   auto-fit can fit per row (desktop keeps that auto-fit behaviour above — usually 4-5 columns,
+   wrapping the rest, with no horizontal scroll). */
+@media (max-width: 1099px) {
+  #weekView { overflow-x: auto; }
+  #weekView .planner-grid { grid-template-columns: repeat(7, minmax(150px, 1fr)); }
+}
+
 .planner-day { border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--sp-3); background: var(--surface-raised); }
 .planner-day h3 { font-size: var(--fs-4); color: var(--brand-ink); margin-bottom: var(--sp-3); }
 
@@ -213,7 +221,6 @@
 
 .slot-card { border: 1px dashed var(--line); border-radius: var(--radius-control); padding: var(--sp-2); background: var(--surface); display: grid; gap: var(--sp-2); }
 .slot-card-header { display: flex; align-items: center; gap: var(--sp-2); }
-.slot-empty { font-size: var(--fs-2); color: var(--ink-muted); padding: var(--sp-1) 0; }
 .slot-recipe { font-weight: 700; color: var(--ink); line-height: 1.4; }
 .slot-recipe-link { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--brand-ink); text-align: left; text-decoration: underline; cursor: pointer; }
 .slot-unavailable { font-style: italic; color: var(--ink-muted); }
