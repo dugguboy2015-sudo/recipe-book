@@ -3,8 +3,13 @@
 // "tomorrow" can belong to a different week than "today") now that the store holds many weeks, not
 // just one — see lib/planner-store.js for the multi-week schema these read from.
 
-import { DAYS, PROTEIN_SMART_SLOTS } from './planner-constants.js';
+import { DAYS, SLOTS, WEEKDAYS, PROTEIN_SMART_SLOTS } from './planner-constants.js';
 import { getWeekDays, mondayOf } from '../lib/planner-store.js';
+
+/** Packed Lunch only applies on school days (config/household.json) — every other slot, every day. */
+export function slotsForDay(day) {
+  return SLOTS.filter((slot) => slot !== 'Packed Lunch' || WEEKDAYS.includes(day));
+}
 
 export function parseLocalDate(iso) {
   const [y, m, d] = iso.split('-').map(Number);

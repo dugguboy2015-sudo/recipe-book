@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, computeProteinSmartShare } from '../../public/js/shared/plan-summary.js';
+import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, computeProteinSmartShare, slotsForDay } from '../../public/js/shared/plan-summary.js';
 import { defaultStore, setWeekDays, emptyDays } from '../../public/js/lib/planner-store.js';
 
 describe('todayIso / addDaysIso', () => {
@@ -35,6 +35,16 @@ describe('entriesOnDate', () => {
 
   it('returns an empty array for an untouched date', () => {
     expect(entriesOnDate(defaultStore(), '2026-09-14')).toEqual([]);
+  });
+});
+
+describe('slotsForDay', () => {
+  it('includes Packed Lunch on a weekday', () => {
+    expect(slotsForDay('Monday')).toEqual(['Breakfast', 'Packed Lunch', 'Lunch', 'Dinner', 'Snacks', 'Dessert']);
+  });
+
+  it('excludes Packed Lunch on a weekend day', () => {
+    expect(slotsForDay('Saturday')).toEqual(['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Dessert']);
   });
 });
 

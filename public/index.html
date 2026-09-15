@@ -43,33 +43,41 @@
         <p>Browse favourite dishes, plan the week, and keep the family mealtimes light and easy.</p>
       </header>
 
-      <section class="planner-card this-week-card" id="thisWeekCard">
-        <div class="content-head">
-          <h2 id="dashboardGreeting">This week</h2>
-        </div>
-        <div id="thisWeekBody"></div>
-      </section>
+      <div class="dashboard-grid">
+        <section class="planner-card this-week-card" id="thisWeekCard">
+          <div class="content-head">
+            <h2 id="dashboardGreeting">This week</h2>
+          </div>
+          <div id="thisWeekBody"></div>
+        </section>
 
-      <section class="planner-card ask-inline-card">
-        <div class="content-head">
-          <h2>Ask for a recipe</h2>
-        </div>
-        <form id="dashAskForm" class="ask-inline-form">
-          <label class="sr-only" for="dashAskInput">Describe the recipe you want</label>
-          <input type="text" id="dashAskInput" class="search-box" placeholder="e.g. a quick protein-rich breakfast" autocomplete="off" />
-          <button type="submit" class="primary-button">Ask</button>
-        </form>
-        <div id="askRecipeTip"></div>
-      </section>
+        <section class="planner-card ask-inline-card">
+          <div class="content-head">
+            <h2><span aria-hidden="true">✨</span> Ask for a recipe</h2>
+          </div>
+          <p class="ask-inline-lede">Describe what you're after and AI will draft a full recipe from the collection's style.</p>
+          <div class="chip-group ask-suggestion-chips" id="askSuggestionChips">
+            <button type="button" class="chip" data-ask-suggestion="a quick protein-rich breakfast">Quick breakfast</button>
+            <button type="button" class="chip" data-ask-suggestion="a high-protein dinner for tonight">High-protein dinner</button>
+            <button type="button" class="chip" data-ask-suggestion="a nut-free packed lunch the kids will eat">Kids will eat</button>
+          </div>
+          <form id="dashAskForm" class="ask-inline-form">
+            <label class="sr-only" for="dashAskInput">Describe the recipe you want</label>
+            <input type="text" id="dashAskInput" class="search-box" placeholder="e.g. a quick protein-rich breakfast" autocomplete="off" />
+            <button type="submit" class="primary-button">Ask</button>
+          </form>
+          <div id="askRecipeTip"></div>
+        </section>
 
-      <section class="card-grid stats-grid" id="statsGrid"></section>
+        <section class="dashboard-recent">
+          <div class="content-head">
+            <h2>Recently added</h2>
+          </div>
+          <div class="card-grid recent-grid" id="recentGrid"></div>
+        </section>
 
-      <section>
-        <div class="content-head">
-          <h2>Recently added</h2>
-        </div>
-        <div class="card-grid recent-grid" id="recentGrid"></div>
-      </section>
+        <section class="card-grid stats-grid dashboard-stats" id="statsGrid"></section>
+      </div>
     </main>
 
     <footer class="site-footer">

@@ -6,13 +6,13 @@ import { monogramSvg } from '../components/monogram.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
-import { planWeek, shuffleEntry, WEEKDAYS } from '../shared/planner-engine.js';
+import { planWeek, shuffleEntry } from '../shared/planner-engine.js';
 import {
   DAYS, SLOTS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
   replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
   parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf,
 } from '../lib/planner-store.js';
-import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare } from '../shared/plan-summary.js';
+import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay } from '../shared/plan-summary.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
 import { MEAL_TYPES } from '../shared/html.js';
@@ -362,10 +362,6 @@ export async function initPlannerPage() {
         </div>
       </div>
     `;
-  }
-
-  function slotsForDay(day) {
-    return SLOTS.filter((slot) => slot !== 'Packed Lunch' || WEEKDAYS.includes(day));
   }
 
   function renderMealSlot(weekOf, day, slot, days) {
