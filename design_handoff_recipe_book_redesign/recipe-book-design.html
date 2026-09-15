@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #FFF3E6; }
+    a { color: #23665F; text-decoration: none; }
+    a:hover { color: #D95D39; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid #23665F; outline-offset: 2px; }
+  </style>
+</helmet>
+
+<div style="display:flex; min-height:100vh; background:#FFF3E6; color:#283044; font-family:'Work Sans', sans-serif;">
+
+  <sc-if value="{{ showSidebarNav }}" hint-placeholder-val="{{ true }}">
+    <aside style="width:240px; flex-shrink:0; background:#FFFCF7; border-right:1px solid #E8CDB8; padding:32px 20px; display:flex; flex-direction:column; gap:28px; position:sticky; top:0; height:100vh;">
+      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:22px; color:#23665F;">Recipe Book</span>
+      <nav style="display:flex; flex-direction:column; gap:6px;">
+        <sc-for list="{{ sidebarNavItems }}" as="item" hint-placeholder-count="3">
+          <button type="button" onClick="{{ item.onClick }}" style="{{ item.style }}">
+            <span style="font-size:18px;">{{ item.glyph }}</span>
+            <span>{{ item.label }}</span>
+          </button>
+        </sc-for>
+      </nav>
+      <div style="margin-top:auto;">
+        <button type="button" onClick="{{ openAddRecipeHandler }}" style="width:100%; background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:12px 16px; font-weight:600; font-size:15px;">Add a recipe</button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+
+    <header style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 24px; border-bottom:1px solid #E8CDB8; background:#FFFCF7;">
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <span style="font-family:'Fraunces',serif; font-size:20px; font-weight:600; color:#283044;">{{ screenTitle }}</span>
+      </sc-if>
+      <sc-if value="{{ isNotDesktop }}" hint-placeholder-val="{{ false }}">
+        <span style="font-family:'Fraunces',serif; font-weight:700; font-size:20px; color:#23665F;">Recipe Book</span>
+      </sc-if>
+
+      <sc-if value="{{ isTablet }}" hint-placeholder-val="{{ false }}">
+        <nav style="display:flex; gap:8px;">
+          <sc-for list="{{ tabNavItems }}" as="item" hint-placeholder-count="3">
+            <button type="button" onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.label }}</button>
+          </sc-for>
+        </nav>
+      </sc-if>
+
+      <button type="button" onClick="{{ openAddRecipeHandler }}" style="background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 16px; font-weight:600; font-size:14px; white-space:nowrap;">Add a recipe</button>
+    </header>
+
+    <main style="{{ mainStyle }}">
+
+      <sc-if value="{{ isDashboardScreen }}" hint-placeholder-val="{{ true }}">
+        <section>
+          <header style="text-align:center; margin-bottom:32px;">
+            <span style="display:inline-block; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#23665F; font-weight:600; padding:4px 16px; border:1px solid #4D9A8B; border-radius:999px; margin-bottom:16px;">Recipe Book</span>
+            <h1 style="font-family:'Fraunces',serif; font-size:40px; font-weight:700; line-height:1.1; color:#283044;">Kitchen joy, <em style="font-style:italic; color:#D95D39;">one menu</em> at a time</h1>
+            <p style="max-width:560px; margin:12px auto 0; color:#5E6872; font-size:16px;">Browse favourite dishes, plan the week, and keep mealtimes light and easy.</p>
+          </header>
+
+          <div style="{{ dashboardGridStyle }}">
+            <div style="{{ thisWeekAreaStyle }}">
+              <div style="background:#FFFCF7; border:1px solid #E8CDB8; border-radius:12px; box-shadow:0 12px 28px rgba(40,48,68,0.08); padding:20px;">
+                <h2 style="color:#23665F; font-family:'Fraunces',serif; font-size:22px; margin-bottom:16px;">This week &middot; Monday</h2>
+                <div style="display:grid; gap:12px;">
+                  <sc-for list="{{ todayMeals }}" as="meal" hint-placeholder-count="5">
+                    <div style="display:flex; align-items:center; gap:12px; border:1px solid #E8CDB8; border-radius:6px; padding:10px 14px; flex-wrap:wrap;">
+                      <span style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#5E6872; min-width:90px; font-weight:700;">{{ meal.slot }}</span>
+                      <sc-if value="{{ meal.hasRecipe }}" hint-placeholder-val="{{ true }}">
+                        <button type="button" onClick="{{ meal.onOpen }}" style="border:0; background:none; font-weight:700; color:#23665F; text-decoration:underline; text-align:left;">{{ meal.recipeName }}</button>
+                      </sc-if>
+                      <sc-if value="{{ meal.isEmpty }}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{ meal.onAssign }}" style="border:1px dashed #E8CDB8; background:none; border-radius:6px; padding:6px 10px; font-size:13px; color:#5E6872;">+ Add something</button>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <div style="{{ askAreaStyle }} height:100%;">
+              <div style="background:linear-gradient(135deg,#FFFCF7,#E2F3EC); border:1px solid #4D9A8B; border-radius:12px; box-shadow:0 12px 28px rgba(40,48,68,0.08); padding:20px; height:100%; display:flex; flex-direction:column;">
+                <h2 style="color:#1B6E4F; font-family:'Fraunces',serif; font-size:22px; margin-bottom:6px; display:flex; align-items:center; gap:8px;"><span>&#10024;</span> Ask AI for a recipe</h2>
+                <p style="font-size:13px; color:#5E6872; margin-bottom:14px;">Describe what you're after — AI will draft a full recipe from the collection's style.</p>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                  <sc-for list="{{ askSuggestionChips }}" as="s" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ s.onClick }}" style="border:1px solid #4D9A8B; background:#FFFCF7; border-radius:999px; padding:6px 12px; font-size:12px; color:#1B6E4F; font-weight:600;">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                  <textarea value="{{ askPrompt }}" onChange="{{ onAskPromptChange }}" placeholder="e.g. a quick protein-rich breakfast" rows="3" style="flex:1; min-width:180px; border:1px solid #4D9A8B; border-radius:6px; padding:10px 12px; min-height:88px; background:#FFFCF7; resize:vertical;"></textarea>
+                  <button type="button" onClick="{{ askAiHandler }}" style="background:#1B6E4F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 16px; height:44px; font-weight:700; white-space:nowrap; flex-shrink:0;">&#10024; Ask AI</button>
+                </div>
+                <sc-if value="{{ hasAskResult }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:14px; background:#FFFCF7; border:1px solid #4D9A8B; border-radius:8px; padding:14px; margin-top:auto;">
+                    <p style="font-size:13px; color:#5E6872; margin-bottom:8px;">Based on your description, this looked closest:</p>
+                    <button type="button" onClick="{{ askResult.onOpen }}" style="border:0; background:none; text-align:left; font-weight:700; color:#1B6E4F; text-decoration:underline; font-size:15px;">{{ askResult.name }}</button>
+                    <p style="font-size:13px; color:#5E6872; margin-top:4px;">{{ askResult.desc }}</p>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+
+            <div style="{{ statsAreaStyle }}">
+              <div style="{{ statsGridStyle }}">
+                <sc-for list="{{ stats }}" as="stat" hint-placeholder-count="4">
+                  <div style="background:#FFFCF7; border:1px solid #E8CDB8; border-radius:12px; box-shadow:0 12px 28px rgba(40,48,68,0.08); padding:20px 16px;">
+                    <span style="color:#23665F; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700; display:inline-block; margin-bottom:8px;">{{ stat.label }}</span>
+                    <div style="font-family:'Fraunces',serif; font-size:26px; color:#283044; margin-bottom:4px;">{{ stat.value }}</div>
+                    <div style="font-size:13px; color:#5E6872;">{{ stat.sub }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="{{ recentAreaStyle }}">
+              <div>
+                <h2 style="color:#23665F; font-family:'Fraunces',serif; font-size:22px; margin-bottom:16px;">Recently added</h2>
+                <div style="{{ recentGridStyle }}">
+                  <sc-for list="{{ recent }}" as="r" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ r.onOpen }}" style="{{ r.cardStyle }}">
+                      <div style="{{ r.cuisineBandStyle }}">{{ r.cuisine }}</div>
+                      <h3 style="font-family:'Fraunces',serif; font-size:18px; color:#23665F; margin-top:10px;">{{ r.name }}</h3>
+                      <p style="font-size:13px; color:#5E6872; margin-top:6px;">{{ r.totalTime }} min &middot; serves {{ r.serves }}</p>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isRecipesScreen }}" hint-placeholder-val="{{ false }}">
+        <section>
+          <header style="text-align:center; margin-bottom:24px;">
+            <span style="display:inline-block; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#23665F; font-weight:600; padding:4px 16px; border:1px solid #4D9A8B; border-radius:999px; margin-bottom:16px;">Recipe library</span>
+            <h1 style="font-family:'Fraunces',serif; font-size:36px; font-weight:700; color:#283044;">Find the right dish <em style="font-style:italic; color:#D95D39;">for the moment</em></h1>
+          </header>
+
+          <div style="{{ recipesRowStyle }}">
+
+            <sc-if value="{{ showFilterSidebar }}" hint-placeholder-val="{{ true }}">
+              <aside style="width:260px; flex-shrink:0; background:#FFFCF7; border:1px solid #E8CDB8; border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:18px; position:sticky; top:88px;">
+                <h3 style="font-family:'Fraunces',serif; font-size:18px; color:#23665F;">Filters</h3>
+                <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+                  <span>Search</span>
+                  <input type="search" value="{{ search }}" onChange="{{ onSearchChange }}" placeholder="Recipe name or description" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5; font-size:15px; color:#283044;" />
+                </label>
+                <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+                  <span>Cuisine</span>
+                  <select value="{{ cuisineFilter }}" onChange="{{ onCuisineChange }}" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5; font-size:15px;">
+                    <option value="">All cuisines</option>
+                    <sc-for list="{{ cuisineOptions }}" as="c" hint-placeholder-count="8">
+                      <option value="{{ c.value }}">{{ c.value }}</option>
+                    </sc-for>
+                  </select>
+                </label>
+                <div>
+                  <span style="font-weight:600; font-size:13px; color:#23665F; display:block; margin-bottom:8px;">Meal type</span>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <sc-for list="{{ mealTypeChips }}" as="m" hint-placeholder-count="4">
+                      <button type="button" onClick="{{ m.onClick }}" style="{{ m.style }}">{{ m.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div>
+                  <span style="font-weight:600; font-size:13px; color:#23665F; display:block; margin-bottom:8px;">Dietary</span>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <sc-for list="{{ dietaryChips }}" as="d" hint-placeholder-count="3">
+                      <button type="button" onClick="{{ d.onClick }}" style="{{ d.style }}">{{ d.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+                  <span>Spice up to</span>
+                  <select value="{{ spiceMax }}" onChange="{{ onSpiceChange }}" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5; font-size:15px;">
+                    <option value="">Any</option>
+                    <option value="1">1 &mdash; mild</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5 &mdash; very hot</option>
+                  </select>
+                </label>
+                <button type="button" onClick="{{ clearFiltersHandler }}" style="background:transparent; border:1px solid #E8CDB8; border-radius:6px; padding:10px 14px; font-weight:600; color:#283044;">Clear filters</button>
+              </aside>
+            </sc-if>
+
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+                <h2 style="color:#23665F; font-family:'Fraunces',serif; font-size:22px;">{{ resultCount }} recipes</h2>
+                <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ toggleMobileFiltersHandler }}" style="border:1px solid #E8CDB8; border-radius:999px; padding:8px 16px; font-weight:600; background:#FFFAF5;">Filters</button>
+                </sc-if>
+              </div>
+
+              <div style="{{ recipeGridStyle }}">
+                <sc-for list="{{ recipes }}" as="r" hint-placeholder-count="6">
+                  <button type="button" onClick="{{ r.onOpen }}" style="{{ r.cardStyle }}">
+                    <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+                      <div style="{{ r.cuisineBandStyle }}">{{ r.cuisine }}</div>
+                      <div style="{{ r.monogramStyle }}">{{ r.initials }}</div>
+                    </div>
+                    <h3 style="font-family:'Fraunces',serif; font-size:19px; color:#23665F; margin-top:10px;">{{ r.name }}</h3>
+                    <p style="color:#5E6872; font-size:14px; line-height:1.5; margin-top:6px;">{{ r.desc }}</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:13px; color:#5E6872; margin-top:10px;">
+                      <span>{{ r.totalTime }} min</span><span>&middot;</span><span>Serves {{ r.serves }}</span><span>&middot;</span>
+                      <span style="display:inline-flex; gap:2px;">
+                        <sc-for list="{{ r.chilis }}" as="c" hint-placeholder-count="5"><span style="{{ c.style }}">&#9679;</span></sc-for>
+                      </span>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+                      <sc-for list="{{ r.badges }}" as="b" hint-placeholder-count="2"><span style="{{ b.style }}">{{ b.label }}</span></sc-for>
+                    </div>
+                    <p style="font-size:12px; color:#1B6E4F; font-weight:700; margin-top:8px;">{{ r.protein }}g protein / serving</p>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isPlannerScreen }}" hint-placeholder-val="{{ false }}">
+        <section>
+          <header style="text-align:center; margin-bottom:24px;">
+            <span style="display:inline-block; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#23665F; font-weight:600; padding:4px 16px; border:1px solid #4D9A8B; border-radius:999px; margin-bottom:16px;">Weekly kitchen planner</span>
+            <h1 style="font-family:'Fraunces',serif; font-size:36px; font-weight:700; color:#283044;">Plan the week, <em style="font-style:italic; color:#D95D39;">without the chaos</em></h1>
+          </header>
+
+          <div style="background:#FFFCF7; border:1px solid #E8CDB8; border-radius:12px; box-shadow:0 12px 28px rgba(40,48,68,0.08); padding:20px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+              <div style="display:flex; gap:4px; border-bottom:1px solid #E8CDB8;">
+                <sc-for list="{{ plannerTabs }}" as="t" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ isPlannerDay }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button type="button" onClick="{{ dayPrevHandler }}" style="width:36px; height:36px; border:1px solid #E8CDB8; border-radius:6px; background:#FFFAF5; font-size:16px;">&lsaquo;</button>
+                  <span style="font-weight:700; color:#23665F; min-width:12ch; text-align:center;">{{ activeDayRow.day }}</span>
+                  <button type="button" onClick="{{ dayNextHandler }}" style="width:36px; height:36px; border:1px solid #E8CDB8; border-radius:6px; background:#FFFAF5; font-size:16px;">&rsaquo;</button>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+              <div style="flex:1; min-width:220px;">
+                <div style="position:relative; height:10px; border-radius:999px; background:#E8CDB8; width:100%;">
+                  <span style="{{ proteinBarStyle }}"></span>
+                </div>
+                <p style="margin-top:8px; font-weight:600; font-size:14px;">Protein-smart: {{ proteinSharePct }}% of the collection meets the household's 60% goal</p>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="button" onClick="{{ autoFillHandler }}" style="background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 16px; font-weight:600;">{{ autoFillLabel }}</button>
+                <button type="button" onClick="{{ resetWeekHandler }}" style="background:#B42318; color:#FFFCF7; border:0; border-radius:6px; padding:10px 16px; font-weight:600;">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ isPlannerWeek }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x:{{ weekScroll }};">
+              <div style="{{ weekGridStyle }}">
+                <sc-for list="{{ weekRows }}" as="dayRow" hint-placeholder-count="7">
+                  <div style="{{ dayRow.colStyle }}">
+                    <h3 style="font-size:15px; color:#23665F; margin-bottom:10px; font-weight:700;">{{ dayRow.day }}</h3>
+                    <div style="display:grid; gap:10px;">
+                      <sc-for list="{{ dayRow.slots }}" as="slotItem" hint-placeholder-count="4">
+                        <div style="{{ slotItem.cardStyle }}">
+                          <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.07em; color:#5E6872; font-weight:700;">{{ slotItem.slot }}</span>
+                          <sc-if value="{{ slotItem.hasRecipe }}" hint-placeholder-val="{{ false }}">
+                            <button type="button" onClick="{{ slotItem.onOpen }}" style="border:0; background:none; text-align:left; font-weight:700; color:#23665F; text-decoration:underline; font-size:13px;">{{ slotItem.recipeName }}</button>
+                            <button type="button" onClick="{{ slotItem.onClear }}" style="border:0; background:none; color:#5E6872; font-size:11px; text-align:left; text-decoration:underline;">Remove</button>
+                          </sc-if>
+                          <sc-if value="{{ slotItem.isEmpty }}" hint-placeholder-val="{{ true }}">
+                            <button type="button" onClick="{{ slotItem.onAssign }}" style="border:1px dashed #E8CDB8; background:none; border-radius:6px; padding:6px; font-size:12px; color:#5E6872;">+ Add</button>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isPlannerDay }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:480px; display:grid; gap:12px;">
+              <sc-for list="{{ activeDayRow.slots }}" as="slotItem" hint-placeholder-count="4">
+                <div style="{{ slotItem.cardStyle }}">
+                  <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:#5E6872; font-weight:700;">{{ slotItem.slot }}</span>
+                  <sc-if value="{{ slotItem.hasRecipe }}" hint-placeholder-val="{{ false }}">
+                    <button type="button" onClick="{{ slotItem.onOpen }}" style="border:0; background:none; text-align:left; font-weight:700; color:#23665F; text-decoration:underline; font-size:15px;">{{ slotItem.recipeName }}</button>
+                    <button type="button" onClick="{{ slotItem.onClear }}" style="border:0; background:none; color:#5E6872; font-size:12px; text-align:left; text-decoration:underline;">Remove</button>
+                  </sc-if>
+                  <sc-if value="{{ slotItem.isEmpty }}" hint-placeholder-val="{{ true }}">
+                    <button type="button" onClick="{{ slotItem.onAssign }}" style="border:1px dashed #E8CDB8; background:none; border-radius:6px; padding:8px; font-size:13px; color:#5E6872;">+ Add something</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isPlannerMonth }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid #E8CDB8; border-radius:12px; overflow:hidden;">
+              <div style="display:grid; grid-template-columns:repeat(7,1fr); background:#FFFAF5;">
+                <sc-for list="{{ weekdayLabels }}" as="wd" hint-placeholder-count="7">
+                  <div style="padding:8px; text-align:center; font-size:11px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:#5E6872;">{{ wd.label }}</div>
+                </sc-for>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(7,1fr);">
+                <sc-for list="{{ monthCells }}" as="cell" hint-placeholder-count="35">
+                  <div style="{{ cell.style }}">
+                    <span>{{ cell.label }}</span>
+                    <sc-if value="{{ cell.hasDots }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; gap:3px;">
+                        <sc-for list="{{ cell.dotsList }}" as="dot" hint-placeholder-count="2">
+                          <span style="width:6px; height:6px; border-radius:50%; background:#4D9A8B; display:inline-block;"></span>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <p style="margin-top:16px; color:#5E6872; font-size:13px;">Plans are saved in this browser only. Export a copy to move them to another device.</p>
+        </section>
+      </sc-if>
+    </main>
+
+    <footer style="text-align:center; color:#5E6872; font-size:12px; padding:32px 0 {{ footerBottomPad }};">Recipe Book &mdash; a family kitchen companion.</footer>
+  </div>
+
+  <sc-if value="{{ showBottomTabs }}" hint-placeholder-val="{{ false }}">
+    <nav style="position:fixed; left:0; right:0; bottom:0; display:flex; background:#FFFCF7; border-top:1px solid #E8CDB8; box-shadow:0 -4px 16px rgba(40,48,68,0.08); z-index:40;">
+      <sc-for list="{{ bottomNavItems }}" as="item" hint-placeholder-count="3">
+        <button type="button" onClick="{{ item.onClick }}" style="{{ item.style }}">
+          <span style="font-size:18px;">{{ item.glyph }}</span>
+          <span>{{ item.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ showMobileFilters }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(40,48,68,0.45); z-index:70; display:flex; align-items:flex-end;">
+      <div style="width:100%; max-height:85vh; overflow-y:auto; background:#FFFCF7; border-radius:20px 20px 0 0; padding:24px 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-family:'Fraunces',serif; color:#23665F; font-size:20px;">Filters</h3>
+          <button type="button" onClick="{{ toggleMobileFiltersHandler }}" style="border:0; background:none; font-size:20px; color:#5E6872;">&times;</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+            <span>Search</span>
+            <input type="search" value="{{ search }}" onChange="{{ onSearchChange }}" placeholder="Recipe name or description" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5;" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+            <span>Cuisine</span>
+            <select value="{{ cuisineFilter }}" onChange="{{ onCuisineChange }}" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5;">
+              <option value="">All cuisines</option>
+              <sc-for list="{{ cuisineOptions }}" as="c" hint-placeholder-count="8"><option value="{{ c.value }}">{{ c.value }}</option></sc-for>
+            </select>
+          </label>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <sc-for list="{{ mealTypeChips }}" as="m" hint-placeholder-count="4"><button type="button" onClick="{{ m.onClick }}" style="{{ m.style }}">{{ m.label }}</button></sc-for>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <sc-for list="{{ dietaryChips }}" as="d" hint-placeholder-count="3"><button type="button" onClick="{{ d.onClick }}" style="{{ d.style }}">{{ d.label }}</button></sc-for>
+          </div>
+          <button type="button" onClick="{{ toggleMobileFiltersHandler }}" style="background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:12px; font-weight:700; margin-top:8px;">Show {{ resultCount }} recipes</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasSelectedRecipe }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(40,48,68,0.45); z-index:70; display:flex; align-items:center; justify-content:center;">
+      <div style="{{ detailPanelStyle }}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div style="display:flex; gap:14px; align-items:center;">
+            <div style="{{ selectedRecipe.monogramStyleLg }}">{{ selectedRecipe.initials }}</div>
+            <div>
+              <h2 style="font-family:'Fraunces',serif; font-size:24px; color:#283044;">{{ selectedRecipe.name }}</h2>
+              <div style="{{ selectedRecipe.cuisineBandStyle }}">{{ selectedRecipe.cuisine }}</div>
+            </div>
+          </div>
+          <button type="button" onClick="{{ closeRecipeHandler }}" style="border:0; background:none; font-size:22px; color:#5E6872;">&times;</button>
+        </div>
+
+        <p style="color:#5E6872; font-size:14px; line-height:1.6; margin-top:16px;">{{ selectedRecipe.desc }}</p>
+
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:12px;">
+          <sc-for list="{{ selectedRecipe.badges }}" as="b" hint-placeholder-count="2"><span style="{{ b.style }}">{{ b.label }}</span></sc-for>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-top:16px; padding:14px; background:#FFFAF5; border-radius:8px;">
+          <span style="font-size:14px; color:#5E6872;">Prep {{ selectedRecipe.prep }} min &middot; Cook {{ selectedRecipe.cook }} min</span>
+          <div style="display:inline-flex; align-items:center; gap:8px; border:1px solid #E8CDB8; border-radius:999px; padding:4px;">
+            <button type="button" onClick="{{ servingsDownHandler }}" style="width:28px; height:28px; border-radius:50%; border:0; background:#FFFAF5; color:#23665F; font-size:16px;">&minus;</button>
+            <span style="font-weight:700; min-width:2ch; text-align:center;">{{ selectedRecipe.servings }}</span>
+            <button type="button" onClick="{{ servingsUpHandler }}" style="width:28px; height:28px; border-radius:50%; border:0; background:#FFFAF5; color:#23665F; font-size:16px;">+</button>
+            <span style="font-size:13px; color:#5E6872; padding-right:6px;">servings</span>
+          </div>
+        </div>
+
+        <div style="{{ detailBodyStyle }}">
+          <div>
+            <h4 style="color:#23665F; font-size:15px; margin-bottom:10px;">Ingredients</h4>
+            <sc-for list="{{ selectedRecipe.ingredientGroups }}" as="g" hint-placeholder-count="2">
+              <div style="margin-bottom:14px;">
+                <span style="font-weight:700; font-size:13px; color:#283044; display:block; margin-bottom:6px;">{{ g.group }}</span>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+                  <p style="font-size:14px; color:#283044; line-height:1.6;">{{ it.scaledQty }} {{ it.unit }} {{ it.name }}</p>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          <div>
+            <h4 style="color:#23665F; font-size:15px; margin-bottom:10px;">Method</h4>
+            <sc-for list="{{ selectedRecipe.stepGroups }}" as="g" hint-placeholder-count="1">
+              <ol style="display:grid; gap:10px; padding-left:20px;">
+                <sc-for list="{{ g.items }}" as="step" hint-placeholder-count="4">
+                  <li style="font-size:14px; color:#283044; line-height:1.6;">{{ step }}</li>
+                </sc-for>
+              </ol>
+            </sc-for>
+            <h4 style="color:#23665F; font-size:15px; margin-top:20px; margin-bottom:10px;">Nutrition per serving</h4>
+            <p style="font-size:13px; color:#5E6872; line-height:1.8;">{{ selectedRecipe.cal }} kcal &middot; {{ selectedRecipe.protein }}g protein &middot; {{ selectedRecipe.carbs }}g carbs &middot; {{ selectedRecipe.fat }}g fat</p>
+            <p style="font-size:11px; color:#5E6872; margin-top:6px;">Estimate only, not medical advice.</p>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:24px;">
+          <button type="button" onClick="{{ addToPlanHandler }}" style="background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 16px; font-weight:600;">Add to Monday's dinner</button>
+          <button type="button" onClick="{{ closeRecipeHandler }}" style="background:transparent; border:1px solid #E8CDB8; border-radius:6px; padding:10px 16px; font-weight:600;">Close</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showAddRecipe }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(40,48,68,0.45); z-index:70; display:flex; align-items:center; justify-content:center;">
+      <div style="{{ wizardPanelStyle }}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h2 style="font-family:'Fraunces',serif; font-size:22px; color:#283044;">Add a new recipe</h2>
+          <button type="button" onClick="{{ closeAddRecipeHandler }}" style="border:0; background:none; font-size:22px; color:#5E6872;">&times;</button>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+          <sc-for list="{{ wizardTabs }}" as="t" hint-placeholder-count="4">
+            <button type="button" onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.stepNum }}. {{ t.label }}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ isWizardStep0 }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#E2F3EC; border:1px solid #4D9A8B; border-radius:10px; padding:14px; margin-bottom:16px; display:grid; gap:10px;">
+            <span style="font-weight:700; font-size:13px; color:#1B6E4F;">Or describe it and let AI draft the recipe</span>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <input type="text" value="{{ aiPrompt }}" onChange="{{ onAiPromptChange }}" placeholder="e.g. a high-protein Gujarati breakfast the kids will eat" style="flex:1; min-width:200px; border:1px solid #4D9A8B; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFCF7;" />
+              <button type="button" onClick="{{ aiGenerateHandler }}" style="background:#1B6E4F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 16px; font-weight:700; white-space:nowrap;">Generate with AI</button>
+            </div>
+          </div>
+          <div style="display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(200px,1fr));">
+            <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F; grid-column:1/-1;">
+              <span>Recipe name</span>
+              <input type="text" value="{{ wizardName }}" onChange="{{ onWizardNameChange }}" placeholder="e.g. Chicken-free Chettinad" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5;" />
+            </label>
+            <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+              <span>Cuisine</span>
+              <select style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5;"><option>South Indian</option><option>North Indian</option><option>Other</option></select>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F;">
+              <span>Serves</span>
+              <input type="number" placeholder="4" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; min-height:44px; background:#FFFAF5;" />
+            </label>
+            <label style="display:flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; color:#23665F; grid-column:1/-1;">
+              <span>Description</span>
+              <textarea rows="3" placeholder="Short description of the dish" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; background:#FFFAF5; resize:vertical;"></textarea>
+            </label>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWizardStep1 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; gap:16px;">
+            <div style="background:#FFFAF5; border:1px solid #E8CDB8; border-radius:10px; padding:14px;">
+              <span style="font-weight:700; font-size:13px; color:#283044; display:block; margin-bottom:10px;">Ingredients</span>
+              <div style="display:grid; gap:8px;">
+                <input type="text" placeholder="e.g. Basmati rice &mdash; 2 cup" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; background:#FFFCF7;" />
+                <input type="text" placeholder="e.g. Turmeric &mdash; 0.5 tsp" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; background:#FFFCF7;" />
+              </div>
+              <button type="button" style="margin-top:10px; border:1px dashed #E8CDB8; background:none; border-radius:6px; padding:8px 12px; font-size:13px; color:#5E6872;">+ Add ingredient row</button>
+            </div>
+            <div style="background:#FFFAF5; border:1px solid #E8CDB8; border-radius:10px; padding:14px;">
+              <span style="font-weight:700; font-size:13px; color:#283044; display:block; margin-bottom:10px;">Method</span>
+              <div style="display:grid; gap:8px;">
+                <textarea rows="2" placeholder="Step 1" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; background:#FFFCF7; resize:vertical;"></textarea>
+                <textarea rows="2" placeholder="Step 2" style="border:1px solid #E8CDB8; border-radius:6px; padding:10px 12px; background:#FFFCF7; resize:vertical;"></textarea>
+              </div>
+              <button type="button" style="margin-top:10px; border:1px dashed #E8CDB8; background:none; border-radius:6px; padding:8px 12px; font-size:13px; color:#5E6872;">+ Add step</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWizardStep2 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; gap:16px;">
+            <div style="display:grid; gap:10px; grid-template-columns:repeat(3,1fr);">
+              <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-weight:600; font-size:13px; color:#23665F;">Vegetarian?</span><div style="display:inline-flex; border:1px solid #E8CDB8; border-radius:999px; overflow:hidden;"><span style="padding:8px 16px; background:#23665F; color:#FFFCF7; font-size:13px; font-weight:600;">Yes</span><span style="padding:8px 16px; font-size:13px;">No</span></div></div>
+              <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-weight:600; font-size:13px; color:#23665F;">Egg-free?</span><div style="display:inline-flex; border:1px solid #E8CDB8; border-radius:999px; overflow:hidden;"><span style="padding:8px 16px; background:#23665F; color:#FFFCF7; font-size:13px; font-weight:600;">Yes</span><span style="padding:8px 16px; font-size:13px;">No</span></div></div>
+              <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-weight:600; font-size:13px; color:#23665F;">Contains dairy?</span><div style="display:inline-flex; border:1px solid #E8CDB8; border-radius:999px; overflow:hidden;"><span style="padding:8px 16px; font-size:13px;">Yes</span><span style="padding:8px 16px; background:#23665F; color:#FFFCF7; font-size:13px; font-weight:600;">No</span></div></div>
+            </div>
+            <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(120px,1fr));">
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#23665F; font-weight:600;">Calories<input type="number" placeholder="420" style="border:1px solid #E8CDB8; border-radius:6px; padding:8px 10px; background:#FFFAF5;" /></label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#23665F; font-weight:600;">Protein (g)<input type="number" placeholder="25" style="border:1px solid #E8CDB8; border-radius:6px; padding:8px 10px; background:#FFFAF5;" /></label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#23665F; font-weight:600;">Carbs (g)<input type="number" placeholder="40" style="border:1px solid #E8CDB8; border-radius:6px; padding:8px 10px; background:#FFFAF5;" /></label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#23665F; font-weight:600;">Fat (g)<input type="number" placeholder="18" style="border:1px solid #E8CDB8; border-radius:6px; padding:8px 10px; background:#FFFAF5;" /></label>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWizardStep3 }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#E2F3EC; border-radius:10px; padding:16px; display:grid; gap:8px;">
+            <p style="font-weight:700; color:#1B6E4F;">Ready to save</p>
+            <p style="font-size:14px; color:#283044; line-height:1.6;">Basics, ingredients, method and dietary answers all look complete. Saving adds this recipe to the collection and logs who added it.</p>
+          </div>
+        </sc-if>
+
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-top:24px;">
+          <button type="button" onClick="{{ wizardBackHandler }}" disabled="{{ isWizardStep0 }}" style="background:transparent; border:1px solid #E8CDB8; border-radius:6px; padding:10px 16px; font-weight:600;">Back</button>
+          <sc-if value="{{ isWizardStep3 }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ saveRecipeHandler }}" style="background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 20px; font-weight:700;">Save recipe</button>
+          </sc-if>
+          <sc-if value="{{ isWizardNotLast }}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{ wizardNextHandler }}" style="background:#23665F; color:#FFFCF7; border:0; border-radius:6px; padding:10px 20px; font-weight:700;">Next</button>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; left:50%; bottom:32px; transform:translateX(-50%); background:#283044; color:#FFFCF7; padding:12px 20px; border-radius:999px; font-size:14px; z-index:80;">{{ toast }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    screen: 'dashboard',
+    breakpoint: 'desktop',
+    search: '',
+    cuisineFilter: '',
+    dietaryActive: [],
+    mealTypeActive: [],
+    spiceMax: '',
+    showMobileFilters: false,
+    selectedRecipeId: null,
+    servingsOverride: null,
+    showAddRecipe: false,
+    wizardStep: 0,
+    aiPrompt: '',
+    wizardName: '',
+    askPrompt: '',
+    askResultId: null,
+    plannerView: null,
+    plannerDayIndex: 0,
+    plan: {
+      Mon: { Breakfast: 10, Lunch: null, Snack: null, Dinner: 2, Extra: null },
+      Tue: { Breakfast: 1, Lunch: 8, Snack: null, Dinner: null, Extra: null },
+      Wed: { Breakfast: null, Lunch: 3, Snack: 5, Dinner: 6, Extra: null },
+      Thu: { Breakfast: 10, Lunch: null, Snack: 7, Dinner: null, Extra: null },
+      Fri: { Breakfast: 1, Lunch: 8, Snack: null, Dinner: 9, Extra: null },
+      Sat: { Breakfast: null, Lunch: null, Snack: null, Dinner: null, Extra: null },
+      Sun: { Breakfast: null, Lunch: 4, Snack: null, Dinner: null, Extra: null }
+    },
+    toast: ''
+  };
+
+  componentDidMount() {
+    this._onMq = () => this.updateBreakpoint();
+    window.addEventListener('resize', this._onMq);
+    this.updateBreakpoint();
+    this._pollCount = 0;
+    this._pollTimer = setInterval(() => {
+      this.updateBreakpoint();
+      this._pollCount++;
+      if (this._pollCount > 20) clearInterval(this._pollTimer);
+    }, 150);
+  }
+  componentWillUnmount() {
+    clearInterval(this._pollTimer);
+    window.removeEventListener('resize', this._onMq);
+    clearTimeout(this._toastTimer);
+  }
+  updateBreakpoint() {
+    const w = document.documentElement.clientWidth || window.innerWidth;
+    const bp = w < 760 ? 'mobile' : w < 1100 ? 'tablet' : 'desktop';
+    if (bp !== this.state.breakpoint) this.setState({ breakpoint: bp });
+  }
+
+  dayKeys() { return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; }
+  slotKeys() { return ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Extra']; }
+
+  cuisineTint(cuisine) {
+    const map = {
+      'South Indian': ['#F6EBDF', '#6A421B'], 'North Indian': ['#F6E5DF', '#6A2E1B'],
+      'Maharashtrian': ['#F6DFE3', '#6A1B28'], 'Rajasthani': ['#F6F0DF', '#6A561B'],
+      'Chaat': ['#ECDFF6', '#491B6A'], 'Indo-Chinese': ['#F6E1DF', '#6A211B'],
+      'Gujarati': ['#F6F4DF', '#6A631B'], 'Fusion': ['#DFEEF6', '#1B506A'], 'Other': ['#F0EAE3', '#5E5548']
+    };
+    return map[cuisine] || map['Other'];
+  }
+
+  getRecipes() {
+    if (this._recipes) return this._recipes;
+    const raw = [
+      { id: 1, name: 'Masala Dosa with Coconut Chutney', cuisine: 'South Indian', desc: 'Crisp fermented rice-lentil crepe, spiced potato filling, coconut chutney.', mealTypes: ['Breakfast'], serves: 4, prep: 15, cook: 20, spice: 2, dairy: false, proteinSmart: false, nutFree: true, packedLunch: false, cal: 320, protein: 8, carbs: 52, fat: 10, initials: 'MD',
+        ingredients: [{ group: 'Batter', items: [{ name: 'dosa batter', qty: 4, unit: 'cup' }, { name: 'oil', qty: 4, unit: 'tsp' }] }, { group: 'Potato filling', items: [{ name: 'potatoes, boiled', qty: 4, unit: 'piece' }, { name: 'mustard seeds', qty: 1, unit: 'tsp' }, { name: 'curry leaves', qty: 8, unit: 'piece' }] }],
+        steps: [{ group: 'Method', items: ['Temper mustard seeds and curry leaves in oil.', 'Add mashed potatoes and mix well.', 'Spread batter thin on a hot tawa, drizzle oil.', 'Fill with potato mix, fold and serve with chutney.'] }] },
+      { id: 2, name: 'Paneer Butter Masala', cuisine: 'North Indian', desc: 'Paneer simmered in a silky tomato-cashew gravy.', mealTypes: ['Dinner'], serves: 4, prep: 20, cook: 30, spice: 2, dairy: true, proteinSmart: true, nutFree: true, packedLunch: false, cal: 410, protein: 18, carbs: 22, fat: 26, initials: 'PB',
+        ingredients: [{ group: 'Gravy', items: [{ name: 'tomatoes', qty: 4, unit: 'piece' }, { name: 'cashews', qty: 2, unit: 'tbsp' }, { name: 'butter', qty: 3, unit: 'tbsp' }] }, { group: 'Paneer', items: [{ name: 'paneer, cubed', qty: 400, unit: 'g' }, { name: 'garam masala', qty: 1, unit: 'tsp' }] }],
+        steps: [{ group: 'Method', items: ['Blend tomatoes and cashews into a smooth puree.', 'Cook puree in butter until thickened.', 'Add garam masala and cream, simmer.', 'Fold in paneer and warm through.'] }] },
+      { id: 3, name: 'Misal Pav', cuisine: 'Maharashtrian', desc: 'Sprouted moth bean curry, spicy tarri, crunchy toppings, pav.', mealTypes: ['Breakfast', 'Lunch'], serves: 4, prep: 15, cook: 25, spice: 4, dairy: false, proteinSmart: true, nutFree: true, packedLunch: false, cal: 380, protein: 16, carbs: 55, fat: 9, initials: 'MP',
+        ingredients: [{ group: 'Curry', items: [{ name: 'sprouted moth beans', qty: 3, unit: 'cup' }, { name: 'misal masala', qty: 2, unit: 'tbsp' }] }, { group: 'To serve', items: [{ name: 'pav bread', qty: 8, unit: 'piece' }, { name: 'farsan', qty: 1, unit: 'cup' }] }],
+        steps: [{ group: 'Method', items: ['Cook sprouts with misal masala until tender.', 'Prepare a thin spicy tarri to pour over.', 'Top with chopped onion, farsan and lime.', 'Serve hot with pav.'] }] },
+      { id: 4, name: 'Dal Baati Churma', cuisine: 'Rajasthani', desc: 'Baked wheat rounds, spiced dal, sweet churma.', mealTypes: ['Dinner'], serves: 4, prep: 30, cook: 40, spice: 2, dairy: true, proteinSmart: true, nutFree: false, packedLunch: false, cal: 520, protein: 15, carbs: 68, fat: 20, initials: 'DB',
+        ingredients: [{ group: 'Baati', items: [{ name: 'whole wheat flour', qty: 3, unit: 'cup' }, { name: 'ghee', qty: 4, unit: 'tbsp' }] }, { group: 'Dal & churma', items: [{ name: 'mixed lentils', qty: 2, unit: 'cup' }, { name: 'jaggery', qty: 3, unit: 'tbsp' }] }],
+        steps: [{ group: 'Method', items: ['Knead a stiff dough, shape into rounds, bake until golden.', 'Cook mixed lentils into a spiced dal.', 'Crumble a few baati with jaggery and ghee for churma.', 'Serve baati with dal, churma and extra ghee.'] }] },
+      { id: 5, name: 'Bhel Puri', cuisine: 'Chaat', desc: 'Puffed rice tossed with chutneys, onion, tomato and sev.', mealTypes: ['Snack'], serves: 4, prep: 15, cook: 0, spice: 3, dairy: false, proteinSmart: false, nutFree: false, packedLunch: false, cal: 180, protein: 5, carbs: 30, fat: 6, initials: 'BP',
+        ingredients: [{ group: 'Bhel', items: [{ name: 'puffed rice', qty: 4, unit: 'cup' }, { name: 'tamarind chutney', qty: 3, unit: 'tbsp' }, { name: 'onion, chopped', qty: 1, unit: 'piece' }] }],
+        steps: [{ group: 'Method', items: ['Toss puffed rice with both chutneys.', 'Add chopped onion and tomato.', 'Top with sev and a squeeze of lime.', 'Serve immediately so it stays crisp.'] }] },
+      { id: 6, name: 'Veg Manchurian', cuisine: 'Indo-Chinese', desc: 'Crisp vegetable balls in a glossy garlic-chilli sauce.', mealTypes: ['Dinner'], serves: 4, prep: 20, cook: 25, spice: 3, dairy: false, proteinSmart: false, nutFree: true, packedLunch: false, cal: 300, protein: 7, carbs: 40, fat: 12, initials: 'VM',
+        ingredients: [{ group: 'Balls', items: [{ name: 'mixed vegetables, grated', qty: 3, unit: 'cup' }, { name: 'cornflour', qty: 3, unit: 'tbsp' }] }, { group: 'Sauce', items: [{ name: 'garlic, chopped', qty: 2, unit: 'tbsp' }, { name: 'soy sauce', qty: 2, unit: 'tbsp' }] }],
+        steps: [{ group: 'Method', items: ['Shape vegetable mix into balls and fry until golden.', 'Stir-fry garlic and green chilli.', 'Add soy sauce and a little stock, thicken slightly.', 'Toss the fried balls through the sauce and serve hot.'] }] },
+      { id: 7, name: 'Dhokla', cuisine: 'Gujarati', desc: 'Steamed savoury gram-flour cake with a tempered topping.', mealTypes: ['Snack'], serves: 4, prep: 15, cook: 20, spice: 1, dairy: false, proteinSmart: false, nutFree: true, packedLunch: true, cal: 160, protein: 6, carbs: 26, fat: 4, initials: 'DH',
+        ingredients: [{ group: 'Batter', items: [{ name: 'gram flour', qty: 2, unit: 'cup' }, { name: 'yoghurt', qty: 0.5, unit: 'cup' }] }, { group: 'Tempering', items: [{ name: 'mustard seeds', qty: 1, unit: 'tsp' }, { name: 'curry leaves', qty: 6, unit: 'piece' }] }],
+        steps: [{ group: 'Method', items: ['Mix gram flour and yoghurt into a smooth batter, rest.', 'Fold in fruit salt just before steaming.', 'Steam for 15-18 minutes until a skewer comes out clean.', 'Pour a mustard-curry leaf tempering over the top.'] }] },
+      { id: 8, name: 'Rajma Tikki Wrap', cuisine: 'Fusion', desc: 'Spiced kidney-bean patties rolled into a wholewheat wrap.', mealTypes: ['Lunch'], serves: 4, prep: 20, cook: 15, spice: 2, dairy: true, proteinSmart: true, nutFree: true, packedLunch: true, cal: 340, protein: 14, carbs: 45, fat: 11, initials: 'RW',
+        ingredients: [{ group: 'Tikki', items: [{ name: 'kidney beans, cooked', qty: 2, unit: 'cup' }, { name: 'boiled potato', qty: 1, unit: 'piece' }] }, { group: 'Wrap', items: [{ name: 'wholewheat wraps', qty: 4, unit: 'piece' }, { name: 'yoghurt mint sauce', qty: 4, unit: 'tbsp' }] }],
+        steps: [{ group: 'Method', items: ['Mash beans and potato with chaat masala, shape patties.', 'Pan-fry patties until crisp on both sides.', 'Warm the wraps and spread with mint sauce.', 'Roll patties with salad into each wrap.'] }] },
+      { id: 9, name: 'Roast Vegetable & Nut Roast', cuisine: 'Other', desc: 'A British Sunday roast built around a herby nut roast.', mealTypes: ['Dinner'], serves: 4, prep: 25, cook: 45, spice: 1, dairy: true, proteinSmart: true, nutFree: false, packedLunch: false, cal: 430, protein: 16, carbs: 38, fat: 22, initials: 'NR',
+        ingredients: [{ group: 'Nut roast', items: [{ name: 'mixed nuts, chopped', qty: 2, unit: 'cup' }, { name: 'breadcrumbs', qty: 1, unit: 'cup' }] }, { group: 'Roast veg', items: [{ name: 'potatoes', qty: 4, unit: 'piece' }, { name: 'carrots', qty: 4, unit: 'piece' }] }],
+        steps: [{ group: 'Method', items: ['Mix nuts, breadcrumbs and cheese, press into a tin.', 'Bake the nut roast until firm and golden.', 'Roast potatoes and carrots in olive oil until crisp.', 'Slice the nut roast and serve with the roast veg.'] }] },
+      { id: 10, name: 'Moong Dal Chilla', cuisine: 'North Indian', desc: 'Savoury lentil pancakes, a fast high-protein breakfast.', mealTypes: ['Breakfast'], serves: 4, prep: 10, cook: 15, spice: 1, dairy: false, proteinSmart: true, nutFree: true, packedLunch: true, cal: 220, protein: 13, carbs: 28, fat: 6, initials: 'MC',
+        ingredients: [{ group: 'Batter', items: [{ name: 'split moong dal, soaked', qty: 2, unit: 'cup' }, { name: 'ginger', qty: 1, unit: 'tsp' }] }, { group: 'To finish', items: [{ name: 'oil', qty: 2, unit: 'tsp' }, { name: 'coriander, chopped', qty: 2, unit: 'tbsp' }] }],
+        steps: [{ group: 'Method', items: ['Blend soaked dal with ginger and chilli into a smooth batter.', 'Stir in chopped coriander and a pinch of salt.', 'Pour and spread on a hot griddle, drizzle oil.', 'Flip once golden and serve warm.'] }] }
+    ];
+    this._recipes = raw.map(r => {
+      const [bg, ink] = this.cuisineTint(r.cuisine);
+      const badges = [];
+      if (r.proteinSmart) badges.push({ label: 'Protein-smart', style: { display: 'inline-flex', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: '#E2F3EC', color: '#1B6E4F' } });
+      if (r.packedLunch) badges.push({ label: 'Packed lunch', style: { display: 'inline-flex', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: '#DFEEF6', color: '#1B506A' } });
+      if (r.nutFree) badges.push({ label: 'Nut-free', style: { display: 'inline-flex', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: '#F6F4DF', color: '#6A631B' } });
+      const chilis = [0, 1, 2, 3, 4].map(i => ({ style: { fontSize: '11px', color: i < r.spice ? '#D95D39' : '#E8CDB8' } }));
+      const cuisineBandStyle = { padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, background: bg, color: ink, display: 'inline-block' };
+      const monogramStyle = { width: '40px', height: '40px', borderRadius: '6px', background: bg, color: ink, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '14px', flexShrink: 0, fontFamily: "'Fraunces',serif" };
+      const monogramStyleLg = { ...monogramStyle, width: '56px', height: '56px', fontSize: '18px', borderRadius: '10px' };
+      const cardStyle = { display: 'block', width: '100%', textAlign: 'left', border: '1px solid #E8CDB8', borderRadius: '12px', padding: '18px', background: '#FFFCF7', boxShadow: '0 12px 28px rgba(40,48,68,0.08)' };
+      return { ...r, cuisineBg: bg, cuisineInk: ink, badges, chilis, cuisineBandStyle, monogramStyle, monogramStyleLg, cardStyle, totalTime: r.prep + r.cook };
+    });
+    return this._recipes;
+  }
+
+  recipesById() { const m = {}; this.getRecipes().forEach(r => { m[r.id] = r; }); return m; }
+
+  showToast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: '' }), 2200);
+  }
+
+  setScreen(s) { this.setState({ screen: s, showMobileFilters: false }); }
+  setSearch(v) { this.setState({ search: v }); }
+  setCuisineFilter(v) { this.setState({ cuisineFilter: v }); }
+  setSpiceMax(v) { this.setState({ spiceMax: v }); }
+  toggleDietary(v) { const c = this.state.dietaryActive; this.setState({ dietaryActive: c.includes(v) ? c.filter(x => x !== v) : [...c, v] }); }
+  toggleMealType(v) { const c = this.state.mealTypeActive; this.setState({ mealTypeActive: c.includes(v) ? c.filter(x => x !== v) : [...c, v] }); }
+  clearFilters() { this.setState({ search: '', cuisineFilter: '', dietaryActive: [], mealTypeActive: [], spiceMax: '' }); }
+  toggleMobileFilters() { this.setState(s => ({ showMobileFilters: !s.showMobileFilters })); }
+
+  openRecipe(id) { this.setState({ selectedRecipeId: id, servingsOverride: null }); }
+  closeRecipe() { this.setState({ selectedRecipeId: null }); }
+  changeServings(delta) {
+    const r = this.recipesById()[this.state.selectedRecipeId];
+    if (!r) return;
+    const base = this.state.servingsOverride == null ? r.serves : this.state.servingsOverride;
+    this.setState({ servingsOverride: Math.max(1, base + delta) });
+  }
+  addToPlan() {
+    const r = this.recipesById()[this.state.selectedRecipeId];
+    if (!r) return;
+    this.setState({ plan: { ...this.state.plan, Mon: { ...this.state.plan.Mon, Dinner: r.id } }, selectedRecipeId: null });
+    this.showToast(r.name + ' added to Monday dinner');
+  }
+
+  openAddRecipe() { this.setState({ showAddRecipe: true, wizardStep: 0, aiPrompt: '', wizardName: '' }); }
+  setAiPrompt(v) { this.setState({ aiPrompt: v }); }
+  setAskPrompt(v) { this.setState({ askPrompt: v, askResultId: null }); }
+  askAi() {
+    const prompt = this.state.askPrompt.trim().toLowerCase();
+    if (!prompt) return;
+    const recipes = this.getRecipes();
+    const match = recipes.find(r => prompt.split(' ').some(w => w.length > 3 && (r.name.toLowerCase().includes(w) || r.desc.toLowerCase().includes(w) || r.mealTypes.some(m => m.toLowerCase().includes(w)))));
+    const pick = match || recipes[Math.floor(Math.random() * recipes.length)];
+    this.setState({ askResultId: pick.id });
+  }
+  setWizardName(v) { this.setState({ wizardName: v }); }
+  aiGenerate() {
+    const prompt = this.state.aiPrompt.trim();
+    if (!prompt) return;
+    const draftName = prompt.charAt(0).toUpperCase() + prompt.slice(1);
+    this.setState({ wizardName: draftName, wizardStep: 3 });
+    this.showToast('Drafted a recipe from your description — review before saving');
+  }
+  closeAddRecipe() { this.setState({ showAddRecipe: false }); }
+  wizardGo(step) { this.setState({ wizardStep: step }); }
+  wizardNext() { this.setState(s => ({ wizardStep: Math.min(3, s.wizardStep + 1) })); }
+  wizardBack() { this.setState(s => ({ wizardStep: Math.max(0, s.wizardStep - 1) })); }
+  saveRecipeDraft() { this.setState({ showAddRecipe: false, wizardStep: 0 }); this.showToast('Recipe saved to the collection'); }
+
+  setPlannerView(v) { this.setState({ plannerView: v }); }
+  navDay(delta) {
+    const days = this.dayKeys();
+    const idx = Math.max(0, Math.min(days.length - 1, this.state.plannerDayIndex + delta));
+    this.setState({ plannerDayIndex: idx });
+  }
+  assignRandom(day, slot) {
+    const recipes = this.getRecipes();
+    const pick = recipes[Math.floor(Math.random() * recipes.length)];
+    this.setState({ plan: { ...this.state.plan, [day]: { ...this.state.plan[day], [slot]: pick.id } } });
+    this.showToast(pick.name + ' added to ' + day + ' ' + slot);
+  }
+  clearSlot(day, slot) { this.setState({ plan: { ...this.state.plan, [day]: { ...this.state.plan[day], [slot]: null } } }); }
+  autoFillDay() {
+    const day = this.dayKeys()[this.state.plannerDayIndex];
+    const recipes = this.getRecipes();
+    const dayPlan = {};
+    this.slotKeys().forEach(slot => { dayPlan[slot] = this.state.plan[day][slot] || recipes[Math.floor(Math.random() * recipes.length)].id; });
+    this.setState({ plan: { ...this.state.plan, [day]: dayPlan } });
+    this.showToast(day + ' auto-filled');
+  }
+  autoFillWeek() {
+    const recipes = this.getRecipes();
+    const plan = {};
+    this.dayKeys().forEach(day => {
+      plan[day] = {};
+      this.slotKeys().forEach(slot => { plan[day][slot] = this.state.plan[day][slot] || recipes[Math.floor(Math.random() * recipes.length)].id; });
+    });
+    this.setState({ plan });
+    this.showToast('Week auto-filled from your preferences');
+  }
+  autoFillMonth() {
+    const recipes = this.getRecipes();
+    const plan = {};
+    this.dayKeys().forEach(day => {
+      plan[day] = {};
+      this.slotKeys().forEach(slot => { plan[day][slot] = this.state.plan[day][slot] || recipes[Math.floor(Math.random() * recipes.length)].id; });
+    });
+    this.setState({ plan });
+    this.showToast('Month auto-filled from your preferences');
+  }
+  resetWeek() {
+    const plan = {};
+    this.dayKeys().forEach(day => { plan[day] = { Breakfast: null, Lunch: null, Snack: null, Dinner: null, Extra: null }; });
+    this.setState({ plan });
+    this.showToast('This week was reset');
+  }
+
+  renderVals() {
+    const bp = this.state.breakpoint;
+    const isMobile = bp === 'mobile', isTablet = bp === 'tablet', isDesktop = bp === 'desktop';
+    const recipes = this.getRecipes();
+    const byId = this.recipesById();
+
+    const cuisines = Array.from(new Set(recipes.map(r => r.cuisine))).sort();
+    const cuisineOptions = cuisines.map(c => ({ value: c }));
+    const mealTypeOptions = ['Breakfast', 'Lunch', 'Snack', 'Dinner'];
+
+
+    const chipStyle = (active) => ({ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 600, border: '1px solid ' + (active ? '#23665F' : '#E8CDB8'), background: active ? '#23665F' : '#FFFAF5', color: active ? '#FFFCF7' : '#283044' });
+    const mealTypeChips = mealTypeOptions.map(m => { const active = this.state.mealTypeActive.includes(m); return { key: m, label: m, onClick: () => this.toggleMealType(m), style: chipStyle(active) }; });
+    const dietaryDefs = [{ key: 'dairy-free', label: 'Dairy-free' }, { key: 'protein-smart', label: 'Protein-smart' }, { key: 'nut-free', label: 'Nut-free' }];
+    const dietaryChips = dietaryDefs.map(d => { const active = this.state.dietaryActive.includes(d.key); return { key: d.key, label: d.label, onClick: () => this.toggleDietary(d.key), style: chipStyle(active) }; });
+
+    const search = this.state.search.trim().toLowerCase();
+    const filtered = recipes.filter(r => {
+      if (search && !(r.name.toLowerCase().includes(search) || r.desc.toLowerCase().includes(search))) return false;
+      if (this.state.cuisineFilter && r.cuisine !== this.state.cuisineFilter) return false;
+      if (this.state.mealTypeActive.length && !this.state.mealTypeActive.some(m => r.mealTypes.includes(m))) return false;
+      if (this.state.dietaryActive.includes('dairy-free') && r.dairy) return false;
+      if (this.state.dietaryActive.includes('protein-smart') && !r.proteinSmart) return false;
+      if (this.state.dietaryActive.includes('nut-free') && !r.nutFree) return false;
+      if (this.state.spiceMax && r.spice > Number(this.state.spiceMax)) return false;
+      return true;
+    });
+    const filteredCards = filtered.map(r => ({ ...r, onOpen: () => this.openRecipe(r.id) }));
+
+    const navDefs = [{ key: 'dashboard', label: 'Dashboard', glyph: '\u2302' }, { key: 'recipes', label: 'Recipes', glyph: '\u25A4' }, { key: 'planner', label: 'Planner', glyph: '\u25A6' }];
+    const sidebarNavItems = navDefs.map(n => { const active = this.state.screen === n.key; return { ...n, onClick: () => this.setScreen(n.key), style: { display: 'flex', alignItems: 'center', gap: '12px', border: '0', borderRadius: '999px', padding: '12px 16px', fontWeight: 600, fontSize: '15px', textAlign: 'left', width: '100%', background: active ? '#E2F3EC' : 'transparent', color: active ? '#23665F' : '#5E6872' } }; });
+    const tabNavItems = navDefs.map(n => { const active = this.state.screen === n.key; return { ...n, onClick: () => this.setScreen(n.key), style: { border: '0', borderRadius: '999px', padding: '10px 16px', fontWeight: 600, fontSize: '14px', background: active ? '#E2F3EC' : 'transparent', color: active ? '#23665F' : '#5E6872' } }; });
+    const bottomNavItems = navDefs.map(n => { const active = this.state.screen === n.key; return { ...n, onClick: () => this.setScreen(n.key), style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 4px', minHeight: '56px', flex: 1, fontSize: '11px', fontWeight: 600, border: '0', background: 'transparent', color: active ? '#23665F' : '#5E6872' } }; });
+
+    const totalRecipes = recipes.length;
+    const proteinSmartCount = recipes.filter(r => r.proteinSmart).length;
+    let plannedCount = 0;
+    this.dayKeys().forEach(d => this.slotKeys().forEach(s => { if (this.state.plan[d][s]) plannedCount += 1; }));
+    const totalSlots = this.dayKeys().length * this.slotKeys().length;
+    const stats = [
+      { label: 'Recipes saved', value: String(totalRecipes), sub: 'in your collection' },
+      { label: 'Protein-smart', value: proteinSmartCount + ' of ' + totalRecipes, sub: "meet the household's goal" },
+      { label: 'Cuisines', value: String(cuisines.length), sub: 'represented in this collection' },
+      { label: 'This week planned', value: plannedCount + ' of ' + totalSlots, sub: 'meal slots filled' }
+    ];
+    const recentCardStyle = { display: 'block', width: '100%', textAlign: 'left', border: '1px solid #E8CDB8', borderRadius: '12px', padding: '16px', background: '#FFFCF7', boxShadow: '0 12px 28px rgba(40,48,68,0.08)' };
+    const recent = recipes.slice(-4).reverse().map(r => ({ ...r, onOpen: () => this.openRecipe(r.id), cardStyle: recentCardStyle }));
+
+    const todayKey = 'Mon';
+    const todayMeals = this.slotKeys().map(slot => {
+      const rid = this.state.plan[todayKey][slot];
+      const r = rid ? byId[rid] : null;
+      return { slot, hasRecipe: !!r, isEmpty: !r, recipeName: r ? r.name : '', onOpen: r ? () => this.openRecipe(r.id) : null, onAssign: () => this.assignRandom(todayKey, slot) };
+    });
+
+    const dayColStyle = { background: '#FFFAF5', border: '1px solid #E8CDB8', borderRadius: '10px', padding: '12px' };
+    const weekRows = this.dayKeys().map((day, di) => {
+      const slots = this.slotKeys().map(slot => {
+        const rid = this.state.plan[day][slot];
+        const r = rid ? byId[rid] : null;
+        const filled = !!r;
+        return { day, slot, hasRecipe: filled, isEmpty: !filled, recipeName: r ? r.name : '',
+          onOpen: r ? () => this.openRecipe(r.id) : null, onAssign: () => this.assignRandom(day, slot), onClear: () => this.clearSlot(day, slot),
+          cardStyle: { border: '1px solid ' + (filled ? '#4D9A8B' : '#E8CDB8'), borderRadius: '8px', padding: '10px', background: filled ? '#E2F3EC' : '#FFFCF7', minHeight: '82px', display: 'flex', flexDirection: 'column', gap: '6px' } };
+      });
+      return { day, dayIndex: di, slots, colStyle: dayColStyle };
+    });
+    const activeDayRow = weekRows[this.state.plannerDayIndex];
+
+    const effectivePlannerView = this.state.plannerView || (isMobile ? 'day' : 'week');
+    const plannerDefs = ['day', 'week', 'month'];
+    const plannerTabs = plannerDefs.map(v => { const active = effectivePlannerView === v; return { key: v, label: v.charAt(0).toUpperCase() + v.slice(1), onClick: () => this.setPlannerView(v), style: { padding: '10px 16px', fontWeight: 700, fontSize: '14px', border: '0', borderBottom: '3px solid ' + (active ? '#23665F' : 'transparent'), color: active ? '#23665F' : '#5E6872', background: 'transparent' } }; });
+
+    const monthCells = [];
+    const daysInMonth = 30, leadOffset = 1;
+    for (let i = 0; i < leadOffset; i++) monthCells.push({ label: '31', outside: true, today: false, dots: 0 });
+    for (let d = 1; d <= daysInMonth; d++) monthCells.push({ label: String(d), outside: false, today: d === 13, dots: Math.min(3, (d * 3) % 4) });
+    let trail = 1;
+    while (monthCells.length % 7 !== 0) { monthCells.push({ label: String(trail), outside: true, today: false, dots: 0 }); trail++; }
+    const monthCellsFinal = monthCells.map(c => ({
+      label: c.label, hasDots: c.dots > 0 && !c.outside, dotsList: Array.from({ length: c.dots }, () => ({})),
+      style: { aspectRatio: '1/1', minHeight: isMobile ? '44px' : '64px', border: '1px solid #E8CDB8', background: c.outside ? '#FFFAF5' : (c.today ? '#E2F3EC' : '#FFFCF7'), color: c.outside ? '#5E6872' : '#283044', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', gap: '4px', padding: '6px', fontSize: '13px', fontWeight: c.today ? 700 : 400 }
+    }));
+    const weekdayLabels = this.dayKeys().map(d => ({ label: d }));
+
+    const selected = this.state.selectedRecipeId ? byId[this.state.selectedRecipeId] : null;
+    let selectedRecipe = null;
+    if (selected) {
+      const servings = this.state.servingsOverride == null ? selected.serves : this.state.servingsOverride;
+      const factor = servings / selected.serves;
+      const ingredientGroups = selected.ingredients.map(g => ({ group: g.group, items: g.items.map(it => ({ ...it, scaledQty: Math.round(it.qty * factor * 100) / 100 })) }));
+      selectedRecipe = { ...selected, servings, ingredientGroups, stepGroups: selected.steps };
+    }
+
+    const wizardLabels = ['Basics', 'Ingredients & method', 'Dietary & nutrition', 'Review'];
+    const wizardTabs = wizardLabels.map((label, i) => {
+      const active = this.state.wizardStep === i, done = i < this.state.wizardStep;
+      return { key: i, label, stepNum: i + 1, onClick: () => this.wizardGo(i), style: { border: '0', borderRadius: '999px', padding: '8px 14px', fontWeight: 600, fontSize: '12px', background: active ? '#23665F' : (done ? '#E2F3EC' : '#FFFAF5'), color: active ? '#FFFCF7' : (done ? '#1B6E4F' : '#5E6872') } };
+    });
+
+    return {
+      isMobile, isTablet, isDesktop, isNotDesktop: !isDesktop,
+      screen: this.state.screen, screenTitle: this.state.screen.charAt(0).toUpperCase() + this.state.screen.slice(1),
+      isDashboardScreen: this.state.screen === 'dashboard', isRecipesScreen: this.state.screen === 'recipes', isPlannerScreen: this.state.screen === 'planner',
+      showSidebarNav: isDesktop, showBottomTabs: isMobile, sidebarNavItems, tabNavItems, bottomNavItems,
+      mainStyle: { flex: 1, padding: isMobile ? '20px 16px 96px' : isTablet ? '28px 24px' : '40px', maxWidth: isDesktop ? '1320px' : '100%', margin: isDesktop ? '0 auto' : '0', width: '100%', boxSizing: 'border-box' },
+      footerBottomPad: isMobile ? '80px' : '24px',
+      openAddRecipeHandler: () => this.openAddRecipe(),
+      askPrompt: this.state.askPrompt, onAskPromptChange: (e) => this.setAskPrompt(e.target.value), askAiHandler: () => this.askAi(),
+      askSuggestionChips: ['Quick breakfast', 'High protein dinner', 'Kids will eat'].map(label => ({ key: label, label, onClick: () => { this.setState({ askPrompt: label }); this.askAi(); } })),
+      hasAskResult: !!this.state.askResultId,
+      askResult: this.state.askResultId ? { ...byId[this.state.askResultId], onOpen: () => this.openRecipe(this.state.askResultId) } : null,
+
+      dashboardGridStyle: { display: 'grid', gridTemplateColumns: isDesktop ? '1fr 380px' : '1fr', gridTemplateAreas: isDesktop ? '"thisweek ask" "recent stats"' : 'none', gap: '24px', alignItems: isDesktop ? 'stretch' : 'start' },
+      thisWeekAreaStyle: isDesktop ? { gridArea: 'thisweek' } : {}, askAreaStyle: isDesktop ? { gridArea: 'ask' } : {},
+      statsAreaStyle: isDesktop ? { gridArea: 'stats' } : {}, recentAreaStyle: isDesktop ? { gridArea: 'recent' } : {},
+      statsGridStyle: { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : (isDesktop ? '1fr' : 'repeat(4,1fr)'), gap: '16px' },
+      recentGridStyle: { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap: '16px' },
+      stats, recent, todayMeals,
+
+      recipesRowStyle: { display: 'flex', gap: '24px', alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row', width: '100%' },
+      showFilterSidebar: !isMobile, showMobileFilters: this.state.showMobileFilters,
+      recipeGridStyle: { display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, minmax(0,1fr))' : (isTablet ? 'repeat(2, minmax(0,1fr))' : '1fr'), gap: '20px' },
+      recipes: filteredCards, resultCount: filteredCards.length,
+      cuisineOptions, cuisineFilter: this.state.cuisineFilter, mealTypeChips, dietaryChips, spiceMax: this.state.spiceMax, search: this.state.search,
+      onSearchChange: (e) => this.setSearch(e.target.value), onCuisineChange: (e) => this.setCuisineFilter(e.target.value), onSpiceChange: (e) => this.setSpiceMax(e.target.value),
+      clearFiltersHandler: () => this.clearFilters(), toggleMobileFiltersHandler: () => this.toggleMobileFilters(),
+
+      plannerTabs, effectivePlannerView, isPlannerDay: effectivePlannerView === 'day', isPlannerWeek: effectivePlannerView === 'week', isPlannerMonth: effectivePlannerView === 'month',
+      weekRows, activeDayRow, monthCells: monthCellsFinal, weekdayLabels,
+      weekGridStyle: { display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(7, minmax(0,1fr))' : 'repeat(7, minmax(150px,1fr))', gap: '14px' },
+      weekScroll: !isDesktop ? 'auto' : 'visible',
+      proteinSharePct: Math.round((proteinSmartCount / totalRecipes) * 100),
+      proteinBarStyle: { display: 'block', height: '100%', borderRadius: '999px', background: '#4D9A8B', width: Math.round((proteinSmartCount / totalRecipes) * 100) + '%' },
+      dayPrevHandler: () => this.navDay(-1), dayNextHandler: () => this.navDay(1),
+      autoFillHandler: effectivePlannerView === 'day' ? () => this.autoFillDay() : (effectivePlannerView === 'month' ? () => this.autoFillMonth() : () => this.autoFillWeek()),
+      autoFillLabel: effectivePlannerView === 'day' ? ('Auto-fill ' + activeDayRow.day) : (effectivePlannerView === 'month' ? 'Auto-fill this month' : 'Auto-fill this week'),
+      resetWeekHandler: () => this.resetWeek(),
+
+      hasSelectedRecipe: !!selectedRecipe, selectedRecipe,
+      detailPanelStyle: { width: isMobile ? '100%' : 'min(760px,92vw)', height: isMobile ? '100%' : 'auto', maxHeight: isMobile ? '100%' : '88vh', overflowY: 'auto', background: '#FFFCF7', borderRadius: isMobile ? '0' : '20px', padding: isMobile ? '24px 18px' : '32px', boxShadow: '0 12px 28px rgba(40,48,68,0.12)' },
+      detailBodyStyle: { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0,1fr))', gap: '24px', marginTop: '24px' },
+      closeRecipeHandler: () => this.closeRecipe(), servingsDownHandler: () => this.changeServings(-1), servingsUpHandler: () => this.changeServings(1), addToPlanHandler: () => this.addToPlan(),
+
+      showAddRecipe: this.state.showAddRecipe, wizardTabs,
+      wizardPanelStyle: { width: isMobile ? '100%' : 'min(720px,92vw)', height: isMobile ? '100%' : 'auto', maxHeight: isMobile ? '100%' : '88vh', overflowY: 'auto', background: '#FFFCF7', borderRadius: isMobile ? '0' : '20px', padding: isMobile ? '24px 18px' : '32px', boxShadow: '0 12px 28px rgba(40,48,68,0.12)' },
+      isWizardStep0: this.state.wizardStep === 0, isWizardStep1: this.state.wizardStep === 1, isWizardStep2: this.state.wizardStep === 2, isWizardStep3: this.state.wizardStep === 3,
+      isWizardNotLast: this.state.wizardStep !== 3,
+      closeAddRecipeHandler: () => this.closeAddRecipe(), wizardBackHandler: () => this.wizardBack(), wizardNextHandler: () => this.wizardNext(), saveRecipeHandler: () => this.saveRecipeDraft(),
+      aiPrompt: this.state.aiPrompt, onAiPromptChange: (e) => this.setAiPrompt(e.target.value), aiGenerateHandler: () => this.aiGenerate(),
+      wizardName: this.state.wizardName, onWizardNameChange: (e) => this.setWizardName(e.target.value),
+
+      hasToast: !!this.state.toast, toast: this.state.toast
+    };
+  }
+}
+
+</script>
+</body>
+</html>
