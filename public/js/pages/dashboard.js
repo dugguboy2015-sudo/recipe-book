@@ -1,6 +1,6 @@
 import { escapeHtml } from '../shared/html.js';
 import { supabase } from '../lib/supabase-client.js';
-import { fetchRecipeStats, fetchRecentRecipes, fetchPlannerRecipesByIds, fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
+import { fetchRecipeStats, fetchRecentRecipes, fetchCuisineCounts, fetchPlannerRecipesByIds, fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { mountAskDialog } from '../components/ask-dialog.js';
@@ -10,7 +10,7 @@ import { openCookMode } from '../components/cook-mode.js';
 import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { getHousehold } from '../lib/household.js';
 import { loadPlanState, DAYS, getWeekDays, mondayOf } from '../lib/planner-store.js';
-import { computeProteinSmartShare, todayIso, addDaysIso, entriesOnDate } from '../shared/plan-summary.js';
+import { computeProteinSmartShare, todayIso, addDaysIso, entriesOnDate, dayNameForIso, slotsForDay } from '../shared/plan-summary.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 
 function greeting(now = new Date()) {
@@ -24,16 +24,19 @@ function isWeekEmpty(planDays) {
   return DAYS.every((day) => (planDays[day] || []).length === 0);
 }
 
-function renderStats(stats) {
+function renderStats(stats, cuisineCount, thisWeekPlannedCount) {
   const statsGrid = document.getElementById('statsGrid');
   if (!statsGrid) return;
 
   statsGrid.innerHTML = `
-    <article class="metric-card"><div class="label">Total recipes</div><div class="value">${stats.total}</div><div class="sub">Across the full collection</div></article>
-    <article class="metric-card"><div class="label">Top cuisine</div><div class="value">${escapeHtml(stats.top_cuisine || 'N/A')}</div><div class="sub">${stats.top_cuisine_count || 0} recipes</div></article>
+    <article class="metric-card"><div class="label">Recipes saved</div><div class="value">${stats.total}</div><div class="sub">Across the full collection</div></article>
     <article class="metric-card"><div class="label">Protein-smart</div><div class="value">${stats.protein_smart}</div><div class="sub">${stats.protein_smart} of ${stats.total} recipes are protein-smart</div></article>
+    <article class="metric-card"><div class="label">Cuisines</div><div class="value">${cuisineCount}</div><div class="sub">Represented in the collection</div></article>
+    <article class="metric-card"><div class="label">This week planned</div><div class="value">${thisWeekPlannedCount}</div><div class="sub">Meals assigned to this week</div></article>
   `;
 }
+
+const RECENT_COUNT = 4;
 
 function renderRecentGrid(recipes, onAskFirst) {
   const box = document.getElementById('recentGrid');
@@ -74,16 +77,15 @@ function renderSkeleton() {
   const statsGrid = document.getElementById('statsGrid');
   const recentGrid = document.getElementById('recentGrid');
   const thisWeekBody = document.getElementById('thisWeekBody');
-  if (statsGrid) statsGrid.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton metric-card-skeleton"></div>').join('');
-  if (recentGrid) recentGrid.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
+  if (statsGrid) statsGrid.innerHTML = Array.from({ length: 4 }).map(() => '<div class="skeleton metric-card-skeleton"></div>').join('');
+  if (recentGrid) recentGrid.innerHTML = Array.from({ length: RECENT_COUNT }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
   if (thisWeekBody) thisWeekBody.innerHTML = '<div class="skeleton metric-card-skeleton"></div>';
 }
 
-function mealRowHtml(entry, recipe) {
-  if (!recipe) return '';
+function mealRowHtml(slot, entry, recipe) {
   return `
     <div class="today-meal-row">
-      <span class="meal-slot-label">${escapeHtml(entry.slot)}</span>
+      <span class="meal-slot-label">${escapeHtml(slot)}</span>
       <div class="slot-card-art" aria-hidden="true">${monogramSvg(recipe)}</div>
       <strong>${escapeHtml(recipe.name)}</strong>
       <div class="today-meal-actions">
@@ -92,6 +94,21 @@ function mealRowHtml(entry, recipe) {
       </div>
     </div>
   `;
+}
+
+// Every applicable slot for today, not just the ones already planned — an empty slot gets the
+// dashed "+ Add something" affordance so the card is a way to fill gaps, not just a status readout.
+function todaySlotRowHtml(slot, entries, resolvedById) {
+  const resolvedEntries = entries.filter((entry) => resolvedById.has(entry.recipeId));
+  if (!resolvedEntries.length) {
+    return `
+      <div class="today-meal-row">
+        <span class="meal-slot-label">${escapeHtml(slot)}</span>
+        <a class="slot-add-link" href="planner.html">+ Add something</a>
+      </div>
+    `;
+  }
+  return resolvedEntries.map((entry) => mealRowHtml(slot, entry, resolvedById.get(entry.recipeId))).join('');
 }
 
 export async function initDashboardPage() {
@@ -113,24 +130,25 @@ export async function initDashboardPage() {
     askInput.value = '';
   });
 
+  // Fills the input for review rather than asking immediately — same "pick a value" feel as every
+  // other chip in the app, not an implicit submit.
+  document.getElementById('askSuggestionChips')?.querySelectorAll('[data-ask-suggestion]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      if (!askInput) return;
+      askInput.value = chip.dataset.askSuggestion;
+      askInput.focus();
+    });
+  });
+
   async function renderThisWeek() {
     if (!thisWeekBody) return;
     const household = await getHousehold().catch(() => null);
     const { store } = loadPlanState({ defaultServings: household?.default_servings || 4 });
     const thisWeekDays = getWeekDays(store, mondayOf());
-
-    if (isWeekEmpty(thisWeekDays)) {
-      thisWeekBody.innerHTML = `
-        <div class="empty-state">
-          <p>Your week is empty.</p>
-          <a class="primary-button" href="planner.html">Auto-fill it?</a>
-        </div>
-      `;
-      return;
-    }
+    const weekEmpty = isWeekEmpty(thisWeekDays);
 
     const plannedIds = [...new Set(DAYS.flatMap((day) => (thisWeekDays[day] || []).map((e) => e.recipeId)))];
-    const resolved = await fetchPlannerRecipesByIds(supabase, plannedIds);
+    const resolved = plannedIds.length ? await fetchPlannerRecipesByIds(supabase, plannedIds) : { data: [] };
     const resolvedById = new Map(resolved.data.map((row) => [row.id, row]));
 
     const share = computeProteinSmartShare(thisWeekDays, resolvedById);
@@ -145,10 +163,15 @@ export async function initDashboardPage() {
       ? `Tomorrow's packed lunch: <strong>${escapeHtml(packedRecipe.name)}</strong>`
       : "Tomorrow's packed lunch: <strong>not planned yet</strong>";
 
-    const todayEntries = entriesOnDate(store, todayIso()).filter((e) => resolvedById.has(e.recipeId));
-    const todayHtml = todayEntries.length
-      ? todayEntries.map((entry) => mealRowHtml(entry, resolvedById.get(entry.recipeId))).join('')
-      : '<p class="hint">Nothing planned for today.</p>';
+    const todayIsoDate = todayIso();
+    const todayName = dayNameForIso(todayIsoDate);
+    const todayEntries = entriesOnDate(store, todayIsoDate);
+    const todayHtml = slotsForDay(todayName)
+      .map((slot) => todaySlotRowHtml(slot, todayEntries.filter((entry) => entry.slot === slot), resolvedById))
+      .join('');
+    // A whole-week auto-fill shortcut sits alongside the per-slot view below, not instead of it —
+    // the per-slot list already shows today is empty, but this is the one-click fix for the week.
+    const weekEmptyHint = weekEmpty ? '<p class="hint">Your whole week is empty. <a href="planner.html">Auto-fill it?</a></p>' : '';
 
     thisWeekBody.innerHTML = `
       <div class="week-header-row">
@@ -161,6 +184,7 @@ export async function initDashboardPage() {
         </div>
         <div class="tomorrow-packed-lunch">${tomorrowHtml}</div>
       </div>
+      ${weekEmptyHint}
       <div class="content-head"><h3>Today</h3></div>
       <div class="today-meals">${todayHtml}</div>
     `;
@@ -187,11 +211,14 @@ export async function initDashboardPage() {
 
   async function load() {
     renderSkeleton();
-    // Exactly 2 Supabase requests for the stats/recent tiles (8.1 acceptance), unchanged by
-    // 12.1's "This week" card, which makes its own bounded requests via loadPlanState/renderThisWeek.
-    const [statsResult, recentResult] = await Promise.all([
+    // 3 bounded Supabase requests for the stats/recent tiles (originally 2 per 8.1; Phase C's
+    // Cuisines tile reuses the same cuisine_counts view the recipes page's filter facet already
+    // fetches, adding one more bounded read) — unchanged by "This week", which makes its own
+    // bounded requests via loadPlanState/renderThisWeek.
+    const [statsResult, recentResult, cuisineResult] = await Promise.all([
       fetchRecipeStats(supabase),
-      fetchRecentRecipes(supabase, 3),
+      fetchRecentRecipes(supabase, RECENT_COUNT),
+      fetchCuisineCounts(supabase),
     ]);
 
     if (!statsResult.ok || !recentResult.ok) {
@@ -199,7 +226,14 @@ export async function initDashboardPage() {
       return;
     }
 
-    renderStats(statsResult.data);
+    // Cuisine count is a nice-to-have 4th tile, not core data — don't hard-fail the page for it.
+    const cuisineCount = cuisineResult.ok ? cuisineResult.data.filter((row) => row.recipes > 0).length : 0;
+    const household = await getHousehold().catch(() => null);
+    const { store } = loadPlanState({ defaultServings: household?.default_servings || 4 });
+    const thisWeekDays = getWeekDays(store, mondayOf());
+    const thisWeekPlannedCount = DAYS.reduce((sum, day) => sum + (thisWeekDays[day] || []).length, 0);
+
+    renderStats(statsResult.data, cuisineCount, thisWeekPlannedCount);
     renderRecentGrid(recentResult.data.map(normalizeRecipe), () => askDialog.open());
     await renderThisWeek();
   }

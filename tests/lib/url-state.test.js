@@ -4,7 +4,7 @@ import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from
 function defaultFilters() {
   return {
     search: '', cuisine: '', tags: [], mealTypes: [],
-    vegetarian: false, eggFree: false, dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null,
+    dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null,
   };
 }
 
@@ -16,7 +16,7 @@ describe('filtersToSearchParams', () => {
   it('round-trips a fully populated filter set', () => {
     const filters = {
       search: 'poha', cuisine: 'Maharashtrian', tags: ['Snack', 'Quick'], mealTypes: ['Breakfast', 'Packed Lunch'],
-      vegetarian: true, eggFree: true, dairyFree: true, proteinSmart: true, nutFree: true, spiceMax: 3,
+      dairyFree: true, proteinSmart: true, nutFree: true, spiceMax: 3,
     };
     const params = filtersToSearchParams(filters, 2);
     expect(searchParamsToFilters(params)).toEqual(filters);

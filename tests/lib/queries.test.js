@@ -51,7 +51,7 @@ describe('searchRecipes', () => {
       client,
       {
         term: 'poha', cuisine: 'Maharashtrian', tags: ['Snack'], mealTypes: ['Breakfast'],
-        dietary: { vegetarian: true, eggFree: true, dairyFree: true, proteinSmart: true, nutFree: true, spiceMax: 3 },
+        dietary: { dairyFree: true, proteinSmart: true, nutFree: true, spiceMax: 3 },
       },
       { page: 1, pageSize: 12 },
     );
@@ -64,8 +64,6 @@ describe('searchRecipes', () => {
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'cuisine' && c.args[1] === 'Maharashtrian')).toBe(true);
     expect(callsFor(client, 'contains').some((c) => c.args[0] === 'tags' && c.args[1][0] === 'Snack')).toBe(true);
     expect(callsFor(client, 'contains').some((c) => c.args[0] === 'meal_types' && c.args[1][0] === 'Breakfast')).toBe(true);
-    expect(callsFor(client, 'eq').some((c) => c.args[0] === 'is_vegetarian' && c.args[1] === true)).toBe(true);
-    expect(callsFor(client, 'eq').some((c) => c.args[0] === 'is_egg_free' && c.args[1] === true)).toBe(true);
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'contains_dairy' && c.args[1] === false)).toBe(true);
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'is_protein_smart' && c.args[1] === true)).toBe(true);
     expect(callsFor(client, 'eq').some((c) => c.args[0] === 'contains_nuts' && c.args[1] === false)).toBe(true);

@@ -6,13 +6,13 @@ import { monogramSvg } from '../components/monogram.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
-import { planWeek, shuffleEntry, WEEKDAYS } from '../shared/planner-engine.js';
+import { planWeek, shuffleEntry } from '../shared/planner-engine.js';
 import {
   DAYS, SLOTS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
   replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
   parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf,
 } from '../lib/planner-store.js';
-import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare } from '../shared/plan-summary.js';
+import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay } from '../shared/plan-summary.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
 import { MEAL_TYPES } from '../shared/html.js';
@@ -20,13 +20,25 @@ import { MEAL_TYPES } from '../shared/html.js';
 const VIEW_MODE_KEY = 'recipeBook.plannerViewMode';
 const VIEW_MODES = ['day', 'week', 'month'];
 
-function loadViewMode() {
+// Once the user has picked a view explicitly (via the tabs), that choice always wins. Only a
+// first-ever visit (nothing in storage yet) falls back to a breakpoint-aware default: Day on
+// mobile, Week on tablet/desktop — this is the *initial* default only, not a live-resize behaviour.
+function defaultViewModeForBreakpoint() {
   try {
-    const value = localStorage.getItem(VIEW_MODE_KEY);
-    return VIEW_MODES.includes(value) ? value : 'week';
+    return window.matchMedia('(max-width: 760px)').matches ? 'day' : 'week';
   } catch {
     return 'week';
   }
+}
+
+function loadViewMode() {
+  try {
+    const value = localStorage.getItem(VIEW_MODE_KEY);
+    if (VIEW_MODES.includes(value)) return value;
+  } catch {
+    /* fall through to the breakpoint default */
+  }
+  return defaultViewModeForBreakpoint();
 }
 function persistViewMode(mode) {
   try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch { /* best-effort */ }
@@ -50,6 +62,24 @@ function monthGridDates(anchorIso) {
     d.setDate(gridStart.getDate() + i);
     return d;
   });
+}
+
+/** Every ISO Monday whose week *starts* in this calendar month — excludes a leading week whose
+ * Monday falls in the previous month (even if a few of its days show in this month's grid), and
+ * includes a trailing week's Sunday spilling into next month (an expected, not surprising,
+ * consequence of filling by whole weeks). This is what "Auto-fill this month" actually fills. */
+function weeksStartingInMonth(anchorIso) {
+  const anchor = parseLocalDate(anchorIso);
+  const month = anchor.getMonth();
+  const year = anchor.getFullYear();
+  const weeks = new Set();
+  for (const d of monthGridDates(anchorIso)) {
+    if (d.getMonth() !== month || d.getFullYear() !== year) continue;
+    const weekOf = mondayOf(d);
+    const monday = parseLocalDate(weekOf);
+    if (monday.getMonth() === month && monday.getFullYear() === year) weeks.add(weekOf);
+  }
+  return [...weeks].sort();
 }
 
 function pluralize(n, singular, plural) {
@@ -207,6 +237,12 @@ export async function initPlannerPage() {
     return parseLocalDate(state.selectedDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   }
 
+  function formatAutoFillLabel() {
+    if (state.viewMode === 'day') return `Auto-fill ${dayNameForIso(state.selectedDate)}`;
+    if (state.viewMode === 'month') return 'Auto-fill this month';
+    return 'Auto-fill this week';
+  }
+
   function updateTabsUI() {
     [[dayTab, 'day'], [weekTab, 'week'], [monthTab, 'month']].forEach(([tab, mode]) => {
       tab?.setAttribute('aria-selected', String(mode === state.viewMode));
@@ -217,9 +253,9 @@ export async function initPlannerPage() {
     weekView.hidden = state.viewMode !== 'week';
     dayView.hidden = state.viewMode !== 'day';
     monthView.hidden = state.viewMode !== 'month';
-    // Month is navigate-and-glance only — editing (auto-fill included) always happens in Day/Week.
-    autoFillWeek.hidden = state.viewMode === 'month';
-    autoFillSettingsButton.hidden = state.viewMode === 'month';
+    // Month stays navigate-and-glance for per-slot editing (no slot cards render there at all),
+    // but auto-fill is a bulk "generate a plan" action rather than a per-slot edit, so it — and its
+    // slot-eligibility settings — are available in every view, contextually scoped.
   }
 
   function renderHeaderStats() {
@@ -364,19 +400,24 @@ export async function initPlannerPage() {
     `;
   }
 
-  function slotsForDay(day) {
-    return SLOTS.filter((slot) => slot !== 'Packed Lunch' || WEEKDAYS.includes(day));
-  }
-
   function renderMealSlot(weekOf, day, slot, days) {
     const entries = (days[day] || []).filter((e) => e.slot === slot);
+    // A filled slot keeps the header "+" (for a second entry, e.g. two dinner options); an empty
+    // one shows the dashed affordance instead of the header "+" and static "No recipe planned" —
+    // one clear action rather than two ways to trigger the same picker.
+    const headerAdd = entries.length
+      ? `<button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}" aria-label="Add another recipe to ${slot} on ${day}">+</button>`
+      : '';
+    const body = entries.length
+      ? entries.map((entry) => renderSlotCard(weekOf, day, entry)).join('')
+      : `<button type="button" class="slot-add-link" data-day-add="${day}" data-slot="${slot}">+ Add something</button>`;
     return `
       <div class="meal-slot ${entries.length ? 'filled' : ''}" data-day="${day}" data-slot="${slot}">
         <div class="meal-slot-header">
           <strong>${slot}</strong>
-          <button type="button" class="small-button" data-day-add="${day}" data-slot="${slot}" aria-label="Add recipe to ${slot} on ${day}">+</button>
+          ${headerAdd}
         </div>
-        ${entries.length ? entries.map((entry) => renderSlotCard(weekOf, day, entry)).join('') : '<div class="slot-empty">No recipe planned</div>'}
+        ${body}
       </div>
     `;
   }
@@ -449,6 +490,7 @@ export async function initPlannerPage() {
     plannerHeading.textContent = formatHeading();
     navLabel.textContent = formatNavLabel();
     navToday.textContent = state.viewMode === 'day' ? 'Today' : state.viewMode === 'week' ? 'This week' : 'This month';
+    autoFillWeek.textContent = formatAutoFillLabel();
     await ensureResolvedForView();
     renderHeaderStats();
     renderWeekReview();
@@ -638,8 +680,8 @@ export async function initPlannerPage() {
   autoFillSettingsButton?.addEventListener('click', () => autoFillSettingsDialog.open());
   document.getElementById('closeAutoFillSettings')?.addEventListener('click', () => autoFillSettingsDialog.close());
 
-  // ---------- Auto-fill (task 11.4 / Appendix K.3) — operates on whichever week is selected ----------
-  autoFillWeek.addEventListener('click', async () => {
+  // ---------- Auto-fill (task 11.4 / Appendix K.3) — contextually scoped to whatever's on screen ----------
+  async function runWeekAutoFill() {
     const weekOf = selectedWeekOf();
     const days = getWeekDays(state.store, weekOf);
     const result = planWeek({ recipes: state.candidates, plan: days, prefs: state.prefs, household: state.household, weekOf });
@@ -668,6 +710,55 @@ export async function initPlannerPage() {
     } else {
       showSnackbar('Nothing to fill — every enabled slot already has a plan.', 'success');
     }
+  }
+
+  // planWeek always scores a whole week (variety/protein-smart balance need that context), but the
+  // user only asked to fill what's on screen — so run it normally, then keep only this day's result.
+  async function runDayAutoFill() {
+    const weekOf = selectedWeekOf();
+    const dayName = dayNameForIso(state.selectedDate);
+    const days = getWeekDays(state.store, weekOf);
+    const beforeKeys = new Set((days[dayName] || []).map((e) => `${e.slot}|${e.recipeId}`));
+    const result = planWeek({ recipes: state.candidates, plan: days, prefs: state.prefs, household: state.household, weekOf });
+    const dayPlan = result.plan[dayName] || [];
+    mutateWeek(weekOf, { ...days, [dayName]: dayPlan });
+    await ensureResolvedIds(dayPlan.map((entry) => entry.recipeId));
+    renderHeaderStats();
+    renderView();
+
+    // No protein-smart% or "ask for more" prompt here — both are whole-week signals from planWeek
+    // that could reference a slot on a different day, which would be a confusing thing to surface
+    // from a single-day action.
+    const added = dayPlan.some((entry) => !beforeKeys.has(`${entry.slot}|${entry.recipeId}`));
+    showSnackbar(added ? `${dayName} auto-filled.` : 'Nothing to fill — every enabled slot already has a plan.', 'success');
+  }
+
+  // Fills every week that *starts* in the displayed month (see weeksStartingInMonth) — one
+  // planWeek call per week, each still reasoning about its own full 7 days for variety/balance.
+  async function runMonthAutoFill() {
+    const weeks = weeksStartingInMonth(state.selectedDate);
+    let addedTotal = 0;
+    for (const weekOf of weeks) {
+      const days = getWeekDays(state.store, weekOf);
+      const result = planWeek({ recipes: state.candidates, plan: days, prefs: state.prefs, household: state.household, weekOf });
+      state.store = setWeekDays(state.store, weekOf, result.plan);
+      addedTotal += result.added.length;
+    }
+    persistStore(state.store);
+    await ensureResolvedForView();
+    renderHeaderStats();
+    renderView();
+
+    showSnackbar(
+      addedTotal ? `This month auto-filled — ${addedTotal} meal${addedTotal === 1 ? '' : 's'} added.` : 'Nothing to fill — every enabled slot already has a plan.',
+      'success',
+    );
+  }
+
+  autoFillWeek.addEventListener('click', () => {
+    if (state.viewMode === 'day') return runDayAutoFill();
+    if (state.viewMode === 'month') return runMonthAutoFill();
+    return runWeekAutoFill();
   });
 
   // ---------- Week review (task 11.5) ----------
