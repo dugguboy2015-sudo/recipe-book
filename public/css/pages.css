@@ -2,7 +2,7 @@
 
 .page-shell { display: grid; gap: var(--sp-5); }
 
-.metric-card, .info-card, .planner-card {
+.metric-card, .planner-card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -221,7 +221,6 @@
 
 .slot-card { border: 1px dashed var(--line); border-radius: var(--radius-control); padding: var(--sp-2); background: var(--surface); display: grid; gap: var(--sp-2); }
 .slot-card-header { display: flex; align-items: center; gap: var(--sp-2); }
-.slot-recipe { font-weight: 700; color: var(--ink); line-height: 1.4; }
 .slot-recipe-link { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--brand-ink); text-align: left; text-decoration: underline; cursor: pointer; }
 .slot-unavailable { font-style: italic; color: var(--ink-muted); }
 .slot-card-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
