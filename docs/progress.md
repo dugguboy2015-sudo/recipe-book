@@ -413,7 +413,7 @@
 
 ## M1b — Sign-in, create or join a household — DONE
 - Date: 2026-09-18
-- Branch / PR: m1b-sign-in / (this PR)
+- Branch / PR: m1b-sign-in / [#41](https://github.com/dugguboy2015-sudo/recipe-book/pull/41)
 - Migrations applied: `016_household_rpcs.sql` (`households.is_curator`; `create_household` and `redeem_household_invite` RPCs, `service_role` only)
 - Backup: `backups/2026-09-18T05-50-03-060Z`
 - Acceptance:
