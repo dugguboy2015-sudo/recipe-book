@@ -108,15 +108,14 @@ function renderSignIn() {
     const button = body().querySelector('#signInEmailForm button[type="submit"]');
     setBusy(button, true);
     // Inside the dialog, not the page: a challenge rendered under a modal dialog can't be clicked.
+    // Fails open: if Turnstile can't run here (blocked script, privacy tools), try without a token
+    // and let Supabase decide — it only insists when its sign-in captcha is switched on.
     let captchaToken;
     try {
       const { getToken } = await import('../lib/turnstile.js');
-      captchaToken = await getToken(document.getElementById('accountTurnstile'));
+      captchaToken = await getToken(document.getElementById('accountTurnstile'), { timeoutMs: 15_000 });
     } catch (err) {
-      console.error(err);
-      setBusy(button, false);
-      setErrors({ email: "We couldn't confirm you're not a bot. Please try again." });
-      return;
+      console.warn('Sign-in bot check unavailable; continuing without it.', err);
     }
     const { error } = await sendSignInEmail(email, `${window.location.origin}${window.location.pathname}`, captchaToken);
     setBusy(button, false);

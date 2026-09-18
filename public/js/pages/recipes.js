@@ -279,12 +279,15 @@ export async function initRecipesPage() {
   }
 
   // Signing in, out, or into a different household changes what's visible and what's editable.
-  let lastHouseholdId;
+  // The first render can't wait for the account to load, so it assumes a signed-out visitor; a
+  // signed-in one gets a second render (with their Edit buttons and pending notice) once it has.
+  let lastHouseholdId = null;
   subscribeAccount((account) => {
     if (!account.ready) return;
     const householdId = account.household?.id ?? null;
-    if (lastHouseholdId !== undefined && householdId !== lastHouseholdId) refreshRecipes();
+    if (householdId === lastHouseholdId) return;
     lastHouseholdId = householdId;
+    refreshRecipes();
   });
 
   // recipe-form.js (+ ingredient-editor.js/method-editor.js) is ~46KB and only needed once the
