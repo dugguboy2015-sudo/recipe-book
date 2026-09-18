@@ -122,3 +122,17 @@ describe('evaluateDraft — protein goal (J.2/J.3)', () => {
     expect(result.retryFeedback).toContain('15 g');
   });
 });
+
+describe('evaluateDraft — per-household diet (M1d)', () => {
+  it('lets a household that eats everything have a non-vegetarian draft', async () => {
+    const result = await evaluateDraft(fakeDb(), baseDraft({ is_vegetarian: false, is_egg_free: false }), { diet: { vegetarian: false, egg_free: false } });
+    expect(result.householdIssues).toEqual([]);
+  });
+
+  it('holds a vegetarian household that eats egg to vegetarian only', async () => {
+    const result = await evaluateDraft(fakeDb(), baseDraft({ is_egg_free: false }), { diet: { vegetarian: true, egg_free: false } });
+    expect(result.householdIssues).toEqual([]);
+    const meat = await evaluateDraft(fakeDb(), baseDraft({ is_vegetarian: false }), { diet: { vegetarian: true, egg_free: false } });
+    expect(meat.householdIssues.length).toBeGreaterThan(0);
+  });
+});

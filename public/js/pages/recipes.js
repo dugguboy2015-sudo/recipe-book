@@ -13,6 +13,7 @@ import { createGenerateFlow } from '../components/generate-flow.js';
 import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
 import { loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf } from '../lib/planner-store.js';
 import { getHousehold } from '../lib/household.js';
+import { dietRecipeFilter } from '../shared/household-settings.js';
 
 function defaultFilters() {
   return {
@@ -216,7 +217,11 @@ export async function initRecipesPage() {
   async function refreshRecipes() {
     syncUrl();
     renderSkeleton();
-    const filters = { term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes, dietary: toDietaryFilter(state.filters), pendingOnly: state.filters.pendingOnly };
+    const household = await getHousehold().catch(() => null);
+    const filters = {
+      term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes,
+      dietary: toDietaryFilter(state.filters), pendingOnly: state.filters.pendingOnly, householdDiet: dietRecipeFilter(household),
+    };
     renderPendingNotice();
     const result = await searchRecipes(supabase, filters, { page: state.page, pageSize: state.pageSize });
     if (!result.ok) {

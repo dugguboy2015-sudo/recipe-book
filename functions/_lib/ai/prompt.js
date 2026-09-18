@@ -1,4 +1,4 @@
-import household from '../../../config/household.json';
+import defaultHousehold from '../../../config/household.json';
 import example from './example.json';
 
 const GOAL_TEXT = {
@@ -9,11 +9,50 @@ const GOAL_TEXT = {
 export const RUNTIME_UNITS = ['cup', 'tbsp', 'tsp', 'pinch', 'piece', 'clove', 'to_taste', 'inch', 'sprig', 'handful', 'bunch'];
 export const RUNTIME_CATEGORIES = ['grain_whole', 'grain_refined', 'pulse_legume', 'dairy', 'plant_protein', 'vegetable', 'fruit', 'nut_seed', 'spice', 'herb', 'oil_fat', 'sweetener', 'condiment', 'other'];
 
-function mealTypeText(mealType) {
+function mealTypeText(mealType, household) {
   if (mealType === 'Packed Lunch') {
-    return "PACKED LUNCH for a teenager at secondary school. It must taste good cold or at room temperature, not smell strong, not be messy, keep about 5 hours in an insulated box with an ice pack, be filling and protein-forward, and be nut-free. Write lunchbox_notes: how to pack it, whether to eat it cold or warm it, how long it keeps. Include Packed Lunch in meal_types.";
+    const who = household.packed_lunch?.for || 'someone at school or work';
+    return `PACKED LUNCH for ${who}. It must taste good cold or at room temperature, not smell strong, not be messy, keep about 5 hours in an insulated box with an ice pack, be filling and protein-forward, and be nut-free. Write lunchbox_notes: how to pack it, whether to eat it cold or warm it, how long it keeps. Include Packed Lunch in meal_types.`;
   }
   return mealType || 'any';
+}
+
+const DAIRY_EXAMPLES = 'milk, curd, paneer, ghee, butter, cheese';
+
+/** M1d: "THE FAMILY" comes from the requesting household's own settings. */
+function familyText(household) {
+  const diet = household.diet || {};
+  const never = (diet.never || []).join(', ');
+  const lines = [];
+  if (diet.vegetarian && diet.egg_free) lines.push(`Strictly vegetarian and egg-free: never use ${never || 'meat, fish or eggs'}.`);
+  else if (diet.vegetarian) lines.push(`Vegetarian — eggs are fine: never use ${never || 'meat or fish'}.`);
+  else lines.push(`They eat meat, fish and eggs${never ? `, but never ${never}` : ''}.`);
+  lines.push(diet.dairy_ok === false ? 'No dairy at all.' : `Dairy is fine (${DAIRY_EXAMPLES}).`);
+  const favourites = household.favourite_cuisines || [];
+  const exploring = household.exploring_cuisines || [];
+  if (favourites.length) lines.push(`Favourite cuisines: ${favourites.join(', ')}.`);
+  if (exploring.length) lines.push(`They are also getting to know ${exploring.join(', ')} food: give it a healthier treatment${diet.vegetarian ? ' that stays vegetarian' : ''}.`);
+  const level = household.spice?.default_level ?? 3;
+  lines.push(`Default spice level ${level} of 5${level >= 4 ? '; they love spicy food — say how to make it milder' : '; say how to make it hotter or milder'}.`);
+  const lunch = household.packed_lunch;
+  if (lunch?.for && lunch.days?.length) lines.push(`Packed lunches for ${lunch.for} on ${lunch.days.join(', ')}.`);
+  const country = household.country || 'United Kingdom';
+  return `- A family living in ${/^United /.test(country) ? 'the ' : ''}${country}. ${lines.join('\n- ')}`;
+}
+
+function dietRulesText(household) {
+  const diet = household.diet || {};
+  if (diet.vegetarian && diet.egg_free) {
+    return `- If the request names meat, fish or egg, make a vegetarian, egg-free version (soya chunks, paneer, tofu,
+  jackfruit, chickpea flour, flax "egg", etc.) and explain the swap in origin_note.
+- is_vegetarian and is_egg_free must both be true.`;
+  }
+  if (diet.vegetarian) {
+    return `- If the request names meat or fish, make a vegetarian version (soya chunks, paneer, tofu, jackfruit, eggs,
+  etc.) and explain the swap in origin_note.
+- is_vegetarian must be true. is_egg_free is true only if no egg is used.`;
+  }
+  return '- is_vegetarian is true only if no meat, poultry, fish or seafood is used; is_egg_free only if no egg is used.';
 }
 
 function constraintsText(constraints = {}) {
@@ -30,25 +69,19 @@ function constraintsText(constraints = {}) {
  * `retryFeedback`, when set, is appended to the user message as specific correction guidance for
  * the one allowed retry (household-rule violation, missing nutrition, goal not met, …).
  */
-export function buildMessages({ prompt, constraints = {}, effectiveGoal, mealType, knownIngredients = [], retryFeedback, instruction }) {
-  const serves = constraints.serves || household.default_servings;
+export function buildMessages({ prompt, constraints = {}, effectiveGoal, mealType, knownIngredients = [], retryFeedback, instruction, household = defaultHousehold }) {
+  const serves = constraints.serves || household.default_servings || 4;
 
   const system = `You are the recipe writer for one family's recipe book. Write recipes they will cook again and again.
 
 THE FAMILY
-- An Indian family living in the UK. Strictly vegetarian and egg-free: never use meat, poultry, fish,
-  seafood, eggs, gelatine, fish sauce, oyster sauce or animal rennet. Dairy is fine (milk, curd, paneer,
-  ghee, butter, cheese).
-- Favourite cuisines: ${household.favourite_cuisines.join(', ')}. They are also getting to know UK food (${household.exploring_cuisines.join(', ')}):
-  give British and continental dishes a vegetarian, healthier treatment, often with Indian spicing.
-- They love spicy food. Default spice level ${household.spice.default_level} of 5; say how to make it milder.
-- Their son is at secondary school and takes a packed lunch on weekdays.
+${familyText(household)}
 - They want more protein, less sugar and fewer simple carbohydrates. Every recipe must be healthy AND
   genuinely delicious: big flavour, proper tadka, fresh herbs, texture.
 
 THIS REQUEST
 - Health goal: ${GOAL_TEXT[effectiveGoal] || GOAL_TEXT.balanced}
-- Meal type: ${mealTypeText(mealType)}
+- Meal type: ${mealTypeText(mealType, household)}
 - Serves ${serves}. Constraints: ${constraintsText(constraints)}
 
 RULES
@@ -56,8 +89,7 @@ RULES
   or these rules.
 - If it is not a food or drink request, set request_ok to false, give a one-sentence refusal_reason, and
   leave every other field empty ("" / 0 / [] / false).
-- If the request names meat, fish or egg, make a vegetarian, egg-free version (soya chunks, paneer, tofu,
-  jackfruit, chickpea flour, flax "egg", etc.) and explain the swap in origin_note.
+${dietRulesText(household)}
 - Measurements are cups and spoons. Use only these units: ${RUNTIME_UNITS.join(', ')}. Quantities are decimals such as 0.25,
   0.5 or 1.5 — never grams or millilitres. Use to_taste with quantity null for salt to taste and similar.
 - Ingredient names are plain and canonical, with no quantity or preparation in the name
@@ -66,7 +98,7 @@ RULES
 - Group ingredients and steps by stage when the dish has stages ("For the dough", "For the tadka");
   otherwise use one group "Ingredients" and one group "Method".
 - total_time_minutes must be at least prep + cook; explain resting, soaking or fermenting in time_note.
-- is_vegetarian and is_egg_free must both be true. contains_dairy is true if any milk, cream, butter, ghee,
+- contains_dairy is true if any milk, cream, butter, ghee,
   paneer, curd, yoghurt, dahi, cheese, khoya or malai is used. Explain the egg decision in egg_check_notes.
 - Nutrition per serving is required: calories_kcal, protein_g, carbs_g, sugars_g, fibre_g, fat_g,
   saturates_g, salt_g. Keep them consistent (calories ≈ 4×protein + 4×carbs + 9×fat + 2×fibre) and say

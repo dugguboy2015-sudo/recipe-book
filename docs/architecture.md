@@ -41,7 +41,7 @@ involve.
 
 | Table | Purpose |
 |---|---|
-| `recipes` | The recipe itself: name, cuisine, times, steps (jsonb), spice level, nutrition (per serving), three dietary booleans, soft-delete (`is_deleted`/`deleted_at`), plus a legacy `ingredients` jsonb mirror *intended* to stay in sync for backups/rollback but read by nothing new — **it is not reliably in sync** (M0 found it empty on rows whose structured ingredients are intact; tracked as tech debt in `plan.md`). `created_by_household` (M1a) records which household contributed a recipe — for edit rights only; recipes remain one shared public catalogue. |
+| `recipes` | The recipe itself: name, cuisine, times, steps (jsonb), spice level, nutrition (per serving), three dietary booleans, soft-delete (`is_deleted`/`deleted_at`), plus a legacy `ingredients` jsonb mirror *intended* to stay in sync for backups/rollback but read by nothing new — **it is not reliably in sync** (M0 found it empty on rows whose structured ingredients are intact; tracked as tech debt in `plan.md`). `created_by_household` (M1a) records which household contributed a recipe (edit rights), and `catalogue_status` (M1c: `public`/`pending`) whether it is in the shared catalogue yet or still private to that household. |
 | `ingredients` | The canonical ingredient catalogue: `name` (lowercase, unique), `display_name`, `category`, four allergen/diet flags (`contains_meat`/`egg`/`dairy`/`nuts`/`gluten` — never defaulted), and a `status` (`unreviewed`/`reviewed`) used to gate the dietary auto-suggestion feature. |
 | `ingredient_aliases` | Alternate spellings mapped to a canonical `ingredients.id`, so "cilantro" and "coriander leaves" resolve to the same row. |
 | `recipe_ingredients` | One row per ingredient line on a recipe: `group_name`/`group_position` (e.g. "For the dough"), `position` within the group, `quantity`/`unit`/`preparation`/`is_optional`/`scales`, and `original_text` (what the user typed, kept for reference). This is what makes "scale to N servings" and a future shopping list possible — quantities are structured, not flat text. |
@@ -53,7 +53,7 @@ involve.
 | `households` | (M1a) One row per household — the tenant. |
 | `household_members` | (M1a) Which users belong to which household, with a `role` (`owner`/`member`) and a `display_name`. `user_id` is unique: one household per user. |
 | `household_invites` | (M1a) Unguessable, expiring invite codes. Bearer secrets — RLS on with no policy, so no client can read them; created and redeemed only through a Function. |
-| `household_settings` | (M1a) The per-household rules `config/household.json` holds today, stored as jsonb in the same shape. Not yet read by anything — M1d moves the consumers over. |
+| `household_settings` | (M1a) The per-household rules `config/household.json` holds today, stored as jsonb in the same shape. Read by members through RLS and by the Functions (M1d); written only by `PATCH /api/household/settings` (owner). |
 
 ### 2.2 Views (all `security_invoker = true`, so they run with the *caller's* privileges, not the view owner's)
 
@@ -61,7 +61,7 @@ involve.
 |---|---|
 | `recipe_stats` | One aggregated row for the dashboard tiles (total, vegetarian, egg-free, protein-smart, top cuisine) — replaces a full-table scan. |
 | `cuisine_counts` / `tag_counts` | Every cuisine/tag currently in use with its live recipe count, for filter facets. |
-| `planner_candidates` | The bounded (`limit 500`) pool the planner's scoring engine reads: `id, name, slug, cuisine, meal_types, serves, total_time_minutes, is_protein_smart, spice_level, contains_nuts`. An explicitly allowed exception to "no full-table reads," since it's capped and the planner needs the whole live catalogue to score against. |
+| `planner_candidates` | The bounded (`limit 500`) pool the planner's scoring engine reads: `id, name, slug, cuisine, meal_types, serves, total_time_minutes, is_protein_smart, spice_level, contains_nuts, is_vegetarian, is_egg_free` (the last two since migration 018, for the household diet filter). An explicitly allowed exception to "no full-table reads," since it's capped and the planner needs the whole live catalogue to score against. |
 | `recipe_dietary_derived` | Per-recipe booleans **derived from ingredient flags** (true vegetarian/egg-free/dairy status by looking at what's actually in the recipe), used to cross-check the human-entered dietary answers on save. |
 | `ingredient_usage` | Each ingredient's use count across all recipes, for the (not-yet-built) "merge a duplicate ingredient" operator tooling. |
 
@@ -75,6 +75,9 @@ involve.
 | `refresh_recipe_derived(recipe_id)` | called internally by `save_recipe` | Recomputes `is_protein_smart` and the nutrition-derived flags after a save. |
 | `set_updated_at()` | trigger only | Keeps `recipes.updated_at` current (the original schema had no such trigger — every row shared the same value as `created_at`). |
 | `current_household_id()` | `authenticated`, `service_role` | (M1a) The caller's own household id, keyed on `auth.uid()`. Used by every household RLS policy. |
+| `current_household_is_curator()` | `authenticated`, `service_role` | (M1c) Whether the caller's household curates the catalogue; used by the recipes read policy. |
+| `create_household(...)`, `redeem_household_invite(...)` | `service_role` only | (M1b) Household creation (with the founding claim) and invite redemption, each one transaction. |
+| `save_household_recipe(...)` | `service_role` only | (M1c) `save_recipe` plus stamping `created_by_household`/`catalogue_status` on create, in the same transaction. |
 
 Every function is `security invoker` with `search_path = ''` (no privilege escalation, no
 search-path hijacking), and every one but the trigger function and `current_household_id()` has
@@ -250,6 +253,22 @@ replaced that with **households as the tenant**. M1 is built in slices — see `
    `captchaToken`. It fails open, and Supabase only enforces it once its sign-in captcha is switched
    on (`security_captcha_enabled`, provider `turnstile`, the Turnstile secret) — deliberately not
    yet done; see `docs/operations.md`.
+6. **Per-household settings (M1d — shipped).** `household_settings.settings` (same shape as
+   `config/household.json`) is the source of truth for a signed-in household; the file is the
+   template new households start from and what signed-out visitors see.
+   - Browser: `lib/household.js` `getHousehold()` reads the signed-in household's row through RLS,
+     laid over the file for missing keys. Its diet (`shared/household-settings.js`
+     `dietRecipeFilter`) filters catalogue search, the dashboard's recent recipes and the planner's
+     candidates and picker (migration 018 added `is_vegetarian`/`is_egg_free` to
+     `planner_candidates`); planner "ask" copy and the recipe form's diet confirmation use its
+     wording. A change of household reloads the page (`components/account.js` `refresh()`), so
+     each page reads the household once per load.
+   - AI: `generate.js` loads the requester's settings; `prompt.js` writes THE FAMILY, the diet
+     rules and packed-lunch text from them, and `evaluateDraft`'s hard diet rule follows the
+     household's diet (a household that eats everything gets label warnings, not failures).
+   - `PATCH /api/household/settings` (owner only) validates with the shared
+     `applySettingsUpdate` — diet preset, servings, spice, cuisines, packed-lunch days and who
+     they're for. Health goals, measurements and country stay as the template set them.
 
 ## 6. The shopping list (Phase 14, not built — `ENABLE_SHOPPING_LIST=false`)
 

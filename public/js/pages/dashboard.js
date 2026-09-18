@@ -9,6 +9,7 @@ import { monogramSvg } from '../components/monogram.js';
 import { openCookMode } from '../components/cook-mode.js';
 import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { getHousehold } from '../lib/household.js';
+import { dietRecipeFilter } from '../shared/household-settings.js';
 import { loadPlanState, DAYS, getWeekDays, mondayOf } from '../lib/planner-store.js';
 import { computeProteinSmartShare, todayIso, addDaysIso, entriesOnDate, dayNameForIso, slotsForDay } from '../shared/plan-summary.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
@@ -215,9 +216,10 @@ export async function initDashboardPage() {
     // Cuisines tile reuses the same cuisine_counts view the recipes page's filter facet already
     // fetches, adding one more bounded read) — unchanged by "This week", which makes its own
     // bounded requests via loadPlanState/renderThisWeek.
+    const household = await getHousehold().catch(() => null);
     const [statsResult, recentResult, cuisineResult] = await Promise.all([
       fetchRecipeStats(supabase),
-      fetchRecentRecipes(supabase, RECENT_COUNT),
+      fetchRecentRecipes(supabase, RECENT_COUNT, dietRecipeFilter(household)),
       fetchCuisineCounts(supabase),
     ]);
 
@@ -228,7 +230,6 @@ export async function initDashboardPage() {
 
     // Cuisine count is a nice-to-have 4th tile, not core data — don't hard-fail the page for it.
     const cuisineCount = cuisineResult.ok ? cuisineResult.data.filter((row) => row.recipes > 0).length : 0;
-    const household = await getHousehold().catch(() => null);
     const { store } = loadPlanState({ defaultServings: household?.default_servings || 4 });
     const thisWeekDays = getWeekDays(store, mondayOf());
     const thisWeekPlannedCount = DAYS.reduce((sum, day) => sum + (thisWeekDays[day] || []).length, 0);

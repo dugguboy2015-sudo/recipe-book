@@ -12,8 +12,19 @@ function buildSearchFilter(value) {
   return `name.ilike."${pattern}",description.ilike."${pattern}"`;
 }
 
+/**
+ * M1d: a household only sees recipes that fit its diet (shared/household-settings.js
+ * dietRecipeFilter). Applied on top of whatever else the query filters.
+ */
+function applyHouseholdDiet(query, householdDiet = {}) {
+  let q = query;
+  if (householdDiet.vegetarian) q = q.eq('is_vegetarian', true);
+  if (householdDiet.eggFree) q = q.eq('is_egg_free', true);
+  return q;
+}
+
 function applySearchFilters(query, filters = {}) {
-  let q = query.eq('is_deleted', false);
+  let q = applyHouseholdDiet(query.eq('is_deleted', false), filters.householdDiet);
   if (filters.term) q = q.or(buildSearchFilter(filters.term.trim()));
   if (filters.cuisine) q = q.eq('cuisine', filters.cuisine);
   for (const tag of filters.tags || []) q = q.contains('tags', [tag]);
@@ -81,11 +92,8 @@ export async function fetchRecipeStats(client) {
 }
 
 /** The N most recently added recipes for the dashboard, bounded by `limit` — not a full-table read. */
-export async function fetchRecentRecipes(client, limit = 3) {
-  const { data, error } = await client
-    .from('recipes')
-    .select(DASHBOARD_COLUMNS)
-    .eq('is_deleted', false)
+export async function fetchRecentRecipes(client, limit = 3, householdDiet = {}) {
+  const { data, error } = await applyHouseholdDiet(client.from('recipes').select(DASHBOARD_COLUMNS).eq('is_deleted', false), householdDiet)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) {
@@ -100,10 +108,11 @@ const PLANNER_CANDIDATE_COLUMNS = 'id,name,slug,cuisine,meal_types,total_time_mi
 /**
  * planner_candidates (012_derived_flags.sql): the bounded (limit 500 in the view itself) recipe
  * pool the planner's scoring engine (shared/planner-engine.js, Appendix K) chooses from — one
- * query per auto-fill/shuffle, not a full-table read.
+ * query per auto-fill/shuffle, not a full-table read. `householdDiet` (M1d, migration 018) keeps
+ * the pool to recipes that fit the household.
  */
-export async function fetchPlannerCandidates(client) {
-  const { data, error } = await client.from('planner_candidates').select(PLANNER_CANDIDATE_COLUMNS);
+export async function fetchPlannerCandidates(client, householdDiet = {}) {
+  const { data, error } = await applyHouseholdDiet(client.from('planner_candidates').select(PLANNER_CANDIDATE_COLUMNS), householdDiet);
   if (error) {
     console.error(error);
     return { ok: false, data: [], error };

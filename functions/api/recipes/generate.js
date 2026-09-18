@@ -3,6 +3,8 @@ import { json, problem, readJson } from '../../_lib/http.js';
 import { assertAllowedOrigin } from '../../_lib/origin.js';
 import { createDb } from '../../_lib/db.js';
 import { requireMember } from '../../_lib/write-guard.js';
+import { getHouseholdSettings } from '../../_lib/household.js';
+import householdTemplate from '../../../config/household.json';
 import { generationCounts, quotaExceeded } from '../../_lib/ai/quota.js';
 import { getCuisines } from '../../_lib/cuisines.js';
 import { getKnownIngredients } from '../../_lib/ingredient-usage.js';
@@ -154,13 +156,19 @@ export async function onRequestPost({ request, env }) {
   const recentRecords = await fetchRecentProteinSmartRecords(db);
   const { effectiveGoal: requestedEffectiveGoal, goalAdjusted } = computeEffectiveGoal(validation.goal, recentRecords);
 
+  // M1d: the prompt and the diet rule follow the requesting household, not one fixed family.
+  const household = await getHouseholdSettings(db, actor.householdId, householdTemplate).catch((err) => {
+    console.error('household_settings lookup failed (continuing with the template):', err);
+    return householdTemplate;
+  });
+
   const knownIngredients = await getKnownIngredients(db).catch((err) => {
     console.error('ingredient_usage lookup failed (continuing with an empty list):', err);
     return [];
   });
 
   const schema = buildRecipeDraftSchema({ cuisines, units: RUNTIME_UNITS, categories: RUNTIME_CATEGORIES });
-  const baseParams = { prompt: validation.prompt, constraints: validation.constraints, effectiveGoal: requestedEffectiveGoal, mealType: validation.mealType, knownIngredients };
+  const baseParams = { prompt: validation.prompt, constraints: validation.constraints, effectiveGoal: requestedEffectiveGoal, mealType: validation.mealType, knownIngredients, household };
 
   let evaluationForRetryCheck = null;
   const generation = await generateDraft(env, {
@@ -172,6 +180,7 @@ export async function onRequestPost({ request, env }) {
         constraints: validation.constraints,
         effectiveGoal: requestedEffectiveGoal,
         findExistingBySlug: (slug) => findExistingBySlug(db, slug),
+        diet: household.diet,
       });
       return evaluationForRetryCheck.hardFailure ? null : evaluationForRetryCheck.retryFeedback;
     },
@@ -216,6 +225,7 @@ export async function onRequestPost({ request, env }) {
     constraints: validation.constraints,
     effectiveGoal: requestedEffectiveGoal,
     findExistingBySlug: (slug) => findExistingBySlug(db, slug),
+    diet: household.diet,
   });
 
   if (finalEvaluation.hardFailure) {

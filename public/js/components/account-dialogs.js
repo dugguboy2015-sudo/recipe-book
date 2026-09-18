@@ -1,8 +1,9 @@
 import { escapeHtml } from '../shared/html.js';
 import { showSnackbar } from '../lib/dom.js';
 import { wireDialog } from './dialog.js';
-import { sendSignInEmail, signOut, postAsUser, fetchHouseholdMembers } from '../lib/auth.js';
-import { DIET_PRESETS } from '../shared/household-settings.js';
+import { sendSignInEmail, signOut, postAsUser, patchAsUser, fetchHouseholdMembers, fetchHouseholdSettings, fetchCuisineNames } from '../lib/auth.js';
+import { DIET_PRESETS, WEEKDAYS, dietPresetKey } from '../shared/household-settings.js';
+import { setFlash } from './account.js';
 import { getPendingInvite, setPendingInvite, clearPendingInvite, inviteCodeFrom, isInviteCode } from '../lib/pending-invite.js';
 
 // Everything behind the header account control (M1b): sign in, create or join a household, and the
@@ -218,10 +219,9 @@ function renderCreate() {
     const { ok, status, data } = await postAsUser('/api/household', payload);
     setBusy(button, false);
     if (ok) {
-      await ctx.refresh();
-      close();
+      // The household changed, so refresh() reloads the page; the message shows after it.
       const curatorNote = data.household?.isCurator ? ' Your household curates the shared recipe catalogue.' : '';
-      showSnackbar(`${data.household?.name || 'Your household'} is set up.${curatorNote}`, 'success');
+      await ctx.refresh({ flash: `${data.household?.name || 'Your household'} is set up.${curatorNote}` });
       return;
     }
     if (status === 400) {
@@ -313,9 +313,7 @@ async function renderJoin(code) {
     setBusy(button, false);
     if (ok) {
       clearPendingInvite();
-      await ctx.refresh();
-      close();
-      showSnackbar(`You've joined ${householdName}.`, 'success');
+      await ctx.refresh({ flash: `You've joined ${householdName}.` });
       return;
     }
     if (status === 404) {
@@ -346,7 +344,7 @@ async function renderAccount() {
     renderCreate();
     return;
   }
-  const members = await fetchHouseholdMembers(household.id);
+  const [members, settings] = await Promise.all([fetchHouseholdMembers(household.id), fetchHouseholdSettings(household.id)]);
   const isOwner = household.role === 'owner';
   const memberItems = members.map((member) => `
     <li>
@@ -357,6 +355,9 @@ async function renderAccount() {
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">${escapeHtml(household.name)}</h3></div>
     <p class="hint">Signed in as ${escapeHtml(session.user.email)}${household.isCurator ? ' · your household curates the shared recipe catalogue' : ''}</p>
+    <h4 class="account-subheading">How you eat</h4>
+    <p class="delete-confirm-copy">${escapeHtml(settingsSummary(settings))}</p>
+    ${isOwner ? '<div><button type="button" class="ghost-button" data-account-view="settings">Edit household settings</button></div>' : ''}
     <h4 class="account-subheading">Members</h4>
     <ul class="member-list">${memberItems}</ul>
     ${isOwner ? `
@@ -372,9 +373,9 @@ async function renderAccount() {
   wireCommon();
 
   body().querySelector('#signOutButton').addEventListener('click', async () => {
+    // Signing out fires an auth event whose refresh() reloads the page; leave the message for it.
+    setFlash('Signed out.');
     await signOut();
-    close();
-    showSnackbar('Signed out.', 'success');
   });
 
   body().querySelector('#createInviteButton')?.addEventListener('click', async (event) => {
@@ -414,6 +415,107 @@ async function renderAccount() {
   focusFirst();
 }
 
+// ---------- Household settings (M1d) ----------
+
+function settingsSummary(settings) {
+  if (!settings) return 'Settings unavailable right now.';
+  const diet = DIET_PRESETS[dietPresetKey(settings)]?.label || 'Custom diet';
+  const parts = [diet, `serves ${settings.default_servings || 4}`, `spice ${settings.spice?.default_level ?? 3} of 5`];
+  const lunch = settings.packed_lunch;
+  if (lunch?.days?.length) parts.push(`packed lunches ${lunch.days.map((d) => d.slice(0, 3)).join(', ')}`);
+  return parts.join(' · ');
+}
+
+function checkboxes(name, options, selected) {
+  return options.map((option) => `
+    <label class="choice"><input type="checkbox" name="${name}" value="${escapeHtml(option)}"${selected.includes(option) ? ' checked' : ''} /><span>${escapeHtml(option)}</span></label>`).join('');
+}
+
+const SPICE_WORDS = ['mild', 'gentle', 'medium', 'hot', 'very hot'];
+
+async function renderSettings() {
+  const { household } = ctx.state;
+  if (!household || household.role !== 'owner') {
+    renderAccount();
+    return;
+  }
+  body().innerHTML = '<div class="detail-header"><h3 id="accountDialogTitle">Household settings</h3></div><p class="delete-confirm-copy">Loading…</p>';
+  const [settings, catalogueCuisines] = await Promise.all([fetchHouseholdSettings(household.id), fetchCuisineNames()]);
+  if (!settings) {
+    showSnackbar("Couldn't load your settings. Please try again.", 'error');
+    renderAccount();
+    return;
+  }
+  const favourites = settings.favourite_cuisines || [];
+  const exploring = settings.exploring_cuisines || [];
+  // Cuisines already chosen stay offered even if the catalogue doesn't list them ("Continental").
+  const cuisines = [...new Set([...catalogueCuisines, ...favourites, ...exploring])];
+  const currentDiet = dietPresetKey(settings);
+  const lunch = settings.packed_lunch || { days: [] };
+  const spiceLevel = settings.spice?.default_level ?? 3;
+  const diets = Object.entries(DIET_PRESETS).map(([key, preset]) => `
+    <label class="choice"><input type="radio" name="diet" value="${key}"${key === currentDiet ? ' checked' : ''} /><span>${escapeHtml(preset.label)}</span></label>`).join('');
+
+  body().innerHTML = `
+    <div class="detail-header"><h3 id="accountDialogTitle">Household settings</h3></div>
+    <p class="hint">These shape the recipes you're shown, the planner's suggestions and the AI's recipes.</p>
+    <form id="settingsForm" class="account-form" novalidate>
+      <fieldset class="choice-list"><legend>How does your household eat?</legend>${diets}</fieldset>
+      <small class="field-error" data-error-for="diet" role="alert"></small>
+      <label class="field"><span>Usual servings</span>
+        <input type="number" id="settingsServings" min="1" max="12" value="${settings.default_servings || 4}" />
+      </label>
+      <small class="field-error" data-error-for="defaultServings" role="alert"></small>
+      <label class="field"><span>Spice level</span>
+        <select id="settingsSpice">${[1, 2, 3, 4, 5].map((n) => `<option value="${n}"${n === spiceLevel ? ' selected' : ''}>${n} — ${SPICE_WORDS[n - 1]}</option>`).join('')}</select>
+      </label>
+      <small class="field-error" data-error-for="spiceLevel" role="alert"></small>
+      <fieldset class="choice-list compact"><legend>Favourite cuisines</legend>${checkboxes('favourite', cuisines, favourites)}</fieldset>
+      <small class="field-error" data-error-for="favouriteCuisines" role="alert"></small>
+      <fieldset class="choice-list compact"><legend>Cuisines you're exploring</legend>${checkboxes('exploring', cuisines, exploring)}</fieldset>
+      <small class="field-error" data-error-for="exploringCuisines" role="alert"></small>
+      <fieldset class="choice-list compact"><legend>Packed-lunch days</legend>${checkboxes('lunchDay', WEEKDAYS, lunch.days || [])}</fieldset>
+      <label class="field"><span>Packed lunches are for</span>
+        <input type="text" id="settingsLunchFor" maxlength="60" placeholder="e.g. our son at secondary school" value="${escapeHtml(lunch.for || '')}" />
+      </label>
+      <small class="field-error" data-error-for="packedLunch" role="alert"></small>
+      <div class="form-actions">
+        <button type="button" class="ghost-button" data-account-view="account">Cancel</button>
+        <button type="submit" class="primary-button">Save settings</button>
+      </div>
+    </form>`;
+  wireCommon();
+  body().querySelector('#settingsForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const checked = (name) => [...form.querySelectorAll(`input[name="${name}"]:checked`)].map((input) => input.value);
+    const payload = {
+      diet: form.querySelector('input[name="diet"]:checked')?.value,
+      defaultServings: Number(form.querySelector('#settingsServings').value),
+      spiceLevel: Number(form.querySelector('#settingsSpice').value),
+      favouriteCuisines: checked('favourite'),
+      exploringCuisines: checked('exploring'),
+      packedLunch: { days: checked('lunchDay'), for: form.querySelector('#settingsLunchFor').value },
+    };
+    const button = form.querySelector('button[type="submit"]');
+    setBusy(button, true);
+    const { ok, status, data } = await patchAsUser('/api/household/settings', payload);
+    setBusy(button, false);
+    if (ok) {
+      // Every page reads these once at load, so reload to apply them everywhere.
+      setFlash('Household settings saved.');
+      window.location.reload();
+      return;
+    }
+    if (status === 400) {
+      setErrors(data.errors);
+      return;
+    }
+    showSnackbar(data.message || "Couldn't save your settings. Please try again.", 'error');
+  });
+  focusFirst();
+}
+
 // ---------- Entry point ----------
 
 function show(view) {
@@ -422,6 +524,7 @@ function show(view) {
   if (view === 'check-email') return renderCheckEmail();
   if (view === 'join') return renderJoin(getPendingInvite());
   if (view === 'create' || view === 'onboarding') return renderCreate();
+  if (view === 'settings') return renderSettings();
   return renderAccount();
 }
 
