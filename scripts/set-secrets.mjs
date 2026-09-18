@@ -9,6 +9,8 @@ const secrets = {
   IP_HASH_SALT: env.IP_HASH_SALT,
 };
 if (env.GEMINI_API_KEY) secrets.GEMINI_API_KEY = env.GEMINI_API_KEY;
+// Not secret, but a personal email address — kept out of the committed wrangler.toml.
+if (env.FOUNDING_OWNER_EMAIL) secrets.FOUNDING_OWNER_EMAIL = env.FOUNDING_OWNER_EMAIL;
 
 if (!secrets.IP_HASH_SALT) {
   throw new Error('IP_HASH_SALT is not set. Run `npm run dev:vars` first to generate one.');

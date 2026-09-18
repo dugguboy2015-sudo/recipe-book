@@ -196,6 +196,26 @@ replaced that with **households as the tenant**. M1 is built in slices — see `
    `household_invites`, `household_settings` — §2.1. Every household table is readable only by its
    own members, through RLS on `current_household_id()` (§2.3); every write goes through a Function.
    `anon` keeps exactly the read-only recipe access it has always had.
+   **Sign-in and onboarding (M1b — shipped).** Supabase Auth, emailed sign-in link only (no
+   passwords), implicit flow so a link opened on another device still signs in; the browser client
+   persists the session (`lib/supabase-client.js`). Functions never trust a client-supplied user id:
+   `functions/_lib/auth.js` validates the bearer token against `GET /auth/v1/user` on every call.
+   - `POST /api/household` → RPC `create_household` (household + owner membership + settings in
+     one transaction; the unique `household_members.user_id` makes a second one fail with 409).
+     If the verified email equals the `FOUNDING_OWNER_EMAIL` Pages secret, the household gets
+     `config/household.json` as its settings, `is_curator = true`, and claims every recipe whose
+     `created_by_household` is null. Otherwise settings are `buildNewHouseholdSettings()`
+     (`shared/household-settings.js`): the file as a template with the chosen diet preset and
+     household-specific fields reset.
+   - `POST /api/household/invites` (owner only, ≤10 live) inserts a 32-char code, valid 7 days.
+   - `GET /api/household/join?code=` names the household for the join screen (unknown, used and
+     expired codes are one indistinguishable 404); `POST` → RPC `redeem_household_invite`, which
+     locks the invite row, adds the member and marks the invite used, all in one transaction.
+   - Both RPCs are `security invoker`, executable by `service_role` only (migration 016).
+   - Client: `components/account.js` (header control, on every page, tiny) and
+     `components/account-dialogs.js` (lazy). An `?invite=` link is moved into `localStorage` so it
+     survives the email round trip. Supabase Auth settings are managed by
+     `scripts/configure-auth.mjs` (`npm run auth:configure`, dry run by default).
 2. **Recipes stay global.** Instead of `owner_id`, `recipes.created_by_household` records the
    contributing household, which governs *edit* rights (M1c) and never visibility. There is
    deliberately no user id on recipes, since they are public — per-member attribution goes to

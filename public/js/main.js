@@ -15,6 +15,10 @@ async function initApp() {
     console.error('Supabase client is not available.');
     return;
   }
+  // Not awaited: the account control must never hold up the page itself.
+  import('./components/account.js')
+    .then((m) => m.mountAccount(document.getElementById('accountSlot')))
+    .catch((error) => console.error(error));
   const init = pageModules[pageType];
   if (!init) return;
   await init();
