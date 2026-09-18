@@ -452,7 +452,7 @@
 
 ## M1d — Per-household settings and diet — DONE
 - Date: 2026-09-18
-- Branch / PR: m1d-household-settings / (this PR)
+- Branch / PR: m1d-household-settings / [#43](https://github.com/dugguboy2015-sudo/recipe-book/pull/43)
 - Migrations applied: `018_planner_candidates_diet.sql` — `planner_candidates` gains `is_vegetarian`, `is_egg_free` (appended; grants kept)
 - Backup: `backups/2026-09-18T18-50-44-738Z` (34 rows, count verified)
 - Acceptance:
