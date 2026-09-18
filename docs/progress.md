@@ -432,7 +432,7 @@
 
 ## M1c — Member-only writes, household ownership, curator approval — DONE
 - Date: 2026-09-18
-- Branch / PR: m1c-member-writes / (this PR)
+- Branch / PR: m1c-member-writes / [#42](https://github.com/dugguboy2015-sudo/recipe-book/pull/42)
 - Migrations applied: `017_catalogue_status.sql` — `recipes.catalogue_status` (`public`|`pending`, default `public`), recipes read policy split by role, `current_household_is_curator()`, `save_household_recipe()` wrapper, `household_id`/`user_id` on `recipe_generations`, three indexes
 - Backup: `backups/2026-09-18T06-12-25-267Z` (34 rows, count verified)
 - Acceptance:
