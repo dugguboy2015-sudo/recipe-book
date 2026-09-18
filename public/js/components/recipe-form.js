@@ -6,6 +6,7 @@ import { createMethodEditor } from './method-editor.js';
 import { fetchAllCuisines, fetchRecipeIngredients, fetchRecipeById } from '../lib/queries.js';
 import { getHousehold } from '../lib/household.js';
 import { needsHouseholdConfirm } from '../shared/dietary-suggestion.js';
+import { dietPhrase } from '../shared/household-settings.js';
 import { MEAL_TYPES, reconcileTimes } from '../shared/recipe-rules.js';
 import { draftIngredientsToEditorGroups, groupWarningsByField } from '../shared/draft-adapter.js';
 
@@ -493,6 +494,8 @@ export function createRecipeForm({ client, onSaved }) {
 
     if (needsHouseholdConfirm(household, validation.recipe)) {
       pendingConfirmSave = () => performSave(validation.recipe, validation.ingredients);
+      const confirmCopy = document.getElementById('householdConfirmCopy');
+      if (confirmCopy) confirmCopy.textContent = `This household is ${dietPhrase(household)}. Save anyway?`;
       householdConfirmHandle?.open();
       return;
     }

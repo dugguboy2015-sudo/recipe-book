@@ -475,6 +475,8 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 .choice:hover { border-color: var(--brand); }
 .choice:has(input:checked) { border-color: var(--brand); background: var(--protein-bg); }
 .choice input { accent-color: var(--brand); }
+.choice-list.compact { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.choice-list.compact legend { grid-column: 1 / -1; }
 
 .member-list { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-1); }
 .member-list li { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }

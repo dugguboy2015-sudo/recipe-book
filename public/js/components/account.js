@@ -1,4 +1,5 @@
 import { escapeHtml } from '../shared/html.js';
+import { showSnackbar } from '../lib/dom.js';
 import { getSession, onAuthChange, fetchMyHousehold } from '../lib/auth.js';
 import { captureInviteFromUrl, getPendingInvite } from '../lib/pending-invite.js';
 
@@ -6,6 +7,7 @@ import { captureInviteFromUrl, getPendingInvite } from '../lib/pending-invite.js
 // (account-dialogs.js) load on first use, the same pattern as the ask dialog.
 
 const ONBOARDING_SHOWN_KEY = 'recipeBook.onboardingShown';
+const FLASH_KEY = 'recipeBook.flash';
 const state = { session: null, household: null, ready: false };
 const listeners = new Set();
 let slot = null;
@@ -67,11 +69,30 @@ export async function ensureMember(reason) {
   return false;
 }
 
-/** Re-reads the session and household, re-renders, and notifies subscribers. */
-export async function refresh() {
+/** A snapshot of the account once it has loaded (loading it if nothing has yet). */
+export async function getReadyAccount() {
+  return state.ready ? getAccountState() : refresh();
+}
+
+/**
+ * Re-reads the session and household, re-renders, and notifies subscribers.
+ *
+ * When the household changes after the page has loaded — signing in or out, creating or joining
+ * one — the page reloads: its settings, diet filter and plan all belong to a household, and a
+ * fresh load is the one way every page picks that up consistently. `flash` is a snackbar
+ * message shown after the reload.
+ */
+export async function refresh({ flash } = {}) {
   const session = await getSession();
   const household = session ? await fetchMyHousehold(session) : null;
+  const wasReady = state.ready;
+  const previousHouseholdId = state.household?.id ?? null;
   Object.assign(state, { session, household, ready: true });
+  if (wasReady && (household?.id ?? null) !== previousHouseholdId) {
+    if (flash) setFlash(flash);
+    window.location.reload();
+    return getAccountState();
+  }
   render();
   for (const listener of listeners) listener(getAccountState());
   return getAccountState();
@@ -98,9 +119,24 @@ function maybeAutoOpen() {
   }
 }
 
+/** A snackbar message to show after the next page load (see refresh()). */
+export function setFlash(message) {
+  try { sessionStorage.setItem(FLASH_KEY, message); } catch { /* the message is optional */ }
+}
+
+function showFlash() {
+  let message = null;
+  try {
+    message = sessionStorage.getItem(FLASH_KEY);
+    sessionStorage.removeItem(FLASH_KEY);
+  } catch { /* nothing to show */ }
+  if (message) showSnackbar(message, 'success');
+}
+
 export async function mountAccount(slotElement) {
   if (!slotElement) return;
   slot = slotElement;
+  showFlash();
   captureInviteFromUrl();
   await refresh();
   // A sign-in link leaves a bare "#" behind once supabase-js has read the tokens out of it.
@@ -110,7 +146,7 @@ export async function mountAccount(slotElement) {
   maybeAutoOpen();
   onAuthChange(async (_session, event) => {
     if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') return;
-    const next = await refresh();
+    const next = await refresh(event === 'SIGNED_IN' ? { flash: 'Signed in.' } : {});
     if (event !== 'SIGNED_IN') return;
     if (accountDialogIsOpen()) {
       const { handleSignedIn } = await import('./account-dialogs.js');

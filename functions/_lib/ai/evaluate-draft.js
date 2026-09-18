@@ -24,10 +24,12 @@ function structuralHardFailure(draft) {
  * @param {{ request: Function }} db
  * @param {object} draft - the raw, still-unresolved model output
  * @param {{ cuisines: string[], constraints: object, effectiveGoal: 'protein_smart'|'balanced',
- *   findExistingBySlug: (slug: string) => Promise<{id: number, name: string}|null> }} context
+ *   findExistingBySlug: (slug: string) => Promise<{id: number, name: string}|null>,
+ *   diet?: { vegetarian?: boolean, egg_free?: boolean } }} context - `diet` is the requesting
+ *   household's (M1d); omitted, it is the founding household's vegetarian, egg-free rule.
  * @returns {Promise<{ hardFailure: string|null, retryIssues: string[], warnings: Array, resolvedIngredients: Array, proteinSmart: boolean }>}
  */
-export async function evaluateDraft(db, draft, { constraints = {}, effectiveGoal, findExistingBySlug } = {}) {
+export async function evaluateDraft(db, draft, { constraints = {}, effectiveGoal, findExistingBySlug, diet = { vegetarian: true, egg_free: true } } = {}) {
   const hardFailure = structuralHardFailure(draft);
   if (hardFailure) {
     return { hardFailure, householdIssues: [], nutritionIssues: [], goalIssue: null, retryFeedback: null, warnings: [], resolvedIngredients: [], proteinSmart: false };
@@ -37,14 +39,17 @@ export async function evaluateDraft(db, draft, { constraints = {}, effectiveGoal
   const nutritionIssues = [];
   const warnings = [];
 
-  // v2 Appendix I hard rule: this household is strictly vegetarian and egg-free. A draft claiming
-  // otherwise, or whose ingredients contradict the claim, is invalid — not merely a warning.
-  if (draft.is_vegetarian !== true) householdIssues.push('the draft is not marked vegetarian; make it vegetarian');
-  if (draft.is_egg_free !== true) householdIssues.push('the draft is not marked egg-free; make it egg-free');
+  // v2 Appendix I hard rule, per household since M1d: a draft breaking the household's diet —
+  // by its own claim or by ingredient evidence — is invalid, not merely a warning. Where the
+  // household has no such rule, the same evidence is only a warning about a wrong label.
+  const requireVeg = Boolean(diet?.vegetarian);
+  const requireEggFree = Boolean(diet?.egg_free);
+  if (requireVeg && draft.is_vegetarian !== true) householdIssues.push('the draft is not marked vegetarian; make it vegetarian');
+  if (requireEggFree && draft.is_egg_free !== true) householdIssues.push('the draft is not marked egg-free; make it egg-free');
   const crossCheck = dietaryWarnings(draft);
   for (const w of crossCheck) {
-    if (w.field === 'is_vegetarian') householdIssues.push(`the draft used ${w.evidence[0]}; use a vegetarian substitute instead`);
-    else if (w.field === 'is_egg_free') householdIssues.push(`the draft used ${w.evidence[0]}; use an eggless alternative instead`);
+    if (w.field === 'is_vegetarian' && requireVeg) householdIssues.push(`the draft used ${w.evidence[0]}; use a vegetarian substitute instead`);
+    else if (w.field === 'is_egg_free' && requireEggFree) householdIssues.push(`the draft used ${w.evidence[0]}; use an eggless alternative instead`);
     else warnings.push({ field: w.field, code: w.code, message: w.message, evidence: w.evidence });
   }
 

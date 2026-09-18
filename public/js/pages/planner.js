@@ -5,6 +5,7 @@ import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js
 import { monogramSvg } from '../components/monogram.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
+import { dietAdjective, dietRecipeFilter } from '../shared/household-settings.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 import { planWeek, shuffleEntry } from '../shared/planner-engine.js';
 import {
@@ -86,22 +87,26 @@ function pluralize(n, singular, plural) {
   return n === 1 ? singular : plural;
 }
 
+// "Ask for a recipe" starters per slot. `d` is the household's diet adjective (M1d:
+// "vegetarian", or empty for a household that eats everything) — see shared/household-settings.js.
+const withDiet = (d, noun) => (d ? `${d} ${noun}` : noun);
+
 const SLOT_PROMPTS = {
-  Breakfast: 'a tasty, protein-forward vegetarian breakfast',
-  'Packed Lunch': 'a protein-rich vegetarian packed lunch, good cold',
-  Lunch: 'a satisfying vegetarian lunch',
-  Dinner: 'a flavourful vegetarian dinner',
-  Snacks: 'a healthy vegetarian snack',
-  Dessert: 'a lighter vegetarian dessert',
+  Breakfast: (d) => `a tasty, protein-forward ${withDiet(d, 'breakfast')}`,
+  'Packed Lunch': (d) => `a protein-rich ${withDiet(d, 'packed lunch')}, good cold`,
+  Lunch: (d) => `a satisfying ${withDiet(d, 'lunch')}`,
+  Dinner: (d) => `a flavourful ${withDiet(d, 'dinner')}`,
+  Snacks: (d) => `a healthy ${withDiet(d, 'snack')}`,
+  Dessert: (d) => `a lighter ${withDiet(d, 'dessert')}`,
 };
 
 const NEEDS_PROMPTS = {
-  Breakfast: (n) => `${n} tasty, protein-forward vegetarian ${pluralize(n, 'breakfast', 'breakfasts')}`,
-  'Packed Lunch': (n) => `${n} protein-rich vegetarian ${pluralize(n, 'packed lunch', 'packed lunches')}, good cold`,
-  Lunch: (n) => `${n} satisfying vegetarian ${pluralize(n, 'lunch', 'lunches')}`,
-  Dinner: (n) => `${n} flavourful vegetarian ${pluralize(n, 'dinner', 'dinners')}`,
-  Snacks: (n) => `${n} healthy vegetarian ${pluralize(n, 'snack', 'snacks')}`,
-  Dessert: (n) => `${n} lighter vegetarian ${pluralize(n, 'dessert', 'desserts')}`,
+  Breakfast: (n, d) => `${n} tasty, protein-forward ${withDiet(d, pluralize(n, 'breakfast', 'breakfasts'))}`,
+  'Packed Lunch': (n, d) => `${n} protein-rich ${withDiet(d, pluralize(n, 'packed lunch', 'packed lunches'))}, good cold`,
+  Lunch: (n, d) => `${n} satisfying ${withDiet(d, pluralize(n, 'lunch', 'lunches'))}`,
+  Dinner: (n, d) => `${n} flavourful ${withDiet(d, pluralize(n, 'dinner', 'dinners'))}`,
+  Snacks: (n, d) => `${n} healthy ${withDiet(d, pluralize(n, 'snack', 'snacks'))}`,
+  Dessert: (n, d) => `${n} lighter ${withDiet(d, pluralize(n, 'dessert', 'desserts'))}`,
 };
 
 const state = {
@@ -209,7 +214,7 @@ export async function initPlannerPage() {
   state.storageAvailable = loaded.storageAvailable;
   if (plannerStorageWarning) plannerStorageWarning.hidden = state.storageAvailable !== false;
 
-  const candidatesResult = await fetchPlannerCandidates(supabase);
+  const candidatesResult = await fetchPlannerCandidates(supabase, dietRecipeFilter(state.household));
   state.candidates = candidatesResult.data;
   for (const row of state.candidates) state.resolvedById.set(row.id, row);
 
@@ -639,7 +644,8 @@ export async function initPlannerPage() {
   async function loadPickerResults() {
     const { weekOf, day, slot } = state.pickerContext;
     pickerList.innerHTML = '<div class="skeleton browser-item-skeleton"></div>';
-    const filters = pickerShowAll.checked ? {} : { mealTypes: [slot] };
+    const householdDiet = dietRecipeFilter(state.household);
+    const filters = pickerShowAll.checked ? { householdDiet } : { mealTypes: [slot], householdDiet };
     const result = await searchRecipes(supabase, filters, { page: 1, pageSize: 20 });
     if (!result.ok) {
       pickerList.innerHTML = '<div class="empty-state">Couldn\'t load recipes.</div>';
@@ -671,7 +677,7 @@ export async function initPlannerPage() {
     const { weekOf, day, slot } = state.pickerContext;
     storePendingPlannerSlot({ weekOf, day, slot });
     pickerDialog.close();
-    askDialog.open({ initialPrompt: SLOT_PROMPTS[slot] || SLOT_PROMPTS.Dinner, mealType: MEAL_TYPES.includes(slot) ? slot : undefined });
+    askDialog.open({ initialPrompt: (SLOT_PROMPTS[slot] || SLOT_PROMPTS.Dinner)(dietAdjective(state.household)), mealType: MEAL_TYPES.includes(slot) ? slot : undefined });
   });
   document.getElementById('closePlannerPicker')?.addEventListener('click', () => pickerDialog.close());
 
@@ -697,7 +703,7 @@ export async function initPlannerPage() {
         duration: 10000,
         onClick: () => {
           const buildPrompt = NEEDS_PROMPTS[shortfall.slot];
-          askDialog.open({ initialPrompt: buildPrompt ? buildPrompt(shortfall.count) : SLOT_PROMPTS.Dinner, mealType: MEAL_TYPES.includes(shortfall.slot) ? shortfall.slot : undefined });
+          askDialog.open({ initialPrompt: buildPrompt ? buildPrompt(shortfall.count, dietAdjective(state.household)) : SLOT_PROMPTS.Dinner(dietAdjective(state.household)), mealType: MEAL_TYPES.includes(shortfall.slot) ? shortfall.slot : undefined });
         },
       });
     } else if (result.added.length) {

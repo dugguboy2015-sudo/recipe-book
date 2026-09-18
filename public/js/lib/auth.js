@@ -46,6 +46,25 @@ export async function fetchMyHousehold(session) {
   };
 }
 
+/** The household's stored settings (RLS: members only), or null. */
+export async function fetchHouseholdSettings(householdId) {
+  const { data, error } = await supabase.from('household_settings').select('settings').eq('household_id', householdId).maybeSingle();
+  if (error) {
+    console.error(error);
+    return null;
+  }
+  return data?.settings || null;
+}
+
+export async function fetchCuisineNames() {
+  const { data, error } = await supabase.from('cuisines').select('name').order('sort_order', { ascending: true });
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return (data || []).map((row) => row.name);
+}
+
 export async function fetchHouseholdMembers(householdId) {
   const { data, error } = await supabase
     .from('household_members')
@@ -60,10 +79,19 @@ export async function fetchHouseholdMembers(householdId) {
 }
 
 /** POSTs to one of this site's Functions as the signed-in user. */
-export async function postAsUser(path, body) {
+export function postAsUser(path, body) {
+  return sendAsUser('POST', path, body);
+}
+
+/** PATCHes one of this site's Functions as the signed-in user. */
+export function patchAsUser(path, body) {
+  return sendAsUser('PATCH', path, body);
+}
+
+async function sendAsUser(method, path, body) {
   const session = await getSession();
   const response = await fetch(path, {
-    method: 'POST',
+    method,
     headers: {
       'Content-Type': 'application/json',
       ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),

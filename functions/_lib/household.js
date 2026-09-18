@@ -54,3 +54,12 @@ export async function getMembership(db, userId) {
   if (!row) return null;
   return { household_id: row.household_id, role: row.role, display_name: row.display_name, isCurator: Boolean(row.households?.is_curator) };
 }
+
+/**
+ * A household's settings (M1d), filled in from `template` (config/household.json) for any key the
+ * stored row lacks — so a row written before a new setting existed still reads completely.
+ */
+export async function getHouseholdSettings(db, householdId, template) {
+  const { data } = await db.request(`household_settings?select=settings&household_id=eq.${encodeURIComponent(householdId)}&limit=1`);
+  return { ...template, ...(data?.[0]?.settings || {}) };
+}
