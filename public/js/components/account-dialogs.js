@@ -63,9 +63,10 @@ function friendlyAuthError(error) {
   return 'Something went wrong. Please try again.';
 }
 
+// "priya.sharma@…" → "Priya". Only a starting suggestion; anything too short to be a name is dropped.
 function suggestedName() {
-  const local = (ctx?.state.session?.user?.email || '').split('@')[0].replace(/[._\-\d]+/g, ' ').trim();
-  return local ? local[0].toUpperCase() + local.slice(1) : '';
+  const word = (ctx?.state.session?.user?.email || '').split('@')[0].split(/[^a-zA-Z]+/).find(Boolean) || '';
+  return word.length > 1 ? word[0].toUpperCase() + word.slice(1).toLowerCase() : '';
 }
 
 function markOnboardingShown() {

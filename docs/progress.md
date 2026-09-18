@@ -395,7 +395,7 @@
 
 ## M1a — Tenancy schema — DONE
 - Date: 2026-09-18
-- Branch / PR: m1a-tenancy-schema / (this PR)
+- Branch / PR: m1a-tenancy-schema / [#40](https://github.com/dugguboy2015-sudo/recipe-book/pull/40) (merged 0fe5ff6)
 - Migrations applied: `015_households.sql`
 - Backup: `backups/2026-09-18T05-29-41-263Z` (34 recipe rows, count verified against `select count(*)`)
 - Acceptance:
@@ -410,3 +410,22 @@
   2. **`current_household_id()` is `SECURITY DEFINER`**, an explicit exception to this schema's security-invoker rule, because a policy on `household_members` reading `household_members` through an invoker function recurses. Documented in `docs/architecture.md` §2.3.
   3. **Found in the live Supabase auth config, blocking M1b:** `site_url` is `http://localhost:3000` (sign-in links would land on localhost), the redirect allowlist is empty, and the built-in email sender allows **2 auth emails per hour, project-wide**.
 - Notes for next slice: M1b (sign-in and the founding-household bootstrap) needs two owner decisions first — how people sign in (Google, custom SMTP, or both), and whether a new sign-up can create its own household or only join one by invite. Both are set out in `plan.md`.
+
+## M1b — Sign-in, create or join a household — DONE
+- Date: 2026-09-18
+- Branch / PR: m1b-sign-in / (this PR)
+- Migrations applied: `016_household_rpcs.sql` (`households.is_curator`; `create_household` and `redeem_household_invite` RPCs, `service_role` only)
+- Backup: `backups/2026-09-18T05-50-03-060Z`
+- Acceptance:
+  - [x] Migration trial-run in a rolled-back transaction first: founding create claimed all 34 recipe rows and set curator; names trimmed; a second household for the same user rejected with no orphan rows; redeem added a member; reused and expired codes raised `PT404`; rollback left 0 households
+  - [x] After apply: both RPCs executable by `service_role` only, neither `security definer`
+  - [x] 18/18 API checks against the preview deployment with two admin-created test users (no email sent): signed-out and bad-token calls → 401; invalid body → 400 with per-field errors; create → 201, not curator, chosen diet stored; second create → 409; non-member and member invite → 403; owner invite → 32-char code; join preview names the household; unknown code → 404; join → member; reuse → 404; members read each other through RLS; `anon` reads no members; nobody reads invite codes over REST
+  - [x] Same flow driven through the real UI on the preview: signed-out **Sign in** control and email validation; a real Supabase sign-in link lands back signed in and auto-opens onboarding; create household → avatar + snackbar; owner panel creates and shows an invite link; signed out, the invite link opens the sign-in prompt with an invite notice and strips `?invite=` from the address bar; signing in as a second user on a *different page* opens **Join <household>**; joining lists both members and hides owner controls. No console errors. Header fits at 375px
+  - [x] All test users and households deleted afterwards (0 households, 0 auth users)
+  - [x] `npm run check` green (327 tests)
+- Deviations from spec / findings while building this:
+  1. **No 6-digit code in the sign-in email.** The plan was link + code (the code for "email opened on another device"). Supabase refuses email-template changes on free-tier projects using its built-in sender (HTTP 400). Sign-in is link-only; the implicit flow makes the link work on whichever device opens it, so cross-device still works. `scripts/configure-auth.mjs` installs the branded link-and-code templates automatically once a custom SMTP sender exists.
+  2. **The 2-emails-per-hour project-wide limit stands** for the same reason. Fine for one family; lifting it needs a custom SMTP sender, which needs the owner's credentials. Recorded in `plan.md`.
+  3. **`FOUNDING_OWNER_EMAIL` is a Pages secret, not a `wrangler.toml` var** — the repo is public and it's a personal address.
+  4. **Found in passing:** `recipes.html` overflows horizontally on phones (hidden Health-goal radios widen the page to 658px at a 375px viewport). Present on production before this branch; raised as a separate task.
+- Notes for next slice: the founding owner's first sign-in creates the curator household — nothing claims the existing recipes until then. M1c gates writes on membership and adds the "private until approved" catalogue status; `functions/_lib/auth.js` `getUser()` and `_lib/household.js` `getMembership()` are the building blocks.

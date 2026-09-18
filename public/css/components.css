@@ -463,6 +463,7 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 .account-form { display: grid; gap: var(--sp-2); }
 .account-section { border-top: 1px solid var(--line); margin-top: var(--sp-4); padding-top: var(--sp-4); display: grid; gap: var(--sp-2); }
 .account-section h4, .account-subheading { margin: 0; font-size: var(--fs-3); }
+.account-subheading { margin-top: var(--sp-4); }
 .account-inline-form { display: flex; gap: var(--sp-2); }
 .account-inline-form input { flex: 1; min-width: 0; }
 

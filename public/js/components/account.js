@@ -85,6 +85,10 @@ export async function mountAccount(slotElement) {
   slot = slotElement;
   captureInviteFromUrl();
   await refresh();
+  // A sign-in link leaves a bare "#" behind once supabase-js has read the tokens out of it.
+  if (window.location.href.endsWith('#')) {
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+  }
   maybeAutoOpen();
   onAuthChange(async (_session, event) => {
     if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') return;

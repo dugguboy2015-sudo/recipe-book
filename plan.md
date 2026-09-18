@@ -27,6 +27,15 @@ Companion docs: `docs/ux-uplift-plan.md` (completed A–D uplift), `docs/progres
 3. **Photos** — curated illustrations now; real photo upload later.
 4. **Audience** — family now, **commercialising in the near future**.
 5. **AI quota** — keep 5/day (becomes per-household at M1).
+6. **Who can create a household** — anybody; they then invite their own family.
+7. **Sign-in** — email now, Google later.
+8. **New households' recipes** — private to that household until the curator (the founding
+   household) approves them into the shared catalogue.
+9. **Diet** — per household (not vegetarian-only). Affects AI prompts, validation, planner, copy
+   and which catalogue recipes a household is shown.
+10. **Autonomy** — work unattended, one PR per slice from `main`, self-merge after CI; allowed to
+    change Supabase sign-in settings, set Cloudflare Pages vars/secrets, and create/delete test
+    accounts in production auth.
 
 ### What decision 4 really costs — read this one
 
@@ -105,15 +114,16 @@ not 60%, before re-pointing the planner at the household goal).
 | Slice | Scope | Status |
 |---|---|---|
 | **M1a** | Tenancy schema: `households`, `household_members`, `household_invites`, `household_settings`, `recipes.created_by_household`, `recipe_audit_log.actor_user_id`, RLS + grants. Pure expand — nothing reads it yet | ✅ applied to production, verified |
-| **M1b** | Sign-in (Supabase Auth), founding-household bootstrap from `config/household.json`, the 31 existing recipes claimed by that household, invite links for family members | next — prerequisites below |
-| **M1c** | Only members can add/edit/delete; a household edits only recipes it contributed; signed-in writes skip Turnstile, rate limits move from IP to user; per-household AI quota | |
-| **M1d** | Every `config/household.json` consumer (AI prompts, validation, planner engine, dashboard) reads the household's own settings; the file becomes the default template | |
+| **M1b** | Email sign-in, create a household (diet preset) or join one by invite link, founding household bootstrapped from `config/household.json` and claiming the existing recipes as curator | ✅ built and verified on preview — see below |
+| **M1c** | Only members can add/edit/delete; a household edits only recipes it contributed; new households' recipes private until the curator approves them; signed-in writes skip Turnstile, rate limits move from IP to user; AI generation requires sign-in, per-household quota | |
+| **M1d** | Every `config/household.json` consumer (AI prompts, validation, planner engine, dashboard, "vegetarian" copy) reads the household's own settings, including its diet; catalogue and planner candidates filtered by that diet; a household settings editor; the file becomes the signed-out default | |
 | **M1e** | Planner moves from `localStorage` to the database, one-time import of the existing browser plan, per-member attribution ("who added this", "who loved it") | |
 
 ### Design decisions taken in M1a
 
-- **Recipes stay one shared public catalogue** (owner decision). Tenancy never affects who can
-  *see* a recipe — only who can *edit* one, via `created_by_household`.
+- **Recipes stay one shared catalogue** (owner decision). In M1a tenancy only affected who can
+  *edit* a recipe, via `created_by_household`; decision 8 (private until approved) adds a
+  visibility status in M1c.
 - **One household per user**, enforced (`household_members.user_id` is unique). An unambiguous
   "which household am I acting in" beats multi-membership nobody has asked for; relaxing it later is
   a constraint drop, not a data migration.
@@ -129,28 +139,25 @@ not 60%, before re-pointing the planner at the household goal).
   an invoker function recurses. It takes no arguments and only ever returns the caller's own
   household, so there is nothing to escalate to.
 
-### Before M1b can ship — found in the live auth config
+### M1b — what shipped and what's still constrained
 
-| Setting | Currently | Needs to be |
-|---|---|---|
-| `site_url` | `http://localhost:3000` | `https://recipe-book-9eo.pages.dev` — otherwise every sign-in link sends the user to *localhost* |
-| Redirect allowlist | empty | production + `*.recipe-book-9eo.pages.dev` previews |
-| Auth email limit | **2 emails/hour, project-wide** (built-in sender, no SMTP configured) | enough for real use — see decision below |
-| Open sign-up | on | a policy decision — see below |
+- **Sign-in is an emailed link, no password.** Sessions persist; the implicit flow means the link
+  signs in whichever device it's opened on (ask on a laptop, tap the link on a phone — works).
+- **Onboarding**: a signed-in user with no household is offered *create* (name, your name, diet
+  preset) or *join* (paste an invite link). Invite links are single-use, expire in 7 days, only an
+  owner can make them, and an invite survives the sign-in round trip.
+- **Founding household**: the account whose email matches the `FOUNDING_OWNER_EMAIL` Pages secret
+  gets `config/household.json` as its settings, claims every existing recipe and is marked curator.
+  Everyone else gets their chosen diet preset over neutral defaults.
+- **Auth config applied** (`npm run auth:configure`): `site_url` → production, redirect
+  allowlist → production + every preview + local dev.
 
-**Two decisions needed from you for M1b:**
-
-1. **How should people sign in?** Supabase's built-in email sender allows only **2 auth emails per
-   hour for the whole project** — tight for one family, unworkable for a product. Options, all free:
-   - **Google sign-in** — no email sending at all, one tap on a phone. Needs a Google Cloud OAuth
-     client (you create it; ~10 minutes). *My recommendation* for a family app.
-   - **Custom SMTP** (e.g. Resend's free 3,000/month) — keeps email magic links, needs a sending
-     domain verified.
-   - **Both** — Google as the default, email as a fallback.
-2. **Who can create a household?** With open sign-up, any stranger can make an account. For now,
-   should new sign-ups only be able to *join* your household by invite (family-only), or also
-   *create* their own (the commercial model, which you said is coming)? Either is a one-line
-   switch later; it only decides the default.
+**Still constrained — needs the owner, not code:** Supabase's built-in email sender allows only
+**2 auth emails per hour for the whole project**, and on the free tier it refuses custom email
+templates, so emails can't carry a 6-digit code as well as the link. Both lift the moment a custom
+SMTP sender is configured (e.g. Resend's free tier, which needs a verified sending domain, or a
+Gmail app password). After that, `npm run auth:configure -- --apply` also installs the branded
+templates. Until then: fine for one family signing in over an afternoon; not for a launch.
 
 Two user-facing problems and one commercial requirement, all solved by the same work:
 
@@ -240,6 +247,6 @@ features or cross-household sharing · recipe import-from-URL.
 
 **M0 → M1 → M2 → M3/M4 → M5**
 
-M0 is done. M1 is under way in slices (M1a shipped); M1b is waiting on the two sign-in decisions
-above. M1 comes before M2 because building a shopping list on browser-only storage means building
+M0 is done. M1 is under way in slices (M1a and M1b shipped), running unattended through M1c → M1e
+then M2 → M5. M1 comes before M2 because building a shopping list on browser-only storage means building
 it twice.
