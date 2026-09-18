@@ -449,3 +449,20 @@
   3. **A recipe no household owns is curator-only.** Until the founding owner signs in, nobody can edit the existing 31 recipes — the intended effect of closing the "any visitor can edit anything" gap.
   4. **`WRITES_PER_IP_HOURLY`/`GEN_PER_IP_DAILY` renamed to `WRITES_PER_USER_HOURLY`/`GEN_PER_HOUSEHOLD_DAILY`**, same values; `TURNSTILE_SECRET_KEY` is no longer required by the Functions.
 - Notes for next slice: M1d reads per-household settings everywhere `config/household.json` is read today. The quota endpoint and `requireMember()` already resolve the household; `household_settings` is readable by members over RLS.
+
+## M1d — Per-household settings and diet — DONE
+- Date: 2026-09-18
+- Branch / PR: m1d-household-settings / (this PR)
+- Migrations applied: `018_planner_candidates_diet.sql` — `planner_candidates` gains `is_vegetarian`, `is_egg_free` (appended; grants kept)
+- Backup: `backups/2026-09-18T18-50-44-738Z` (34 rows, count verified)
+- Acceptance:
+  - [x] Migration trial-run in a rolled-back transaction (31 candidates, all vegetarian and egg-free, `anon` select kept), then applied; production smoke green afterwards
+  - [x] 11/11 end-to-end checks on the preview: owner saves settings (200) and reads them back through RLS (packed-lunch days ordered); invalid values → 400 per field; a member who isn't the owner → 403 `owner_only`; signed out → 401; a member reads only their own household's settings; `planner_candidates` filterable by diet as `anon`; **one real AI generation** as a vegetarian, egg-free household → 200 in 35 s, draft vegetarian and egg-free, logged against the household and member, household quota 5 → 4 — the first real model call through the signed-in path
+  - [x] Browser, preview: a signed-in member's planner loads with that household's settings (not the founding family's); the account panel summarises "How you eat"; the owner's settings editor lists 17 cuisines and 7 days, saving reloads with "Household settings saved." and the new diet, servings, cuisine and packed-lunch values; signing out reloads with "Signed out." to the default household; no console errors
+  - [x] All test users and households removed
+  - [x] `npm run check` green (358 tests; new: diet helpers, `applySettingsUpdate`, the settings endpoint, the per-household evaluator rule, the per-household prompt)
+- Deviations from spec / findings while building this:
+  1. **A household change reloads the page** instead of every page re-plumbing household-dependent state. Messages that the dialogs used to show as snackbars now survive the reload as a one-shot "flash".
+  2. **The prompt's founding-family text was regenerated from settings**, not kept verbatim: it now reads "A family living in the United Kingdom" plus their diet, cuisines, spice and packed lunches, rather than hard-coding "An Indian family" and "their son". The real generation above confirms output quality for a vegetarian, egg-free household; the full 11-case eval hasn't been re-run (AI quota).
+  3. **The settings editor offers diet presets, not free-form "never" lists.** It's a smaller surface to validate, and it covers the three diets households choose between at sign-up.
+- Notes for next slice: M1e moves the planner into the database. `getHousehold()` and the reload-on-household-change contract mean the planner page can read the household's plan once per load.

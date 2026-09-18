@@ -250,6 +250,22 @@ replaced that with **households as the tenant**. M1 is built in slices — see `
    `captchaToken`. It fails open, and Supabase only enforces it once its sign-in captcha is switched
    on (`security_captcha_enabled`, provider `turnstile`, the Turnstile secret) — deliberately not
    yet done; see `docs/operations.md`.
+6. **Per-household settings (M1d — shipped).** `household_settings.settings` (same shape as
+   `config/household.json`) is the source of truth for a signed-in household; the file is the
+   template new households start from and what signed-out visitors see.
+   - Browser: `lib/household.js` `getHousehold()` reads the signed-in household's row through RLS,
+     laid over the file for missing keys. Its diet (`shared/household-settings.js`
+     `dietRecipeFilter`) filters catalogue search, the dashboard's recent recipes and the planner's
+     candidates and picker (migration 018 added `is_vegetarian`/`is_egg_free` to
+     `planner_candidates`); planner "ask" copy and the recipe form's diet confirmation use its
+     wording. A change of household reloads the page (`components/account.js` `refresh()`), so
+     each page reads the household once per load.
+   - AI: `generate.js` loads the requester's settings; `prompt.js` writes THE FAMILY, the diet
+     rules and packed-lunch text from them, and `evaluateDraft`'s hard diet rule follows the
+     household's diet (a household that eats everything gets label warnings, not failures).
+   - `PATCH /api/household/settings` (owner only) validates with the shared
+     `applySettingsUpdate` — diet preset, servings, spice, cuisines, packed-lunch days and who
+     they're for. Health goals, measurements and country stay as the template set them.
 
 ## 6. The shopping list (Phase 14, not built — `ENABLE_SHOPPING_LIST=false`)
 
