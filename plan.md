@@ -60,10 +60,28 @@ doesn't stop it.**
 |---|---|---|
 | 0.1 | Merge #37 so Phases B/C/D reach production | ✅ done |
 | 0.7 | Remove dead CSS (`.slot-recipe`, `.info-card`) | ✅ done (#38) |
-| 0.2 | **Soft-delete junk recipe #2** "Aloo Paratha Roll with Ketchup" — steps are `asdfasdf`, 234g protein, 2,345g carbs, 345g fibre, serves 10. It sorts *first alphabetically*, so it is the first recipe any visitor sees | todo |
-| 0.3 | **Repair #4 "Basundi" and #27 "Shrikhand"** — both are real recipes with **no ingredients at all**, so neither can actually be cooked | todo |
-| 0.4 | **Nutrition validation bounds** — sane per-nutrient min/max plus a soft "that looks unusual" warning. This is what would have stopped 0.2 | todo |
-| 0.6 | **Clear the `time_note` junk** — most rows carry the bare string `"Cooking Time:"`, which renders as a dangling label on every recipe detail | todo |
+| 0.2 | **Soft-delete junk recipe #2** "Aloo Paratha Roll with Ketchup" — steps were `asdfasdf`, 234g protein, 2,345g carbs, serves 10, and it sorted *first alphabetically* | ✅ done — live count 31, first card is now the real Aloo Paratha |
+| 0.3 | Repair recipes with no ingredients | ✅ **false alarm, nothing to fix** — see below |
+| 0.4 | **Nutrition validation bounds** — per-nutrient per-serving ceilings replacing one blanket 5000 | ✅ done + regression tests |
+| 0.6 | **Clear the `time_note` junk** — the bare string `"Cooking Time:"` rendering as a dangling label | ✅ done — 30 rows cleared, verified gone on the live detail view |
+
+Data changes were applied over REST with a full row-level snapshot of all 34 recipes taken first
+(`backups/recipes-rest-snapshot-*.json`), since `npm run backup` is itself blocked by the expired
+PAT. Both changes are reversible from that snapshot.
+
+### 0.3 was a false alarm — and it exposed real tech debt
+
+The survey flagged #4 "Basundi" and #27 "Shrikhand" as having no ingredients. They render fine:
+**all 31 live recipes have structured ingredients** (Basundi 7, Shrikhand 6), and Basundi's detail
+view lists milk, sugar, saffron, cardamom and pistachios correctly.
+
+The flag was wrong because it read `recipes.ingredients` — a **legacy JSON column that the UI never
+reads**. The app reads the structured `recipe_ingredients` table instead. The legacy column is still
+written and validated on the write path, but is empty or stale on some rows.
+
+→ **New tech-debt item:** either keep `recipes.ingredients` in sync or drop it (expand/contract).
+A column that looks authoritative, is still validated, and silently disagrees with the real source
+will mislead the next person who queries it — it already misled this audit.
 
 ### 0.5 was wrong — correcting it
 
