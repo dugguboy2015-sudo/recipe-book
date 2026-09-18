@@ -243,10 +243,10 @@ export async function initRecipesPage() {
         pendingNotice.innerHTML = '';
         return;
       }
-      const plural = count === 1 ? 'recipe is' : 'recipes are';
+      const one = count === 1;
       const text = who.isCurator
-        ? `${count} ${plural} waiting for your approval.`
-        : `${count} of your household's ${plural} waiting to be approved for the shared catalogue. Until then only your household can see them.`;
+        ? `${count} ${one ? 'recipe is' : 'recipes are'} waiting for your approval.`
+        : `${one ? 'One' : count} of your household's recipes ${one ? 'is' : 'are'} waiting to be approved for the shared catalogue. Until then only your household can see ${one ? 'it' : 'them'}.`;
       pendingNotice.innerHTML = `<p class="notice pending-notice">${escapeHtml(text)} <button type="button" class="ghost-button" data-pending-toggle>${who.isCurator ? 'Review them' : 'Show them'}</button></p>`;
     }
     pendingNotice.querySelector('[data-pending-toggle]')?.addEventListener('click', async () => {

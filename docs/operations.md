@@ -6,20 +6,23 @@ system looks like and why, see [`docs/architecture.md`](architecture.md).
 
 ## Changing generation and write limits
 
-All four limits are `wrangler.toml` `[vars]` (plain, non-secret config — safe to see in the repo):
+All three limits are `wrangler.toml` `[vars]` (plain, non-secret config — safe to see in the repo):
 
 ```toml
 [vars]
-GEN_GLOBAL_DAILY = "18"       # AI model calls per UTC day, whole site
-GEN_PER_IP_DAILY = "5"        # AI model calls per visitor per UTC day
-WRITES_PER_IP_HOURLY = "30"   # create/edit/delete/restore per visitor per hour
+GEN_GLOBAL_DAILY = "18"          # AI model calls per UTC day, whole site
+GEN_PER_HOUSEHOLD_DAILY = "5"    # AI model calls per household per UTC day (recipes + nutrition estimates)
+WRITES_PER_USER_HOURLY = "30"    # create/edit/delete/restore/approve per signed-in member per hour
 ```
+
+Since M1c these count by household and member, not by IP — every write and AI call is made by a
+signed-in household member.
 
 Edit the value, commit, open a PR, merge to `main` — Cloudflare Pages picks up `wrangler.toml`
 changes on the next deploy like any other file, no separate step. There's nothing to redeploy by
 hand.
 
-`GEN_GLOBAL_DAILY`/`GEN_PER_IP_DAILY` bound *this app's own* request count, not Workers AI's
+`GEN_GLOBAL_DAILY`/`GEN_PER_HOUSEHOLD_DAILY` bound *this app's own* request count, not Workers AI's
 underlying free-tier neuron allocation — raising them doesn't raise Cloudflare's own daily ceiling,
 it just changes how much of that ceiling this app is willing to spend before turning visitors away
 with a 429 of its own. See "When Workers AI runs out" below for what happens if the underlying
@@ -34,7 +37,8 @@ None of them are ever committed, logged, or embedded in a build artifact.
 | Secret | Where to generate a new one | What breaks until you push the new value |
 |---|---|---|
 | `SUPABASE_SECRET_KEY` | Supabase dashboard → Project Settings → API Keys → Secret keys | Every write and every AI generation — Functions can't reach the database at all |
-| `TURNSTILE_SECRET_KEY` | Cloudflare dashboard → Turnstile → your widget → Rotate secret key (rotate the **site key** too if you suspect it's been scraped, and update `TURNSTILE_SITE_KEY` and `public/js/config.js`'s copy together) | All writes and generations fail Turnstile verification (403 `verification_failed`) |
+| `TURNSTILE_SECRET_KEY` | Cloudflare dashboard → Turnstile → your widget → Rotate secret key (rotate the **site key** too if you suspect it's been scraped, and update `TURNSTILE_SITE_KEY` and `public/js/config.js`'s copy together) | Since M1c the Functions no longer use it. It matters only if Supabase's sign-in captcha is switched on (see "Sign-in settings" below) — then update it there too, or sign-in emails are refused |
+| `FOUNDING_OWNER_EMAIL` | Not a secret — the founding owner's email, kept out of the public repo. `.env.local`, pushed with the others | Only the *first* household created by that email is affected: it would not become the curator or claim the existing recipes |
 | `GEMINI_API_KEY` | aistudio.google.com/apikey | No functional break — Workers AI is the primary model and works without it; you just lose the fallback for whenever Workers AI's own daily allocation runs out |
 | `IP_HASH_SALT` | Auto-generated (32 random bytes) the first time `npm run dev:vars` runs without one already in `.env.local`; rotate manually by deleting the line and re-running | Nothing breaks — rate limits and the audit log just start hashing IPs differently from that moment on, so a visitor's very-recent request history (the last hour of writes, the last day of generations) is no longer linked to their new hash. Their limits simply reset a little early; nothing is lost. |
 
@@ -43,6 +47,32 @@ After changing any of them in `.env.local`, push the new values with:
 ```bash
 npm run secrets:push
 ```
+
+## Sign-in settings
+
+Supabase Auth is configured by `npm run auth:configure` (`scripts/configure-auth.mjs`; dry run by
+default, `-- --apply` to write): the site URL and the redirect allowlist (production, every preview,
+local dev). Two things are deliberately left for the owner:
+
+- **A custom SMTP sender.** Supabase's built-in sender allows **2 auth emails per hour for the whole
+  project** and refuses custom email templates on the free tier. Configure SMTP in the Supabase
+  dashboard (Authentication → Emails → SMTP; e.g. Resend's free tier with a verified domain, or a
+  Gmail app password), then re-run `auth:configure -- --apply`: it notices SMTP and also installs the
+  branded templates, which add a 6-digit code to the link.
+- **Sign-in captcha.** The sign-in dialog already sends a Turnstile token. To make Supabase require
+  it: Authentication → Attack Protection → enable Captcha, provider Turnstile, paste
+  `TURNSTILE_SECRET_KEY`. Test a real sign-in from an ordinary browser straight afterwards (automated
+  browsers can't pass Turnstile); turning it off again is the same switch. Local `npm run dev` uses
+  Turnstile's test site key, whose tokens a real secret rejects — sign in locally with an
+  admin-generated link instead (`scripts/lib/test-member.mjs` shows how).
+
+## Test members for write checks
+
+`npm run smoke -- --base <url> --write` and `scripts/eval-generate.mjs` create throwaway signed-in
+members (`scripts/lib/test-member.mjs`: admin API, pre-confirmed, no email sent), act as them, and
+delete them afterwards. Every deployment shares the production database, so a run that is killed
+halfway can leave a `__smoke__ household` behind — delete it (and its auth user) from the Supabase
+dashboard.
 
 ## Restoring from backup
 
@@ -66,8 +96,8 @@ ingredients are left as they are.
 
 Two ways, in order of preference:
 
-1. **The restore endpoint** — `POST /api/recipes/:id/restore` (Origin check, Turnstile, rate
-   limit, same as every other write). This is what the app's own UI uses (the "Undo" action on the
+1. **The restore endpoint** — `POST /api/recipes/:id/restore` (Origin check, signed-in member
+   of the recipe's household or the curator, rate limit — same as every other write). This is what the app's own UI uses (the "Undo" action on the
    delete snackbar, for 8 seconds after a delete) and the only way that also writes a
    `recipe_audit_log` row for the restore.
 2. **A migration**, for a bulk restore or once the UI's undo window has passed and going through
@@ -113,7 +143,7 @@ row via `recipe_generations.saved_recipe_id`.
 ## When Workers AI's daily allocation runs out
 
 If Cloudflare's own Workers AI free-tier daily neuron budget is exhausted before this app's own
-`GEN_GLOBAL_DAILY`/`GEN_PER_IP_DAILY` limits are hit, the generate endpoint automatically falls
+`GEN_GLOBAL_DAILY`/`GEN_PER_HOUSEHOLD_DAILY` limits are hit, the generate endpoint automatically falls
 back to Gemini Flash **if `GEMINI_API_KEY` is set** — no code change or redeploy needed, it's
 checked on every request. Without a Gemini key configured, a visitor sees the same "come back
 after midnight UTC" message this app already shows when its own daily limits are hit, since from
@@ -151,7 +181,7 @@ button calls) takes a recipe's ingredients and serving count and returns the eig
 fields as an estimate — it doesn't write anything itself. To refresh one recipe: open it for
 editing, click "Estimate nutrition," review the numbers, and save. There's no bulk/scripted path
 today; re-estimating many recipes at once would mean scripting repeated calls to that endpoint
-(mind `WRITES_PER_IP_HOURLY` if you do, and only ever against a recipe you intend to also review
+(mind `GEN_PER_HOUSEHOLD_DAILY` if you do, and only ever against a recipe you intend to also review
 by eye — these are estimates, not verified values).
 
 ## Where planner learning lives
@@ -181,12 +211,13 @@ Cloudflare Pages preview URL is a full, real deployment (Workers AI included) an
 way to test anything that touches `env.AI` — including `scripts/eval-generate.mjs`, which also
 needs a working local dev server and has never been run against a real model for the same reason.
 
-**A write or generation fails with `verification_failed`.** Turnstile didn't issue a token. If
-this happens for a real visitor (not an automated browser, which Turnstile is designed to always
-block), check the widget is still active for this domain in the Cloudflare dashboard and that
-`TURNSTILE_SITE_KEY` in `public/js/config.js` matches the secret key pushed to Pages.
+**A write or generation fails with `sign_in_required` or `no_household`.** Since M1c these need a
+signed-in member of a household; the app opens the sign-in or household-setup dialog itself. If a
+signed-in person still gets 401, their session expired and didn't refresh — signing out and in
+again fixes it. `not_your_recipe` (403) means another household contributed that recipe; only it,
+or the curator, can change it.
 
 **The quota endpoint (`GET /api/recipes/generate/quota`) looks wrong.** It reads
-`recipe_generations` directly (count today, grouped by global and by the caller's hashed IP) — if
+`recipe_generations` directly (count today, site-wide and for the caller's household; a signed-out caller gets `requiresSignIn: true` and no personal count) — if
 the numbers look stale, check the request actually reached this endpoint (not a cached response;
 it sets `Cache-Control: no-store`) rather than assuming the underlying data is wrong.
