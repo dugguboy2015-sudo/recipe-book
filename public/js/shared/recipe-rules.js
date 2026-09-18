@@ -13,7 +13,14 @@ export const LIMITS = {
   tags: 12, tagLength: 30,
   ingredientGroups: 12, ingredientsTotal: 60, ingredientName: 200,
   stepGroups: 12, stepsTotal: 40, stepLength: 600,
-  serves: [1, 50], minutes: [0, 1440], nutritionMax: 5000,
+  serves: [1, 50], minutes: [0, 1440],
+  // Per-serving ceilings: generous enough for any real dish, tight enough to reject impossible
+  // data. A single blanket 5000 previously admitted a junk row carrying 2,345 g carbs and 234 g
+  // protein per serving, which the site then rendered as 902% and 468% of reference intake.
+  nutritionMax: {
+    calories_kcal: 2000, protein_g: 150, carbs_g: 400, sugars_g: 250,
+    fibre_g: 100, fat_g: 200, saturates_g: 100, salt_g: 20,
+  },
 };
 
 export const DIETARY_FIELDS = ['is_vegetarian', 'is_egg_free', 'contains_dairy'];
@@ -299,8 +306,7 @@ export function normalizeRecipeInput(raw, { cuisines = [], mode = 'strict', part
       continue;
     }
     const amount = Number(input[field]);
-    // Phase 10: once nutrition is required, salt_g gets a tighter, plausible per-serving ceiling.
-    const max = requireNutrition && field === 'salt_g' ? 20 : LIMITS.nutritionMax;
+    const max = LIMITS.nutritionMax[field];
     if (!Number.isFinite(amount) || amount < 0 || amount > max) {
       errors[field] = `${field} must be between 0 and ${max}.`;
     } else {
