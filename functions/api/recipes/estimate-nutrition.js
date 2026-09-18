@@ -2,12 +2,11 @@ import { readConfig } from '../../_lib/env.js';
 import { json, problem, readJson } from '../../_lib/http.js';
 import { assertAllowedOrigin } from '../../_lib/origin.js';
 import { createDb } from '../../_lib/db.js';
-import { verifyTurnstile } from '../../_lib/turnstile.js';
-import { clientIp, hashIp } from '../../_lib/ip.js';
+import { requireMember } from '../../_lib/write-guard.js';
+import { generationCounts, quotaExceeded } from '../../_lib/ai/quota.js';
 import { generateDraft } from '../../_lib/ai/index.js';
 import { buildNutritionSchema } from '../../_lib/ai/schema.js';
 import { buildNutritionMessages, formatIngredientLine } from '../../_lib/ai/nutrition-prompt.js';
-import { todayStartUtcIso, nextMidnightUtcIso } from '../../_lib/ai/daily-window.js';
 
 const NUTRITION_FIELDS = ['calories_kcal', 'protein_g', 'carbs_g', 'sugars_g', 'fibre_g', 'fat_g', 'saturates_g', 'salt_g'];
 
@@ -62,27 +61,21 @@ export async function onRequestPost({ request, env }) {
   const validation = validateBody(body);
   if (!validation.ok) return problem(400, 'validation_failed', 'Please fix the highlighted fields.', { errors: validation.errors });
 
-  const ip = clientIp(request);
-  const ipHash = await hashIp(ip, config.IP_HASH_SALT);
-  const turnstileResult = await verifyTurnstile(body.turnstileToken, ip, config.TURNSTILE_SECRET_KEY);
-  if (!turnstileResult.ok) return problem(403, 'verification_failed', "We couldn't confirm you're not a bot. Try saving again.");
-
   const db = createDb(config);
-  const since = todayStartUtcIso();
+  // M1c: AI generation needs a signed-in member; the daily quota is per household.
+  const guard = await requireMember(request, config, db);
+  if (guard.errorResponse) return guard.errorResponse;
+  const { actor } = guard;
 
-  let globalCount;
-  let ipCount;
+  let counts;
   try {
-    [globalCount, ipCount] = await Promise.all([
-      db.count('recipe_generations', `created_at=gte.${encodeURIComponent(since)}`),
-      db.count('recipe_generations', `ip_hash=eq.${encodeURIComponent(ipHash)}&created_at=gte.${encodeURIComponent(since)}`),
-    ]);
+    counts = await generationCounts(db, actor.householdId);
   } catch (err) {
     console.error(err);
     return problem(500, 'internal_error', 'Something went wrong. Please try again.');
   }
-  if (globalCount >= config.GEN_GLOBAL_DAILY) return json(429, { code: 'generation_limit', scope: 'site', resetsAt: nextMidnightUtcIso() });
-  if (ipCount >= config.GEN_PER_IP_DAILY) return json(429, { code: 'generation_limit', scope: 'you', resetsAt: nextMidnightUtcIso() });
+  const overQuota = quotaExceeded(config, counts);
+  if (overQuota) return overQuota;
 
   const ingredientLines = await resolveIngredientNames(db, validation.ingredients);
   const schema = buildNutritionSchema();
@@ -99,7 +92,7 @@ export async function onRequestPost({ request, env }) {
         model: generation.attempts.at(-1)?.model || config.AI_MODEL, kind: 'nutrition', outcome: generation.ok ? 'generated' : 'error',
         draft: generation.ok ? generation.raw : null, warnings: [], error: generation.ok ? null : 'generation failed',
         input_tokens: generation.attempts.at(-1)?.usage?.inputTokens ?? null, output_tokens: generation.attempts.at(-1)?.usage?.outputTokens ?? null,
-        est_neurons: generation.attempts.at(-1)?.usage?.estNeurons ?? null, ip_hash: ipHash,
+        est_neurons: generation.attempts.at(-1)?.usage?.estNeurons ?? null, ip_hash: actor.ipHash, household_id: actor.householdId, user_id: actor.userId,
       },
     });
   } catch (err) {

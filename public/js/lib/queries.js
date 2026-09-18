@@ -3,8 +3,8 @@
 // List-returning functions return {ok, data, error} (BUG-4/8.4) so a failed request can render a
 // distinct error state instead of silently looking like "no results".
 
-const RECIPE_LIST_COLUMNS = 'id,slug,name,description,cuisine,tags,meal_types,serves,total_time_minutes,spice_level,protein_g,is_egg_free,is_vegetarian,contains_dairy,is_protein_smart,contains_nuts';
-const DASHBOARD_COLUMNS = 'id,slug,name,cuisine,tags,meal_types,serves,spice_level,protein_g,is_vegetarian,is_egg_free,contains_dairy,is_protein_smart,contains_nuts,created_at';
+const RECIPE_LIST_COLUMNS = 'id,slug,name,description,cuisine,tags,meal_types,serves,total_time_minutes,spice_level,protein_g,is_egg_free,is_vegetarian,contains_dairy,is_protein_smart,contains_nuts,created_by_household,catalogue_status';
+const DASHBOARD_COLUMNS = 'id,slug,name,cuisine,tags,meal_types,serves,spice_level,protein_g,is_vegetarian,is_egg_free,contains_dairy,is_protein_smart,contains_nuts,created_at,catalogue_status';
 
 function buildSearchFilter(value) {
   const escaped = String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
@@ -23,7 +23,20 @@ function applySearchFilters(query, filters = {}) {
   if (dietary.proteinSmart) q = q.eq('is_protein_smart', true);
   if (dietary.nutFree) q = q.eq('contains_nuts', false);
   if (dietary.spiceMax) q = q.lte('spice_level', dietary.spiceMax);
+  // RLS already limits pending recipes to their own household and the curator.
+  if (filters.pendingOnly) q = q.eq('catalogue_status', 'pending');
   return q;
+}
+
+/** How many recipes this viewer can see that are still awaiting approval (M1c). */
+export async function fetchPendingCount(client) {
+  const { count, error } = await client.from('recipes').select('id', { count: 'exact', head: true })
+    .eq('is_deleted', false).eq('catalogue_status', 'pending');
+  if (error) {
+    console.error(error);
+    return 0;
+  }
+  return count || 0;
 }
 
 /**

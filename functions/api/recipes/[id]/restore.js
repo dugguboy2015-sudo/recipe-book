@@ -2,12 +2,9 @@ import { readConfig } from '../../../_lib/env.js';
 import { json, problem, readJson } from '../../../_lib/http.js';
 import { assertAllowedOrigin } from '../../../_lib/origin.js';
 import { createDb, DbError } from '../../../_lib/db.js';
-import { verifyTurnstile } from '../../../_lib/turnstile.js';
-import { clientIp, hashIp } from '../../../_lib/ip.js';
-import { countSince } from '../../../_lib/ratelimit.js';
+import { requireMember, checkWriteRate, canEditRecipe } from '../../../_lib/write-guard.js';
 import { writeAudit } from '../../../_lib/audit.js';
 
-const ONE_HOUR_MS = 60 * 60 * 1000;
 const ID_RE = /^[1-9][0-9]{0,9}$/;
 
 export async function onRequestPost({ request, env, params }) {
@@ -24,34 +21,19 @@ export async function onRequestPost({ request, env, params }) {
     return problem(500, 'internal_error', 'Something went wrong. Please try again.');
   }
 
-  let body;
   try {
-    body = await readJson(request);
+    await readJson(request);
   } catch (err) {
     if (err.code === 'payload_too_large') return problem(413, 'payload_too_large', 'That request is too large.');
     return problem(400, 'invalid_json', 'That request was not valid.');
   }
 
-  const ip = clientIp(request);
-  const ipHash = await hashIp(ip, config.IP_HASH_SALT);
-  const turnstileResult = await verifyTurnstile(body.turnstileToken, ip, config.TURNSTILE_SECRET_KEY);
-  if (!turnstileResult.ok) return problem(403, 'verification_failed', "We couldn't confirm you're not a bot. Try saving again.");
-
   const db = createDb(config);
-
-  let recentWrites;
-  try {
-    recentWrites = await countSince(db, 'recipe_audit_log', 'actor_ip_hash', ipHash, new Date(Date.now() - ONE_HOUR_MS).toISOString());
-  } catch (err) {
-    console.error(err);
-    return problem(500, 'internal_error', 'Something went wrong. Please try again.');
-  }
-  if (recentWrites >= config.WRITES_PER_IP_HOURLY) {
-    return new Response(JSON.stringify({ code: 'rate_limited', message: 'Too many changes from your network. Try again later.' }), {
-      status: 429,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Retry-After': '3600' },
-    });
-  }
+  const guard = await requireMember(request, config, db);
+  if (guard.errorResponse) return guard.errorResponse;
+  const { actor } = guard;
+  const limited = await checkWriteRate(db, actor, config.WRITES_PER_USER_HOURLY);
+  if (limited) return limited;
 
   let before;
   try {
@@ -61,7 +43,10 @@ export async function onRequestPost({ request, env, params }) {
     console.error(err);
     return problem(500, 'internal_error', 'Something went wrong. Please try again.');
   }
-  if (!before) return problem(404, 'not_found', 'This recipe could not be found.');
+  if (!before || (!canEditRecipe(actor, before) && before.catalogue_status !== 'public')) {
+    return problem(404, 'not_found', 'This recipe could not be found.');
+  }
+  if (!canEditRecipe(actor, before)) return problem(403, 'not_your_recipe', 'Only the household that added this recipe can restore it.');
 
   let restored;
   try {
@@ -80,7 +65,7 @@ export async function onRequestPost({ request, env, params }) {
   }
 
   try {
-    await writeAudit(db, { recipeId: Number(id), action: 'restore', ipHash, before, after: restored });
+    await writeAudit(db, { recipeId: Number(id), action: 'restore', ipHash: actor.ipHash, actorUserId: actor.userId, before, after: restored });
   } catch (err) {
     console.error('Audit write failed after a successful restore:', err);
   }

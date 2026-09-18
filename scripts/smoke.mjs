@@ -40,15 +40,24 @@ await check('GET /api/health -> 200 ok:true', async () => {
 });
 
 if (!write) {
-  await check('POST /api/recipes without a token is rejected (403 verification_failed)', async () => {
+  await check('POST /api/recipes signed out is rejected (401 sign_in_required)', async () => {
     const res = await fetch(`${base}/api/recipes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recipe: { name: '__smoke__ unauthorized probe' } }),
     });
-    if (res.status !== 403) throw new Error(`expected 403, got ${res.status}`);
+    if (res.status !== 401) throw new Error(`expected 401, got ${res.status}`);
     const json = await res.json();
-    if (json.code !== 'verification_failed') throw new Error(`expected code verification_failed, got ${json.code}`);
+    if (json.code !== 'sign_in_required') throw new Error(`expected code sign_in_required, got ${json.code}`);
+  });
+
+  await check('POST /api/recipes/generate signed out is rejected (401)', async () => {
+    const res = await fetch(`${base}/api/recipes/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: '__smoke__ probe' }),
+    });
+    if (res.status !== 401) throw new Error(`expected 401, got ${res.status}`);
   });
 
   await check('POST /api/recipes with a bad Origin is rejected (403 origin_not_allowed)', async () => {
@@ -64,9 +73,13 @@ if (!write) {
 }
 
 if (write) {
-  // Local only: the test Turnstile secret key (configured via .dev.vars) accepts any token of
-  // plausible length for this well-known dummy site/secret pair, so no real browser is needed.
-  const TEST_TOKEN = 'smoke-test-turnstile-token';
+  // Writes need a signed-in household member (M1c): a throwaway one is created through the admin
+  // API (no email sent) and removed at the end. Works against any deployment.
+  const { loadEnv } = await import('./lib/env.mjs');
+  const { createTestMember } = await import('./lib/test-member.mjs');
+  const memberEnv = loadEnv({ required: ['SUPABASE_URL', 'SUPABASE_SECRET_KEY'] });
+  const member = await createTestMember(memberEnv, base, { label: 'smoke' });
+  const headers = { 'Content-Type': 'application/json', ...member.authHeader };
   const timestamp = Date.now();
   const name = `__smoke__${timestamp}`;
   let recipeId;
@@ -74,30 +87,31 @@ if (write) {
   await check('create __smoke__ recipe -> 201', async () => {
     const res = await fetch(`${base}/api/recipes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         recipe: {
           name, cuisine: 'Other', description: 'Smoke test recipe.', serves: 4, total_time_minutes: 10,
           steps: [{ group: 'Method', steps: ['Smoke test step.'] }],
           is_vegetarian: true, is_egg_free: true, contains_dairy: false,
+          calories_kcal: 100, protein_g: 5, carbs_g: 10, sugars_g: 1, fibre_g: 1, fat_g: 3, saturates_g: 1, salt_g: 0.1,
         },
         ingredients: [{ group: 'Ingredients', items: [{ ingredient: { name: 'smoke test ingredient' } }] }],
-        turnstileToken: TEST_TOKEN,
       }),
     });
     if (res.status !== 201) throw new Error(`expected 201, got ${res.status}: ${await res.text()}`);
     const json = await res.json();
     recipeId = json.recipe.id;
+    if (json.recipe.catalogue_status !== 'pending') throw new Error(`expected a pending recipe, got ${json.recipe.catalogue_status}`);
   });
 
   await check('update __smoke__ recipe -> 200', async () => {
     // The first PATCH attempt always 409s (the create response's updated_at has more precision
     // than a client would normally know in advance) — that's expected; re-read the real value
     // from the conflict response's `current` and retry once with it.
-    const firstRes = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe: { description: 'Updated.' }, expectedUpdatedAt: new Date().toISOString(), turnstileToken: TEST_TOKEN }) });
+    const firstRes = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'PATCH', headers, body: JSON.stringify({ recipe: { description: 'Updated.' }, expectedUpdatedAt: new Date().toISOString() }) });
     if (firstRes.status === 409) {
       const conflict = await firstRes.json();
-      const retryRes = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe: { description: 'Updated.' }, expectedUpdatedAt: conflict.current.updated_at, turnstileToken: TEST_TOKEN }) });
+      const retryRes = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'PATCH', headers, body: JSON.stringify({ recipe: { description: 'Updated.' }, expectedUpdatedAt: conflict.current.updated_at }) });
       if (retryRes.status !== 200) throw new Error(`expected 200 on retry, got ${retryRes.status}: ${await retryRes.text()}`);
       return;
     }
@@ -105,17 +119,17 @@ if (write) {
   });
 
   await check('delete __smoke__ recipe -> 200', async () => {
-    const res = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ turnstileToken: TEST_TOKEN }) });
+    const res = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'DELETE', headers, body: '{}' });
     if (res.status !== 200) throw new Error(`expected 200, got ${res.status}: ${await res.text()}`);
   });
 
   await check('restore __smoke__ recipe -> 200', async () => {
-    const res = await fetch(`${base}/api/recipes/${recipeId}/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ turnstileToken: TEST_TOKEN }) });
+    const res = await fetch(`${base}/api/recipes/${recipeId}/restore`, { method: 'POST', headers, body: '{}' });
     if (res.status !== 200) throw new Error(`expected 200, got ${res.status}: ${await res.text()}`);
   });
 
   await check('delete __smoke__ recipe again -> 200 (leaves it soft-deleted for cleanup)', async () => {
-    const res = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ turnstileToken: TEST_TOKEN }) });
+    const res = await fetch(`${base}/api/recipes/${recipeId}`, { method: 'DELETE', headers, body: '{}' });
     if (res.status !== 200) throw new Error(`expected 200, got ${res.status}: ${await res.text()}`);
   });
 
@@ -138,6 +152,8 @@ if (write) {
     const res = await rest(env, `recipes?id=eq.${recipeId}&name=eq.${encodeURIComponent(name)}`, { method: 'DELETE', secret: true });
     if (res.status !== 200 && res.status !== 204) throw new Error(`cleanup delete failed: status ${res.status}`);
   });
+
+  await check('remove the test household and user (cleanup)', () => member.cleanup());
 }
 
 console.log('');

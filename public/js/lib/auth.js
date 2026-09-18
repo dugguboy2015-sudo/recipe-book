@@ -11,9 +11,13 @@ export function onAuthChange(callback) {
   return () => data.subscription.unsubscribe();
 }
 
-/** Emails a sign-in link; creates the account on first use. */
-export function sendSignInEmail(email, redirectTo) {
-  return supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } });
+/**
+ * Emails a sign-in link; creates the account on first use. `captchaToken` is a Turnstile token:
+ * Supabase checks it when its sign-in captcha is switched on, which protects the project's tiny
+ * email allowance from being spent by bots.
+ */
+export function sendSignInEmail(email, redirectTo, captchaToken) {
+  return supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true, captchaToken } });
 }
 
 export function signOut() {

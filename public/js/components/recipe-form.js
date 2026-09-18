@@ -56,7 +56,6 @@ export function createRecipeForm({ client, onSaved }) {
   const title = document.getElementById('addRecipeTitle');
   const submitButton = document.getElementById('submitRecipeButton');
   const cancelButton = document.getElementById('cancelAddRecipe');
-  const turnstileContainer = document.getElementById('turnstileContainer');
   const mealTypeChips = document.getElementById('mealTypeChips');
   const cuisineSelect = document.getElementById('recipeCuisineSelect');
   const packedLunchSection = document.getElementById('packedLunchSection');
@@ -438,8 +437,8 @@ export function createRecipeForm({ client, onSaved }) {
     setBusy(submitButton, true);
     try {
       const result = mode === 'edit'
-        ? await updateRecipe(editingRecipeId, { recipe, ingredients, expectedUpdatedAt: editingUpdatedAt, turnstileContainer })
-        : await createRecipe({ recipe, ingredients, turnstileContainer, source: mode === 'ai-draft' ? 'ai' : 'manual', generationId: mode === 'ai-draft' ? currentGenerationId : undefined });
+        ? await updateRecipe(editingRecipeId, { recipe, ingredients, expectedUpdatedAt: editingUpdatedAt })
+        : await createRecipe({ recipe, ingredients, source: mode === 'ai-draft' ? 'ai' : 'manual', generationId: mode === 'ai-draft' ? currentGenerationId : undefined });
 
       if (result.ok) {
         showSnackbar(mode === 'edit' ? 'Recipe updated successfully!' : 'Recipe added successfully!', 'success');
@@ -513,7 +512,7 @@ export function createRecipeForm({ client, onSaved }) {
     setBusy(estimateNutritionButton, true);
     if (estimateNutritionStatus) estimateNutritionStatus.textContent = 'Estimating…';
     try {
-      const result = await estimateNutrition({ name: name || 'Recipe', serves, ingredients, turnstileContainer });
+      const result = await estimateNutrition({ name: name || 'Recipe', serves, ingredients });
       if (!result.ok) {
         if (estimateNutritionStatus) estimateNutritionStatus.textContent = '';
         showSnackbar(result.message || "Couldn't estimate nutrition. Please try again.", 'error');

@@ -25,6 +25,7 @@ function ensureDialog() {
     document.body.insertAdjacentHTML('beforeend', `
       <dialog id="${DIALOG_ID}" class="recipe-detail confirmation-panel account-dialog" aria-labelledby="accountDialogTitle">
         <div id="accountDialogBody"></div>
+        <div id="accountTurnstile"></div>
       </dialog>`);
     handle = wireDialog(document.getElementById(DIALOG_ID));
   }
@@ -57,6 +58,7 @@ function wireCommon() {
 
 function friendlyAuthError(error) {
   const message = String(error?.message || '');
+  if (/captcha/i.test(message)) return "We couldn't confirm you're not a bot. Please try again.";
   if (error?.status === 429 || /rate limit|too many/i.test(message)) {
     return 'Too many sign-in emails have gone out in the last hour. Please try again later — or use a link we already sent.';
   }
@@ -75,11 +77,15 @@ function markOnboardingShown() {
 
 // ---------- Sign in ----------
 
+function reasonNotice(prefix) {
+  return ctx?.reason ? `<p class="notice">${escapeHtml(`${prefix} ${ctx.reason}.`)}</p>` : '';
+}
+
 function renderSignIn() {
   const invited = Boolean(getPendingInvite());
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Sign in</h3></div>
-    ${invited ? '<p class="notice">Sign in first, then you can join the household that invited you.</p>' : ''}
+    ${invited ? '<p class="notice">Sign in first, then you can join the household that invited you.</p>' : reasonNotice('Sign in')}
     <p class="delete-confirm-copy">We'll email you a sign-in link — no password needed.</p>
     <form id="signInEmailForm" class="account-form" novalidate>
       <label class="field"><span>Email</span>
@@ -101,7 +107,18 @@ function renderSignIn() {
     }
     const button = body().querySelector('#signInEmailForm button[type="submit"]');
     setBusy(button, true);
-    const { error } = await sendSignInEmail(email, `${window.location.origin}${window.location.pathname}`);
+    // Inside the dialog, not the page: a challenge rendered under a modal dialog can't be clicked.
+    let captchaToken;
+    try {
+      const { getToken } = await import('../lib/turnstile.js');
+      captchaToken = await getToken(document.getElementById('accountTurnstile'));
+    } catch (err) {
+      console.error(err);
+      setBusy(button, false);
+      setErrors({ email: "We couldn't confirm you're not a bot. Please try again." });
+      return;
+    }
+    const { error } = await sendSignInEmail(email, `${window.location.origin}${window.location.pathname}`, captchaToken);
     setBusy(button, false);
     if (error) {
       setErrors({ email: friendlyAuthError(error) });
@@ -159,6 +176,7 @@ function renderCreate() {
     <label class="choice"><input type="radio" name="diet" value="${key}"${index === 0 ? ' checked' : ''} /><span>${escapeHtml(preset.label)}</span></label>`).join('');
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Set up your household</h3></div>
+    ${reasonNotice('Set up or join a household')}
     <p class="delete-confirm-copy">A household shares one meal plan and its own food rules. You can invite your family once it's set up.</p>
     <form id="createHouseholdForm" class="account-form" novalidate>
       <label class="field"><span>Household name</span>
@@ -409,8 +427,8 @@ function show(view) {
 }
 
 /** Opens the account dialog, choosing the right view for the current state unless one is given. */
-export function openAccountDialog({ state, view, refresh }) {
-  ctx = { state, refresh };
+export function openAccountDialog({ state, view, refresh, reason }) {
+  ctx = { state, refresh, reason };
   ensureDialog();
   let chosen = view;
   if (!state.session) chosen = 'sign-in';

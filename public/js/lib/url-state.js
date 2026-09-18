@@ -13,6 +13,7 @@ export function filtersToSearchParams(filters, page) {
   if (filters.proteinSmart) params.set('proteinsmart', '1');
   if (filters.nutFree) params.set('nutfree', '1');
   if (filters.spiceMax) params.set('spice', String(filters.spiceMax));
+  if (filters.pendingOnly) params.set('status', 'pending');
   if (page && page > 1) params.set('page', String(page));
   return params;
 }
@@ -28,6 +29,7 @@ export function searchParamsToFilters(params) {
     proteinSmart: params.get('proteinsmart') === '1',
     nutFree: params.get('nutfree') === '1',
     spiceMax: params.get('spice') ? Number(params.get('spice')) : null,
+    pendingOnly: params.get('status') === 'pending',
   };
 }
 

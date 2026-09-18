@@ -4,9 +4,8 @@ export function fakeEnv(overrides = {}) {
   return {
     SUPABASE_URL: 'https://example.supabase.co',
     SUPABASE_SECRET_KEY: 'sb_secret_fake',
-    TURNSTILE_SECRET_KEY: 'fake-turnstile-secret',
     IP_HASH_SALT: 'fake-salt',
-    WRITES_PER_IP_HOURLY: '30',
+    WRITES_PER_USER_HOURLY: '30',
     AI: {},
     ...overrides,
   };
@@ -36,15 +35,31 @@ export function stubFetch(handlers) {
   return calls;
 }
 
-export const turnstileOk = {
-  test: (url) => url.includes('challenges.cloudflare.com/turnstile'),
-  respond: () => jsonResponse(200, { success: true, 'error-codes': [] }),
-};
+export const TEST_HOUSEHOLD_ID = '11111111-1111-4111-8111-111111111111';
+export const TEST_USER_ID = '22222222-2222-4222-8222-222222222222';
+export const AUTH_HEADER = { Authorization: 'Bearer test-access-token' };
 
-export const turnstileFail = {
-  test: (url) => url.includes('challenges.cloudflare.com/turnstile'),
-  respond: () => jsonResponse(200, { success: false, 'error-codes': ['invalid-input-response'] }),
-};
+/**
+ * Stubs for a signed-in member: Supabase's /auth/v1/user and the membership lookup. Defaults to
+ * the curator household, which may edit any recipe; pass isCurator: false to test ownership.
+ */
+export function signedInMember({ userId = TEST_USER_ID, householdId = TEST_HOUSEHOLD_ID, role = 'owner', isCurator = true } = {}) {
+  return [
+    {
+      test: (url) => url.includes('/auth/v1/user'),
+      respond: () => jsonResponse(200, { id: userId, email: 'member@example.com', email_confirmed_at: '2026-09-18T00:00:00Z' }),
+    },
+    {
+      test: (url) => url.includes('household_members?select='),
+      respond: () => jsonResponse(200, [{ household_id: householdId, role, display_name: 'Member', households: { is_curator: isCurator } }]),
+    },
+  ];
+}
+
+export const signedInNoHousehold = [
+  { test: (url) => url.includes('/auth/v1/user'), respond: () => jsonResponse(200, { id: TEST_USER_ID, email: 'x@example.com', email_confirmed_at: '2026-09-18T00:00:00Z' }) },
+  { test: (url) => url.includes('household_members?select='), respond: () => jsonResponse(200, []) },
+];
 
 export function rateLimitCount(n) {
   return {

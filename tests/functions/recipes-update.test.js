@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { onRequestPatch, onRequestDelete } from '../../functions/api/recipes/[id].js';
-import { fakeEnv, stubFetch, turnstileOk, rateLimitCount, cuisinesList, auditInsertOk, jsonResponse } from './helpers.js';
+import { fakeEnv, stubFetch, signedInMember, AUTH_HEADER, rateLimitCount, cuisinesList, auditInsertOk, jsonResponse } from './helpers.js';
 
 function makeRequest(method, body = {}) {
   return new Request('https://recipe-book-9eo.pages.dev/api/recipes/5', {
     method,
-    headers: { 'Content-Type': 'application/json', Origin: 'https://recipe-book-9eo.pages.dev' },
+    headers: { 'Content-Type': 'application/json', Origin: 'https://recipe-book-9eo.pages.dev', ...AUTH_HEADER },
     body: JSON.stringify(body),
   });
 }
 
-const patchBody = { recipe: { name: 'Updated Dal' }, expectedUpdatedAt: '2026-01-01T00:00:00Z', turnstileToken: 'x'.repeat(20) };
+const patchBody = { recipe: { name: 'Updated Dal' }, expectedUpdatedAt: '2026-01-01T00:00:00Z' };
 
 describe('PATCH /api/recipes/:id', () => {
   it('rejects an id that fails the id pattern with 404', async () => {
@@ -20,7 +20,7 @@ describe('PATCH /api/recipes/:id', () => {
 
   it('returns 404 not_found when the recipe does not exist (before-read)', async () => {
     stubFetch([
-      turnstileOk,
+      ...signedInMember(),
       rateLimitCount(0),
       { test: (url) => url.includes('recipes?select=*') && url.includes('is_deleted=eq.false'), respond: () => jsonResponse(200, []) },
     ]);
@@ -31,7 +31,7 @@ describe('PATCH /api/recipes/:id', () => {
 
   it('maps PT409 from save_recipe to 409 edit_conflict with the current row', async () => {
     stubFetch([
-      turnstileOk,
+      ...signedInMember(),
       rateLimitCount(0),
       { test: (url) => url.includes('recipes?select=*') && url.includes('is_deleted=eq.false'), respond: () => jsonResponse(200, [{ id: 5, name: 'Old Dal', updated_at: '2025-01-01T00:00:00Z' }]) },
       cuisinesList,
@@ -47,7 +47,7 @@ describe('PATCH /api/recipes/:id', () => {
 
   it('maps PT400 dietary_mismatch to 400 validation_failed with evidence-based messages', async () => {
     stubFetch([
-      turnstileOk,
+      ...signedInMember(),
       rateLimitCount(0),
       { test: (url) => url.includes('recipes?select=*') && url.includes('is_deleted=eq.false'), respond: () => jsonResponse(200, [{ id: 5, name: 'Old Dal', updated_at: '2025-01-01T00:00:00Z' }]) },
       cuisinesList,
@@ -66,7 +66,7 @@ describe('PATCH /api/recipes/:id', () => {
   it('updates successfully and writes an audit row with before/after', async () => {
     const auditRows = [];
     stubFetch([
-      turnstileOk,
+      ...signedInMember(),
       rateLimitCount(0),
       { test: (url) => url.includes('recipes?select=*') && url.includes('is_deleted=eq.false'), respond: () => jsonResponse(200, [{ id: 5, name: 'Old Dal', updated_at: '2025-01-01T00:00:00Z' }]) },
       cuisinesList,
@@ -85,24 +85,24 @@ describe('PATCH /api/recipes/:id', () => {
 describe('DELETE /api/recipes/:id', () => {
   it('returns 404 when the recipe is already gone', async () => {
     stubFetch([
-      turnstileOk,
+      ...signedInMember(),
       rateLimitCount(0),
       { test: (url) => url.includes('recipes?select=*'), respond: () => jsonResponse(200, []) },
     ]);
-    const res = await onRequestDelete({ request: makeRequest('DELETE', { turnstileToken: 'x'.repeat(20) }), env: fakeEnv(), params: { id: '5' } });
+    const res = await onRequestDelete({ request: makeRequest('DELETE', {}), env: fakeEnv(), params: { id: '5' } });
     expect(res.status).toBe(404);
   });
 
   it('soft-deletes successfully and writes an audit row (never on failure)', async () => {
     const auditRows = [];
     stubFetch([
-      turnstileOk,
+      ...signedInMember(),
       rateLimitCount(0),
       { test: (url) => url.includes('recipes?select=*') && url.includes('is_deleted=eq.false'), respond: () => jsonResponse(200, [{ id: 5, name: 'Old Dal' }]) },
       { test: (url, init) => url.includes('recipes?id=eq.5') && init.method === 'PATCH', respond: () => jsonResponse(200, {}) },
       auditInsertOk(auditRows),
     ]);
-    const res = await onRequestDelete({ request: makeRequest('DELETE', { turnstileToken: 'x'.repeat(20) }), env: fakeEnv(), params: { id: '5' } });
+    const res = await onRequestDelete({ request: makeRequest('DELETE', {}), env: fakeEnv(), params: { id: '5' } });
     expect(res.status).toBe(200);
     expect(auditRows).toHaveLength(1);
     expect(auditRows[0].action).toBe('delete');

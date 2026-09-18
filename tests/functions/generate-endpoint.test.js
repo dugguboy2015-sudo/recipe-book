@@ -1,9 +1,9 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { onRequestPost } from '../../functions/api/recipes/generate.js';
-import { fakeEnv, stubFetch, turnstileOk, turnstileFail, cuisinesList, jsonResponse } from './helpers.js';
+import { fakeEnv, stubFetch, signedInMember, AUTH_HEADER, cuisinesList, jsonResponse, TEST_HOUSEHOLD_ID } from './helpers.js';
 
-function makeRequest({ origin = 'https://recipe-book-9eo.pages.dev', body = {} } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+function makeRequest({ origin = 'https://recipe-book-9eo.pages.dev', body = {}, signedIn = true } = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(signedIn ? AUTH_HEADER : {}) };
   if (origin !== null) headers.Origin = origin;
   return new Request('https://recipe-book-9eo.pages.dev/api/recipes/generate', {
     method: 'POST',
@@ -15,7 +15,7 @@ function makeRequest({ origin = 'https://recipe-book-9eo.pages.dev', body = {} }
 function generationCount(globalN, ipN = globalN) {
   return {
     test: (url, init) => url.includes('recipe_generations') && init.method === 'HEAD',
-    respond: (url) => new Response(null, { status: 200, headers: { 'Content-Range': `0-0/${url.includes('ip_hash') ? ipN : globalN}` } }),
+    respond: (url) => new Response(null, { status: 200, headers: { 'Content-Range': `0-0/${url.includes('household_id') ? ipN : globalN}` } }),
   };
 }
 
@@ -35,7 +35,7 @@ const generationInsertOk = (rows = []) => ({
   },
 });
 
-const validBody = { prompt: 'paneer butter masala, lighter than usual', turnstileToken: 'x'.repeat(20) };
+const validBody = { prompt: 'paneer butter masala, lighter than usual' };
 
 const goodDraft = {
   request_ok: true, refusal_reason: null, name: 'Paneer Butter Masala', description: 'A lighter version.', cuisine: 'North Indian',
@@ -52,7 +52,7 @@ function fakeGenEnv(overrides = {}) {
   return fakeEnv({ AI_MODEL: '@cf/test-model', GEMINI_MODEL: 'gemini-test', AI: { run: vi.fn() }, ...overrides });
 }
 
-const happyPathHandlers = () => [turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk()];
+const happyPathHandlers = () => [...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk()];
 
 describe('POST /api/recipes/generate — short-circuits (no model call)', () => {
   beforeEach(() => {
@@ -70,7 +70,7 @@ describe('POST /api/recipes/generate — short-circuits (no model call)', () => 
   it('rejects a too-short prompt with 400 validation_failed', async () => {
     stubFetch([]);
     const env = fakeGenEnv();
-    const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'hi', turnstileToken: 'x'.repeat(20) } }), env });
+    const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'hi' } }), env });
     expect(res.status).toBe(400);
     expect((await res.json()).code).toBe('validation_failed');
     expect(env.AI.run).not.toHaveBeenCalled();
@@ -82,17 +82,18 @@ describe('POST /api/recipes/generate — short-circuits (no model call)', () => 
     expect(res.status).toBe(400);
   });
 
-  it('rejects a failed Turnstile check with 403, before any quota check', async () => {
-    stubFetch([turnstileFail]);
+  it('rejects a signed-out request with 401, before any quota check', async () => {
+    const calls = stubFetch([]);
     const env = fakeGenEnv();
-    const res = await onRequestPost({ request: makeRequest({ body: validBody }), env });
-    expect(res.status).toBe(403);
-    expect((await res.json()).code).toBe('verification_failed');
+    const res = await onRequestPost({ request: makeRequest({ body: validBody, signedIn: false }), env });
+    expect(res.status).toBe(401);
+    expect((await res.json()).code).toBe('sign_in_required');
+    expect(calls).toHaveLength(0);
     expect(env.AI.run).not.toHaveBeenCalled();
   });
 
   it('rejects with 429 generation_limit scope:site when the global daily count is met, before the duplicate precheck', async () => {
-    stubFetch([turnstileOk, generationCount(18)]);
+    stubFetch([...signedInMember(), generationCount(18)]);
     const env = fakeGenEnv({ GEN_GLOBAL_DAILY: '18' });
     const res = await onRequestPost({ request: makeRequest({ body: validBody }), env });
     expect(res.status).toBe(429);
@@ -101,9 +102,9 @@ describe('POST /api/recipes/generate — short-circuits (no model call)', () => 
     expect(env.AI.run).not.toHaveBeenCalled();
   });
 
-  it('rejects with 429 generation_limit scope:you when the per-IP daily count is met', async () => {
-    stubFetch([turnstileOk, generationCount(0, 5)]);
-    const env = fakeGenEnv({ GEN_PER_IP_DAILY: '5' });
+  it('rejects with 429 generation_limit scope:you when the per-household daily count is met', async () => {
+    stubFetch([...signedInMember(), generationCount(0, 5)]);
+    const env = fakeGenEnv({ GEN_PER_HOUSEHOLD_DAILY: '5' });
     const res = await onRequestPost({ request: makeRequest({ body: validBody }), env });
     expect(res.status).toBe(429);
     expect((await res.json())).toMatchObject({ code: 'generation_limit', scope: 'you' });
@@ -111,9 +112,9 @@ describe('POST /api/recipes/generate — short-circuits (no model call)', () => 
 
   it('rejects with 409 similar_exists on a >=0.6 match, without ever calling the model or logging a generation row', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), similarRecipeMatch, similarRecipeSlugLookup, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), similarRecipeMatch, similarRecipeSlugLookup, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
-    const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'kanda poha', turnstileToken: 'x'.repeat(20) } }), env });
+    const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'kanda poha' } }), env });
     expect(res.status).toBe(409);
     const data = await res.json();
     expect(data.code).toBe('similar_exists');
@@ -138,7 +139,7 @@ describe('POST /api/recipes/generate — success path', () => {
 
   it('returns 200 with the expected response shape on a clean draft', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     env.AI.run.mockResolvedValue({ response: goodDraft, usage: { prompt_tokens: 2000, completion_tokens: 800 } });
 
@@ -152,6 +153,7 @@ describe('POST /api/recipes/generate — success path', () => {
     expect(typeof data.generationId).toBe('string');
     expect(genRows).toHaveLength(1);
     expect(genRows[0].outcome).toBe('generated');
+    expect(genRows[0].household_id).toBe(TEST_HOUSEHOLD_ID);
   });
 
   it("the draft never contains id, slug, is_deleted or timestamps", async () => {
@@ -197,11 +199,11 @@ describe('POST /api/recipes/generate — refusal, retry, fallback, and failure p
 
   it('returns 422 not_a_recipe and logs outcome:refused when the model declines', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     env.AI.run.mockResolvedValue({ response: { ...goodDraft, request_ok: false, refusal_reason: 'That is not a food request.' } });
 
-    const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'write me a poem about cars', turnstileToken: 'x'.repeat(20) } }), env });
+    const res = await onRequestPost({ request: makeRequest({ body: { prompt: 'write me a poem about cars' } }), env });
 
     expect(res.status).toBe(422);
     expect((await res.json()).code).toBe('not_a_recipe');
@@ -211,7 +213,7 @@ describe('POST /api/recipes/generate — refusal, retry, fallback, and failure p
 
   it('retries once with feedback on a household-rule violation and succeeds on the corrected draft', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     const badDraft = { ...goodDraft, ingredients: [{ group: 'Ingredients', items: [{ name: 'chicken', category: 'plant_protein', quantity: 1, unit: 'cup', preparation: '', optional: false }] }] };
     env.AI.run
@@ -230,7 +232,7 @@ describe('POST /api/recipes/generate — refusal, retry, fallback, and failure p
 
   it('returns 502 invalid_output when the household violation persists after the one retry', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     const badDraft = { ...goodDraft, is_vegetarian: false };
     env.AI.run.mockResolvedValue({ response: badDraft });
@@ -244,7 +246,7 @@ describe('POST /api/recipes/generate — refusal, retry, fallback, and failure p
 
   it('returns 502 invalid_output after two unparseable responses with no Gemini key configured', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     env.AI.run.mockResolvedValue({ response: 'not json at all' });
 
@@ -258,7 +260,7 @@ describe('POST /api/recipes/generate — refusal, retry, fallback, and failure p
   it('falls back to Gemini when Workers AI is unavailable and a Gemini key is set', async () => {
     const genRows = [];
     stubFetch([
-      turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision,
+      ...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, noIngredientMatches, noNameCollision,
       { test: (url) => url.includes('generativelanguage.googleapis.com'), respond: () => jsonResponse(200, { candidates: [{ content: { parts: [{ text: JSON.stringify(goodDraft) }] } }] }) },
       generationInsertOk(genRows),
     ]);
@@ -274,7 +276,7 @@ describe('POST /api/recipes/generate — refusal, retry, fallback, and failure p
 
   it('returns 503 generation_unavailable on a Workers AI error with no Gemini key configured', async () => {
     const genRows = [];
-    stubFetch([turnstileOk, generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, generationInsertOk(genRows)]);
+    stubFetch([...signedInMember(), generationCount(0), noSimilarRecipes, noRecentGenerations, cuisinesList, noIngredientUsage, generationInsertOk(genRows)]);
     const env = fakeGenEnv();
     env.AI.run.mockRejectedValue(new Error('capacity exceeded'));
 

@@ -48,7 +48,9 @@ export function validateJoin(body) {
 /** The user's household membership via the secret key, or null if they belong to none. */
 export async function getMembership(db, userId) {
   const { data } = await db.request(
-    `household_members?select=household_id,role,display_name&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+    `household_members?select=household_id,role,display_name,households(is_curator)&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
   );
-  return data?.[0] || null;
+  const row = data?.[0];
+  if (!row) return null;
+  return { household_id: row.household_id, role: row.role, display_name: row.display_name, isCurator: Boolean(row.households?.is_curator) };
 }

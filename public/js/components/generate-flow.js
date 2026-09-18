@@ -1,5 +1,6 @@
 import { escapeHtml } from '../lib/dom.js';
 import { generateRecipe, fetchGenerationQuota } from '../lib/api.js';
+import { subscribeAccount } from './account.js';
 
 const SUGGESTED_PROMPTS = ['High-protein packed lunch', 'Spicy dal for tonight', 'Healthy Indo-Chinese', 'British classic, Indian twist', 'Low-sugar dessert', 'Quick chaat'];
 const CLIENT_TIMEOUT_MS = 90_000;
@@ -18,7 +19,7 @@ function formatResetTime(resetsAtIso) {
  * @param {{ container: HTMLElement, onDraftReady: Function, mealType?: string, initialPrompt?: string }} options
  */
 export function createGenerateFlow({ container, onDraftReady, mealType, initialPrompt }) {
-  let state = 'idle'; // idle | verifying | generating | error
+  let state = 'idle'; // idle | generating | error
   let abortController = null;
   let elapsedSeconds = 0;
   let elapsedIntervalId = null;
@@ -27,10 +28,11 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
   let lastPrompt = '';
 
   function render() {
-    const quotaLine = quota
-      ? `${Math.min(quota.remainingToday, quota.remainingForYou)} generations left today`
-      : '';
-    const quotaExhausted = quota && (quota.remainingToday <= 0 || quota.remainingForYou <= 0);
+    // M1c: the personal allowance belongs to a household, so a signed-out visitor has none yet.
+    let quotaLine = '';
+    if (quota?.requiresSignIn) quotaLine = 'Sign in to ask for recipes — each household gets a few a day.';
+    else if (quota) quotaLine = `${Math.min(quota.remainingToday, quota.remainingForYou)} generations left today`;
+    const quotaExhausted = quota && (quota.remainingToday <= 0 || (!quota.requiresSignIn && quota.remainingForYou <= 0));
 
     container.innerHTML = `
       <section class="generate-panel">
@@ -64,8 +66,8 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
             <div class="status-region" id="generateStatus" aria-live="polite"></div>
             ${renderStateBanner()}
             <div class="form-actions">
-              <button type="button" class="primary-button" id="generateSubmit" ${state === 'verifying' || state === 'generating' ? 'disabled' : ''}>
-                ${state === 'verifying' ? 'Checking…' : 'Generate recipe'}
+              <button type="button" class="primary-button" id="generateSubmit" ${state === 'generating' ? 'disabled' : ''}>
+                Generate recipe
               </button>
               ${state === 'generating' ? `<button type="button" class="ghost-button" id="generateCancel">Cancel</button>` : ''}
             </div>
@@ -146,22 +148,13 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
     const constraints = readConstraints();
     const goal = document.querySelector('input[name="generateGoal"]:checked')?.value || 'auto';
 
-    setState('verifying');
-    // Let "Checking…" actually paint before the (usually brief) Turnstile solve + the long model
-    // call run back to back — otherwise this synchronous handoff would skip straight to
-    // "generating" without the browser ever getting a frame to show the verifying state.
-    // A plain setTimeout, not requestAnimationFrame: rAF callbacks can be throttled or never fire
-    // at all in a backgrounded/hidden tab, which would hang this flow forever.
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
     abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), CLIENT_TIMEOUT_MS);
 
     setState('generating');
     startElapsedTimer();
 
-    const turnstileContainer = document.getElementById('turnstileContainer');
-    const result = await generateRecipe({ prompt, constraints, goal, mealType, force, turnstileContainer, signal: abortController.signal });
+    const result = await generateRecipe({ prompt, constraints, goal, mealType, force, signal: abortController.signal });
 
     clearTimeout(timeoutId);
     stopElapsedTimer();
@@ -175,6 +168,10 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
 
     if (result.code === 'aborted') {
       setState('idle');
+      return;
+    }
+    if (result.code === 'sign_in_required' || result.code === 'no_household') {
+      setState('error', { kind: 'other', message: 'Sign in and set up your household to ask for recipes.' });
       return;
     }
     if (result.code === 'similar_exists') {
@@ -223,6 +220,15 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
   if (initialPrompt) lastPrompt = initialPrompt;
   render();
   refreshQuota();
+
+  // Signing in (or finishing household setup) while this panel is open changes the allowance.
+  let wasMember = null;
+  subscribeAccount((account) => {
+    if (!account.ready) return;
+    const isMember = Boolean(account.household);
+    if (wasMember !== null && isMember !== wasMember) refreshQuota();
+    wasMember = isMember;
+  });
 
   return { refreshQuota };
 }

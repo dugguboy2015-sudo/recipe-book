@@ -17,6 +17,7 @@ export function normalizeRecipe(recipe) {
 
 export function dietaryBadges(recipe) {
   return `
+    ${recipe.catalogue_status === 'pending' ? '<span class="badge pending" title="Only your household can see this until it is approved for the shared catalogue">Awaiting approval</span>' : ''}
     ${recipe.is_vegetarian ? '<span class="badge veg">Vegetarian</span>' : ''}
     ${recipe.is_egg_free ? '<span class="badge egg">Egg-free</span>' : ''}
     ${recipe.contains_dairy ? '' : '<span class="badge dairy">Dairy-free</span>'}
@@ -38,7 +39,8 @@ export function spiceMeter(level) {
 
 /**
  * @param {object} recipe - normalized recipe (see normalizeRecipe)
- * @param {{ actions?: boolean, showTime?: boolean, tagLimit?: number }} [options]
+ * @param {{ actions?: boolean, showTime?: boolean, tagLimit?: number }} [options] - `actions` shows Edit and
+ *   Delete, so pass whether this viewer may change this recipe (shared/permissions.js), not just `true`.
  */
 export function renderRecipeCard(recipe, { actions = false, showTime = false, tagLimit = 3 } = {}) {
   const actionButtons = actions

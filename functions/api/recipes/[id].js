@@ -2,14 +2,11 @@ import { readConfig } from '../../_lib/env.js';
 import { json, problem, readJson } from '../../_lib/http.js';
 import { assertAllowedOrigin } from '../../_lib/origin.js';
 import { createDb, DbError } from '../../_lib/db.js';
-import { verifyTurnstile } from '../../_lib/turnstile.js';
-import { clientIp, hashIp } from '../../_lib/ip.js';
-import { countSince } from '../../_lib/ratelimit.js';
+import { requireMember, checkWriteRate, canEditRecipe } from '../../_lib/write-guard.js';
 import { writeAudit } from '../../_lib/audit.js';
 import { getCuisines } from '../../_lib/cuisines.js';
 import { normalizeRecipeInput, deriveIngredientFlags } from '../../../public/js/shared/recipe-rules.js';
 
-const ONE_HOUR_MS = 60 * 60 * 1000;
 const ID_RE = /^[1-9][0-9]{0,9}$/;
 
 function resolveIngredients(rawIngredients) {
@@ -54,30 +51,23 @@ async function commonPreamble(request, env) {
     return { errorResponse: problem(400, 'invalid_json', 'That request was not valid.') };
   }
 
-  const ip = clientIp(request);
-  const ipHash = await hashIp(ip, config.IP_HASH_SALT);
-  const turnstileResult = await verifyTurnstile(body.turnstileToken, ip, config.TURNSTILE_SECRET_KEY);
-  if (!turnstileResult.ok) return { errorResponse: problem(403, 'verification_failed', "We couldn't confirm you're not a bot. Try saving again.") };
-
   const db = createDb(config);
+  const guard = await requireMember(request, config, db);
+  if (guard.errorResponse) return guard;
+  const limited = await checkWriteRate(db, guard.actor, config.WRITES_PER_USER_HOURLY);
+  if (limited) return { errorResponse: limited };
 
-  let recentWrites;
-  try {
-    recentWrites = await countSince(db, 'recipe_audit_log', 'actor_ip_hash', ipHash, new Date(Date.now() - ONE_HOUR_MS).toISOString());
-  } catch (err) {
-    console.error(err);
-    return { errorResponse: problem(500, 'internal_error', 'Something went wrong. Please try again.') };
-  }
-  if (recentWrites >= config.WRITES_PER_IP_HOURLY) {
-    return {
-      errorResponse: new Response(JSON.stringify({ code: 'rate_limited', message: 'Too many changes from your network. Try again later.' }), {
-        status: 429,
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Retry-After': '3600' },
-      }),
-    };
-  }
+  return { config, body, db, actor: guard.actor };
+}
 
-  return { config, body, db, ipHash };
+/**
+ * Another household's recipe that this household can't even see (still pending approval) is a
+ * 404, exactly as if it didn't exist; one it can see but didn't contribute is a 403.
+ */
+function denyEdit(actor, recipe) {
+  if (canEditRecipe(actor, recipe)) return null;
+  if (recipe.catalogue_status !== 'public') return problem(404, 'not_found', 'This recipe could not be found.');
+  return problem(403, 'not_your_recipe', 'Only the household that added this recipe can change it.');
 }
 
 export async function onRequestPatch({ request, env, params }) {
@@ -86,7 +76,7 @@ export async function onRequestPatch({ request, env, params }) {
 
   const pre = await commonPreamble(request, env);
   if (pre.errorResponse) return pre.errorResponse;
-  const { body, db, ipHash } = pre;
+  const { body, db, actor } = pre;
 
   if (typeof body.expectedUpdatedAt !== 'string' || !body.expectedUpdatedAt) {
     return problem(400, 'invalid_request', 'Missing expectedUpdatedAt.');
@@ -101,6 +91,8 @@ export async function onRequestPatch({ request, env, params }) {
     return problem(500, 'internal_error', 'Something went wrong. Please try again.');
   }
   if (!before) return problem(404, 'not_found', 'This recipe could not be found.');
+  const denied = denyEdit(actor, before);
+  if (denied) return denied;
 
   const cuisines = await getCuisines(db);
   // See index.js: B.4 sends ingredients as a sibling of recipe, not nested inside it.
@@ -150,7 +142,7 @@ export async function onRequestPatch({ request, env, params }) {
   }
 
   try {
-    await writeAudit(db, { recipeId: Number(id), action: 'update', source: body.source === 'ai' ? 'ai' : 'manual', ipHash, before, after: updated });
+    await writeAudit(db, { recipeId: Number(id), action: 'update', source: body.source === 'ai' ? 'ai' : 'manual', ipHash: actor.ipHash, actorUserId: actor.userId, before, after: updated });
   } catch (err) {
     console.error('Audit write failed after a successful save:', err);
   }
@@ -164,7 +156,7 @@ export async function onRequestDelete({ request, env, params }) {
 
   const pre = await commonPreamble(request, env);
   if (pre.errorResponse) return pre.errorResponse;
-  const { db, ipHash } = pre;
+  const { db, actor } = pre;
 
   let before;
   try {
@@ -175,6 +167,8 @@ export async function onRequestDelete({ request, env, params }) {
     return problem(500, 'internal_error', 'Something went wrong. Please try again.');
   }
   if (!before) return problem(404, 'not_found', 'This recipe could not be found.');
+  const denied = denyEdit(actor, before);
+  if (denied) return denied;
 
   const deletedAt = new Date().toISOString();
   try {
@@ -188,7 +182,7 @@ export async function onRequestDelete({ request, env, params }) {
   }
 
   try {
-    await writeAudit(db, { recipeId: Number(id), action: 'delete', ipHash, before, after: null });
+    await writeAudit(db, { recipeId: Number(id), action: 'delete', ipHash: actor.ipHash, actorUserId: actor.userId, before, after: null });
   } catch (err) {
     console.error('Audit write failed after a successful delete:', err);
   }
