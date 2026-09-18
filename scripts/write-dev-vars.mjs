@@ -23,6 +23,7 @@ const lines = [
   `TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA`,
 ];
 if (env.GEMINI_API_KEY) lines.push(`GEMINI_API_KEY=${env.GEMINI_API_KEY}`);
+if (env.FOUNDING_OWNER_EMAIL) lines.push(`FOUNDING_OWNER_EMAIL=${env.FOUNDING_OWNER_EMAIL}`);
 
 writeFileSync('.dev.vars', lines.join('\n') + '\n');
 console.log('.dev.vars written.');

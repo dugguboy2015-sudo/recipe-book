@@ -20,6 +20,7 @@
     "migrate": "node scripts/migrate.mjs",
     "sql": "node scripts/sql.mjs",
     "secrets:push": "node scripts/set-secrets.mjs",
+    "auth:configure": "node scripts/configure-auth.mjs",
     "extract-example": "node scripts/extract-example.mjs",
     "eval-generate": "node scripts/eval-generate.mjs"
   },

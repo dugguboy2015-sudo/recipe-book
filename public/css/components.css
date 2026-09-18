@@ -451,7 +451,31 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
   min-height: 44px; /* keeps the theme toggle vertically placed even when .site-nav is hidden (mobile) */
 }
 
-.theme-toggle-button { position: absolute; top: 50%; right: 0; transform: translateY(-50%); }
+.header-actions { position: absolute; top: 50%; right: 0; transform: translateY(-50%); display: flex; align-items: center; gap: var(--sp-2); }
+
+/* ---------- Account (M1b) ---------- */
+.account-slot { display: flex; align-items: center; min-height: 44px; }
+.account-sign-in { min-height: 44px; display: inline-flex; align-items: center; gap: var(--sp-2); }
+.account-avatar { border-radius: var(--radius-pill); font-family: 'Fraunces', serif; font-weight: 700; font-size: var(--fs-3); background: var(--protein-bg); }
+.account-avatar.needs-setup { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
+@media (max-width: 480px) { .account-sign-in .account-label { display: none; } .account-sign-in { width: 44px; padding: 0; justify-content: center; } }
+
+.account-form { display: grid; gap: var(--sp-2); }
+.account-section { border-top: 1px solid var(--line); margin-top: var(--sp-4); padding-top: var(--sp-4); display: grid; gap: var(--sp-2); }
+.account-section h4, .account-subheading { margin: 0; font-size: var(--fs-3); }
+.account-inline-form { display: flex; gap: var(--sp-2); }
+.account-inline-form input { flex: 1; min-width: 0; }
+
+.choice-list { border: 0; padding: 0; margin: var(--sp-2) 0 0; display: grid; gap: var(--sp-2); }
+.choice-list legend { font-size: var(--fs-2); font-weight: 600; margin-bottom: var(--sp-2); padding: 0; }
+.choice { display: flex; align-items: center; gap: var(--sp-3); min-height: 44px; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); border-radius: var(--radius-control); cursor: pointer; }
+.choice:hover { border-color: var(--brand); }
+.choice:has(input:checked) { border-color: var(--brand); background: var(--protein-bg); }
+.choice input { accent-color: var(--brand); }
+
+.member-list { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-1); }
+.member-list li { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.member-list li:last-child { border-bottom: 0; }
 
 .site-nav { display: flex; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
 
