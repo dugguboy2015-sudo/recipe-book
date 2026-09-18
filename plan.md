@@ -15,17 +15,7 @@ Companion docs: `docs/ux-uplift-plan.md` (completed A–D uplift), `docs/progres
 | **Live** | Phases A, B, C and D — all deployed and verified on production |
 | **Merged** | #37 (synced B/C/D to `main`), #38 (dead CSS removed) |
 | **Repo** | Clean. One branch (`main`), no stray files. Every PR now cuts from and targets `main` — no stacking |
-| **🔴 Blocker** | `SUPABASE_ACCESS_TOKEN` returns **401** — the Supabase management PAT has expired |
-
-### About the blocker
-`npm run preflight` passes every check except the SQL API. That token is what `scripts/migrate.mjs`
-and `scripts/sql.mjs` use, so **all DDL is blocked** — which blocks M1 entirely (it needs new
-tables). The Supabase *secret key* still works, so REST reads/writes on existing rows are fine and
-**M0 is unaffected**.
-
-**Action for you:** regenerate a Personal Access Token at supabase.com → Account → Access Tokens and
-put it in `.env.local` as `SUPABASE_ACCESS_TOKEN`. Don't paste it in chat — I only need to know when
-it's done.
+| **Blocker** | ✅ Resolved 2026-09-18 — the Supabase management PAT was rotated; `npm run preflight` is fully green |
 
 ---
 
@@ -109,7 +99,58 @@ not 60%, before re-pointing the planner at the household goal).
 ---
 
 ## M1 — Accounts and multi-tenancy
-**Blocked until the Supabase PAT is restored. Design now, build then.**
+**In progress — M1a (tenancy schema) shipped 2026-09-18.** Built in slices, each its own PR from
+`main` to `main`:
+
+| Slice | Scope | Status |
+|---|---|---|
+| **M1a** | Tenancy schema: `households`, `household_members`, `household_invites`, `household_settings`, `recipes.created_by_household`, `recipe_audit_log.actor_user_id`, RLS + grants. Pure expand — nothing reads it yet | ✅ applied to production, verified |
+| **M1b** | Sign-in (Supabase Auth), founding-household bootstrap from `config/household.json`, the 31 existing recipes claimed by that household, invite links for family members | next — prerequisites below |
+| **M1c** | Only members can add/edit/delete; a household edits only recipes it contributed; signed-in writes skip Turnstile, rate limits move from IP to user; per-household AI quota | |
+| **M1d** | Every `config/household.json` consumer (AI prompts, validation, planner engine, dashboard) reads the household's own settings; the file becomes the default template | |
+| **M1e** | Planner moves from `localStorage` to the database, one-time import of the existing browser plan, per-member attribution ("who added this", "who loved it") | |
+
+### Design decisions taken in M1a
+
+- **Recipes stay one shared public catalogue** (owner decision). Tenancy never affects who can
+  *see* a recipe — only who can *edit* one, via `created_by_household`.
+- **One household per user**, enforced (`household_members.user_id` is unique). An unambiguous
+  "which household am I acting in" beats multi-membership nobody has asked for; relaxing it later is
+  a constraint drop, not a data migration.
+- **No user ids on recipes.** Recipes are publicly readable, so a per-user column would publish auth
+  ids to anyone. Per-member attribution goes to `recipe_audit_log.actor_user_id` instead, which only
+  the secret key can read.
+- **Members read their own household directly (RLS); every write goes through a Pages Function** —
+  the same model recipes already use.
+- **Invite codes are bearer secrets** — no client can read them at all; they are redeemed only
+  through a Function.
+- **One documented exception to the security-invoker rule**: `current_household_id()` is
+  `SECURITY DEFINER`, because a policy on `household_members` that reads `household_members` through
+  an invoker function recurses. It takes no arguments and only ever returns the caller's own
+  household, so there is nothing to escalate to.
+
+### Before M1b can ship — found in the live auth config
+
+| Setting | Currently | Needs to be |
+|---|---|---|
+| `site_url` | `http://localhost:3000` | `https://recipe-book-9eo.pages.dev` — otherwise every sign-in link sends the user to *localhost* |
+| Redirect allowlist | empty | production + `*.recipe-book-9eo.pages.dev` previews |
+| Auth email limit | **2 emails/hour, project-wide** (built-in sender, no SMTP configured) | enough for real use — see decision below |
+| Open sign-up | on | a policy decision — see below |
+
+**Two decisions needed from you for M1b:**
+
+1. **How should people sign in?** Supabase's built-in email sender allows only **2 auth emails per
+   hour for the whole project** — tight for one family, unworkable for a product. Options, all free:
+   - **Google sign-in** — no email sending at all, one tap on a phone. Needs a Google Cloud OAuth
+     client (you create it; ~10 minutes). *My recommendation* for a family app.
+   - **Custom SMTP** (e.g. Resend's free 3,000/month) — keeps email magic links, needs a sending
+     domain verified.
+   - **Both** — Google as the default, email as a fallback.
+2. **Who can create a household?** With open sign-up, any stranger can make an account. For now,
+   should new sign-ups only be able to *join* your household by invite (family-only), or also
+   *create* their own (the commercial model, which you said is coming)? Either is a one-line
+   switch later; it only decides the default.
 
 Two user-facing problems and one commercial requirement, all solved by the same work:
 
@@ -128,11 +169,8 @@ Two user-facing problems and one commercial requirement, all solved by the same 
 | 1.7 | Attribution: `created_by` / `loved_by` per member (decision 1) |
 | 1.8 | AI quota becomes per-household (decision 5) |
 
-**Open question for you (only one left):** when this goes multi-household, are recipes a **shared
-public catalogue** that every household can see, or does **each household own its own recipes**? Or
-both — a curated starter library plus private additions? All 32 recipes are currently global, so
-this decides whether `recipes` gets a nullable `household_id` or a join table. It changes 1.2
-materially, but it does not block starting on 1.1.
+**Recipe ownership — decided 2026-09-18:** one shared public catalogue. Implemented in M1a as a
+nullable `recipes.created_by_household` (edit rights only), not a join table or per-household copies.
 
 ---
 
@@ -202,6 +240,6 @@ features or cross-household sharing · recipe import-from-URL.
 
 **M0 → M1 → M2 → M3/M4 → M5**
 
-M0 needs no DDL, so it proceeds now regardless of the token. M1 starts the moment the PAT is
-restored — and M1 before M2 because building a shopping list on browser-only storage means building
+M0 is done. M1 is under way in slices (M1a shipped); M1b is waiting on the two sign-in decisions
+above. M1 comes before M2 because building a shopping list on browser-only storage means building
 it twice.
