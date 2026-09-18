@@ -115,7 +115,7 @@ not 60%, before re-pointing the planner at the household goal).
 |---|---|---|
 | **M1a** | Tenancy schema: `households`, `household_members`, `household_invites`, `household_settings`, `recipes.created_by_household`, `recipe_audit_log.actor_user_id`, RLS + grants. Pure expand — nothing reads it yet | ✅ applied to production, verified |
 | **M1b** | Email sign-in, create a household (diet preset) or join one by invite link, founding household bootstrapped from `config/household.json` and claiming the existing recipes as curator | ✅ built and verified on preview — see below |
-| **M1c** | Only members can add/edit/delete; a household edits only recipes it contributed; new households' recipes private until the curator approves them; signed-in writes skip Turnstile, rate limits move from IP to user; AI generation requires sign-in, per-household quota | |
+| **M1c** | Only members can add/edit/delete; a household edits only recipes it contributed; new households' recipes private until the curator approves them; signed-in writes skip Turnstile, rate limits move from IP to user; AI generation requires sign-in, per-household quota | ✅ built and verified on preview |
 | **M1d** | Every `config/household.json` consumer (AI prompts, validation, planner engine, dashboard, "vegetarian" copy) reads the household's own settings, including its diet; catalogue and planner candidates filtered by that diet; a household settings editor; the file becomes the signed-out default | |
 | **M1e** | Planner moves from `localStorage` to the database, one-time import of the existing browser plan, per-member attribution ("who added this", "who loved it") | |
 
@@ -247,6 +247,6 @@ features or cross-household sharing · recipe import-from-URL.
 
 **M0 → M1 → M2 → M3/M4 → M5**
 
-M0 is done. M1 is under way in slices (M1a and M1b shipped), running unattended through M1c → M1e
+M0 is done. M1 is under way in slices (M1a, M1b and M1c shipped), running unattended through M1c → M1e
 then M2 → M5. M1 comes before M2 because building a shopping list on browser-only storage means building
 it twice.

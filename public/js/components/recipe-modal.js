@@ -85,6 +85,7 @@ const MODAL_HTML = `
       </label>
       <button type="button" class="ghost-button" id="modalAddToPlanner">Add to planner</button>
       <button type="button" class="ghost-button" id="modalCookMode">Cook mode</button>
+      <button type="button" class="primary-button" id="modalApproveRecipe" hidden>Approve for the catalogue</button>
       <button type="button" class="ghost-button" id="modalEditRecipe" hidden>Edit</button>
       <button type="button" class="danger-button" id="modalDeleteRecipe" hidden>Delete</button>
     </div>
@@ -242,9 +243,11 @@ export function mountRecipeModal() {
 /**
  * @param {object} client - the Supabase client
  * @param {number} id
- * @param {{ serves?: number, onEdit?: (id: number) => void, onDelete?: (id: number) => void }} [options]
+ * @param {{ serves?: number, onEdit?: (id: number) => void, onDelete?: (id: number) => void,
+ *   onApprove?: (id: number) => void, canEdit?: (recipe: object) => boolean, canApprove?: (recipe: object) => boolean }} [options]
+ *   canEdit/canApprove decide per recipe whether onEdit/onDelete and onApprove are offered.
  */
-export async function openRecipeModal(client, id, { serves, onEdit, onDelete } = {}) {
+export async function openRecipeModal(client, id, { serves, onEdit, onDelete, onApprove, canEdit = () => true, canApprove = () => false } = {}) {
   const [recipe, ingredientGroups] = await Promise.all([
     fetchRecipeById(client, id),
     fetchRecipeIngredients(client, id),
@@ -286,10 +289,14 @@ export async function openRecipeModal(client, id, { serves, onEdit, onDelete } =
 
   const editButton = document.getElementById('modalEditRecipe');
   const deleteButton = document.getElementById('modalDeleteRecipe');
-  editButton.hidden = !onEdit;
+  const editable = canEdit(recipe);
+  editButton.hidden = !onEdit || !editable;
   editButton.onclick = onEdit ? () => { dialogHandle.close(); onEdit(recipe.id); } : null;
-  deleteButton.hidden = !onDelete;
+  deleteButton.hidden = !onDelete || !editable;
   deleteButton.onclick = onDelete ? () => { dialogHandle.close(); onDelete(recipe.id); } : null;
+  const approveButton = document.getElementById('modalApproveRecipe');
+  approveButton.hidden = !onApprove || !canApprove(recipe);
+  approveButton.onclick = onApprove ? () => { dialogHandle.close(); onApprove(recipe.id); } : null;
 
   dialogHandle.open();
 }

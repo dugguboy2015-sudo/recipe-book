@@ -1,10 +1,12 @@
 import { escapeHtml, showSnackbar, debounce } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
-import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeBySlug } from '../lib/queries.js';
+import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeBySlug, fetchPendingCount } from '../lib/queries.js';
 import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { wireDialog } from '../components/dialog.js';
-import { deleteRecipe, restoreRecipe } from '../lib/api.js';
+import { deleteRecipe, restoreRecipe, approveRecipe } from '../lib/api.js';
+import { getAccountState, subscribeAccount, ensureMember } from '../components/account.js';
+import { canEditRecipe, canApproveRecipe } from '../shared/permissions.js';
 import { MEAL_TYPES } from '../shared/html.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
@@ -15,8 +17,14 @@ import { getHousehold } from '../lib/household.js';
 function defaultFilters() {
   return {
     search: '', cuisine: '', tags: [], mealTypes: [],
-    dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null,
+    dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null, pendingOnly: false,
   };
+}
+
+/** The signed-in household as shared/permissions.js expects it, or null. */
+function viewer() {
+  const household = getAccountState().household;
+  return household ? { householdId: household.id, isCurator: household.isCurator } : null;
 }
 
 function toDietaryFilter(filters) {
@@ -180,12 +188,13 @@ export async function initRecipesPage() {
       return;
     }
 
-    recipeGrid.innerHTML = recipes.map((recipe) => renderRecipeCard(recipe, { actions: true, showTime: true, tagLimit: 4 })).join('');
+    const who = viewer();
+    recipeGrid.innerHTML = recipes.map((recipe) => renderRecipeCard(recipe, { actions: canEditRecipe(who, recipe), showTime: true, tagLimit: 4 })).join('');
 
     recipeGrid.querySelectorAll('.recipe-card').forEach((card) => {
       card.addEventListener('click', (event) => {
         if (event.target.closest('[data-action]')) return;
-        openRecipeModal(supabase, Number(card.dataset.id), { onEdit: async (id) => (await loadRecipeForm()).openEdit(id), onDelete: openDeleteConfirm });
+        openRecipeModal(supabase, Number(card.dataset.id), modalActions());
       });
     });
 
@@ -207,7 +216,8 @@ export async function initRecipesPage() {
   async function refreshRecipes() {
     syncUrl();
     renderSkeleton();
-    const filters = { term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes, dietary: toDietaryFilter(state.filters) };
+    const filters = { term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes, dietary: toDietaryFilter(state.filters), pendingOnly: state.filters.pendingOnly };
+    renderPendingNotice();
     const result = await searchRecipes(supabase, filters, { page: state.page, pageSize: state.pageSize });
     if (!result.ok) {
       renderErrorState();
@@ -218,6 +228,67 @@ export async function initRecipesPage() {
     state.recipes = result.data.map(normalizeRecipe);
     renderCards(state.recipes);
   }
+
+  // M1c: recipes waiting for the curator. The curator is told how many need review; a household
+  // sees how many of its own are waiting. RLS decides which pending recipes each viewer can count.
+  const pendingNotice = document.getElementById('pendingNotice');
+  async function renderPendingNotice() {
+    if (!pendingNotice) return;
+    const who = viewer();
+    if (state.filters.pendingOnly) {
+      pendingNotice.innerHTML = `<p class="notice pending-notice">Showing recipes awaiting approval. <button type="button" class="ghost-button" data-pending-toggle>Show all recipes</button></p>`;
+    } else {
+      const count = who ? await fetchPendingCount(supabase) : 0;
+      if (count === 0) {
+        pendingNotice.innerHTML = '';
+        return;
+      }
+      const one = count === 1;
+      const text = who.isCurator
+        ? `${count} ${one ? 'recipe is' : 'recipes are'} waiting for your approval.`
+        : `${one ? 'One' : count} of your household's recipes ${one ? 'is' : 'are'} waiting to be approved for the shared catalogue. Until then only your household can see ${one ? 'it' : 'them'}.`;
+      pendingNotice.innerHTML = `<p class="notice pending-notice">${escapeHtml(text)} <button type="button" class="ghost-button" data-pending-toggle>${who.isCurator ? 'Review them' : 'Show them'}</button></p>`;
+    }
+    pendingNotice.querySelector('[data-pending-toggle]')?.addEventListener('click', async () => {
+      state.filters.pendingOnly = !state.filters.pendingOnly;
+      state.page = 1;
+      await refreshRecipes();
+    });
+  }
+
+  async function approve(id) {
+    const result = await approveRecipe(id);
+    if (!result.ok) {
+      showSnackbar(result.message || "Couldn't approve that recipe. Please try again.", 'error');
+      return;
+    }
+    showSnackbar(`${result.data.recipe?.name || 'Recipe'} is now in the shared catalogue.`, 'success');
+    await refreshRecipes();
+  }
+
+  /** Detail-view actions, offered per recipe according to shared/permissions.js. */
+  function modalActions(extra = {}) {
+    return {
+      ...extra,
+      onEdit: async (id) => (await loadRecipeForm()).openEdit(id),
+      onDelete: openDeleteConfirm,
+      onApprove: approve,
+      canEdit: (recipe) => canEditRecipe(viewer(), recipe),
+      canApprove: (recipe) => canApproveRecipe(viewer(), recipe),
+    };
+  }
+
+  // Signing in, out, or into a different household changes what's visible and what's editable.
+  // The first render can't wait for the account to load, so it assumes a signed-out visitor; a
+  // signed-in one gets a second render (with their Edit buttons and pending notice) once it has.
+  let lastHouseholdId = null;
+  subscribeAccount((account) => {
+    if (!account.ready) return;
+    const householdId = account.household?.id ?? null;
+    if (householdId === lastHouseholdId) return;
+    lastHouseholdId = householdId;
+    refreshRecipes();
+  });
 
   // recipe-form.js (+ ingredient-editor.js/method-editor.js) is ~46KB and only needed once the
   // user actually opens Add/Edit/a generated draft — not for merely browsing the list, so it's
@@ -274,14 +345,13 @@ export async function initRecipesPage() {
     deleteDialog?.close();
   }
 
-  const turnstileContainer = document.getElementById('turnstileContainer');
 
   async function confirmSoftDelete() {
     if (!pendingDeleteRecipeId) return;
     const recipeId = pendingDeleteRecipeId;
     closeDeleteConfirm();
 
-    const result = await deleteRecipe(recipeId, { turnstileContainer });
+    const result = await deleteRecipe(recipeId);
     if (!result.ok) {
       const message = result.code === 'not_found' ? 'This recipe was already removed.' : (result.message || 'Unable to delete recipe. Please try again.');
       showSnackbar(message, 'error');
@@ -292,7 +362,7 @@ export async function initRecipesPage() {
       label: 'Undo',
       duration: 8000,
       onClick: async () => {
-        const undoResult = await restoreRecipe(recipeId, { turnstileContainer });
+        const undoResult = await restoreRecipe(recipeId);
         if (undoResult.ok) {
           showSnackbar('Recipe restored.', 'success');
           await refreshRecipes();
@@ -305,7 +375,10 @@ export async function initRecipesPage() {
     await refreshRecipes();
   }
 
-  addRecipeTriggers.forEach((button) => button.addEventListener('click', async () => (await loadRecipeForm()).openAdd()));
+  addRecipeTriggers.forEach((button) => button.addEventListener('click', async () => {
+    if (!(await ensureMember('to add recipes'))) return;
+    (await loadRecipeForm()).openAdd();
+  }));
   cancelDeleteRecipe?.addEventListener('click', closeDeleteConfirm);
   confirmDeleteRecipe?.addEventListener('click', confirmSoftDelete);
 
@@ -414,11 +487,9 @@ export async function initRecipesPage() {
     const deepLinkRecipe = await fetchRecipeBySlug(supabase, deepLinkSlug);
     if (deepLinkRecipe) {
       const requestedServes = Number(initialParams.get('serves'));
-      openRecipeModal(supabase, deepLinkRecipe.id, {
+      openRecipeModal(supabase, deepLinkRecipe.id, modalActions({
         serves: Number.isFinite(requestedServes) && requestedServes > 0 ? requestedServes : undefined,
-        onEdit: async (id) => (await loadRecipeForm()).openEdit(id),
-        onDelete: openDeleteConfirm,
-      });
+      }));
     } else {
       showSnackbar('This recipe was removed.', 'error');
     }
@@ -433,7 +504,7 @@ export async function initRecipesPage() {
   }
 
   // The sidebar's global "Add a recipe" link lands here from other pages via ?add=1.
-  if (initialParams.get('add') === '1') {
+  if (initialParams.get('add') === '1' && (await ensureMember('to add recipes'))) {
     (await loadRecipeForm()).openAdd();
   }
 }

@@ -44,9 +44,27 @@ function render() {
   slot.querySelector('[data-account-open]')?.addEventListener('click', () => openAccount());
 }
 
-async function openAccount(view) {
+async function openAccount(view, reason) {
   const { openAccountDialog } = await import('./account-dialogs.js');
-  openAccountDialog({ state: getAccountState(), view, refresh });
+  openAccountDialog({ state: getAccountState(), view, refresh, reason });
+}
+
+/**
+ * Opens whichever step stands between this visitor and a member-only action — sign in, or set up
+ * a household — explaining why. `reason` completes a sentence, e.g. "to add recipes".
+ */
+export async function promptAccount(reason) {
+  const current = state.ready ? state : await refresh();
+  if (current.session && current.household) return;
+  openAccount(current.session ? 'create' : 'sign-in', reason);
+}
+
+/** True when the visitor can act as a member right now; otherwise opens the prompt and returns false. */
+export async function ensureMember(reason) {
+  const current = state.ready ? state : await refresh();
+  if (current.session && current.household) return true;
+  promptAccount(reason);
+  return false;
 }
 
 /** Re-reads the session and household, re-renders, and notifies subscribers. */

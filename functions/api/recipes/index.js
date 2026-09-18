@@ -2,14 +2,10 @@ import { readConfig } from '../../_lib/env.js';
 import { json, problem, readJson } from '../../_lib/http.js';
 import { assertAllowedOrigin } from '../../_lib/origin.js';
 import { createDb, DbError } from '../../_lib/db.js';
-import { verifyTurnstile } from '../../_lib/turnstile.js';
-import { clientIp, hashIp } from '../../_lib/ip.js';
-import { countSince } from '../../_lib/ratelimit.js';
+import { requireMember, checkWriteRate, initialCatalogueStatus } from '../../_lib/write-guard.js';
 import { writeAudit } from '../../_lib/audit.js';
 import { getCuisines } from '../../_lib/cuisines.js';
 import { normalizeRecipeInput, deriveIngredientFlags } from '../../../public/js/shared/recipe-rules.js';
-
-const ONE_HOUR_MS = 60 * 60 * 1000;
 
 function resolveIngredients(rawIngredients) {
   if (!Array.isArray(rawIngredients)) return [];
@@ -65,26 +61,12 @@ export async function onRequestPost({ request, env }) {
     return problem(400, 'invalid_json', 'That request was not valid.');
   }
 
-  const ip = clientIp(request);
-  const ipHash = await hashIp(ip, config.IP_HASH_SALT);
-  const turnstileResult = await verifyTurnstile(body.turnstileToken, ip, config.TURNSTILE_SECRET_KEY);
-  if (!turnstileResult.ok) return problem(403, 'verification_failed', "We couldn't confirm you're not a bot. Try saving again.");
-
   const db = createDb(config);
-
-  let recentWrites;
-  try {
-    recentWrites = await countSince(db, 'recipe_audit_log', 'actor_ip_hash', ipHash, new Date(Date.now() - ONE_HOUR_MS).toISOString());
-  } catch (err) {
-    console.error(err);
-    return problem(500, 'internal_error', 'Something went wrong. Please try again.');
-  }
-  if (recentWrites >= config.WRITES_PER_IP_HOURLY) {
-    return new Response(JSON.stringify({ code: 'rate_limited', message: 'Too many changes from your network. Try again later.' }), {
-      status: 429,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Retry-After': '3600' },
-    });
-  }
+  const guard = await requireMember(request, config, db);
+  if (guard.errorResponse) return guard.errorResponse;
+  const { actor } = guard;
+  const limited = await checkWriteRate(db, actor, config.WRITES_PER_USER_HOURLY);
+  if (limited) return limited;
 
   let cuisines;
   try {
@@ -105,9 +87,12 @@ export async function onRequestPost({ request, env }) {
 
   let created;
   try {
-    const { data } = await db.request('rpc/save_recipe', {
+    const { data } = await db.request('rpc/save_household_recipe', {
       method: 'POST',
-      body: { p_id: null, p_expected_updated_at: null, p_recipe: value, p_ingredients: ingredients },
+      body: {
+        p_id: null, p_expected_updated_at: null, p_recipe: value, p_ingredients: ingredients,
+        p_household_id: actor.householdId, p_catalogue_status: initialCatalogueStatus(actor),
+      },
     });
     created = data;
   } catch (err) {
@@ -126,14 +111,15 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    await writeAudit(db, { recipeId: created.id, action: 'create', source: body.source === 'ai' ? 'ai' : 'manual', ipHash, before: null, after: created });
+    await writeAudit(db, { recipeId: created.id, action: 'create', source: body.source === 'ai' ? 'ai' : 'manual', ipHash: actor.ipHash, actorUserId: actor.userId, before: null, after: created });
   } catch (err) {
     console.error('Audit write failed after a successful save:', err);
   }
 
   if (body.source === 'ai' && typeof body.generationId === 'string' && /^[0-9a-f-]{36}$/i.test(body.generationId)) {
     try {
-      await db.request(`recipe_generations?id=eq.${encodeURIComponent(body.generationId)}`, {
+      // Scoped to the saver's household, so nobody can claim another household's generation.
+      await db.request(`recipe_generations?id=eq.${encodeURIComponent(body.generationId)}&household_id=eq.${actor.householdId}`, {
         method: 'PATCH',
         body: { saved_recipe_id: created.id, outcome: 'saved' },
       });

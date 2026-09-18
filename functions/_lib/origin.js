@@ -19,6 +19,6 @@ export function isAllowedOrigin(origin) {
 /** Returns true if the request should proceed, false if it was rejected (caller should 403). */
 export function assertAllowedOrigin(request) {
   const origin = request.headers.get('Origin');
-  if (!origin) return true; // no Origin header (e.g. curl) — Turnstile still gates the write
+  if (!origin) return true; // no Origin header (e.g. curl) — the sign-in check still gates the write
   return isAllowedOrigin(origin);
 }

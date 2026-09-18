@@ -1,4 +1,4 @@
-const REQUIRED = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'TURNSTILE_SECRET_KEY', 'IP_HASH_SALT'];
+const REQUIRED = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'IP_HASH_SALT'];
 
 export function readConfig(env) {
   const missing = REQUIRED.filter((key) => !env[key]);
@@ -7,8 +7,8 @@ export function readConfig(env) {
   }
   return {
     ...env,
-    WRITES_PER_IP_HOURLY: Number(env.WRITES_PER_IP_HOURLY || 30),
+    WRITES_PER_USER_HOURLY: Number(env.WRITES_PER_USER_HOURLY || 30),
     GEN_GLOBAL_DAILY: Number(env.GEN_GLOBAL_DAILY || 18),
-    GEN_PER_IP_DAILY: Number(env.GEN_PER_IP_DAILY || 5),
+    GEN_PER_HOUSEHOLD_DAILY: Number(env.GEN_PER_HOUSEHOLD_DAILY || 5),
   };
 }

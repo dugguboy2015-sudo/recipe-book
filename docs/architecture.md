@@ -8,10 +8,13 @@ browser and the database, and how authentication could be added later without a 
 
 ```
 Browser (static, native ES modules, no build step)
-  ├── READS  ───────────────────────────────▶ Supabase PostgREST (anon key: SELECT only, is_deleted=false)
+  ├── READS  ───────────────────────────────▶ Supabase PostgREST (publishable key: SELECT only, RLS: public
+  │                                            recipes for anon; + own household's and, for the curator,
+  │                                            pending ones for a signed-in member)
   │                                            views: recipe_stats, cuisine_counts, tag_counts, planner_candidates
   └── WRITES + AI ──▶ Cloudflare Pages Functions (/api/*)
-                        ├─ origin check → Turnstile verify → rate limit (counts recent rows in Postgres)
+                        ├─ origin check → signed-in household member → per-member rate limit
+                        ├─ ownership: a household edits its own recipes; the curator edits and approves any
                         ├─ shared validation (public/js/shared/recipe-rules.js)
                         ├─ save_recipe() RPC with the SECRET key ─▶ recipes, recipe_ingredients, recipe_audit_log
                         └─ /api/recipes/generate
@@ -103,10 +106,17 @@ caller to escalate to.
 
 1. **Origin check** — the request's `Origin` header must match the Pages domain, or it's rejected
    before anything else runs.
-2. **Turnstile verify** — a real `siteverify` round trip against Cloudflare; failure short-circuits
-   with 403.
-3. **Rate limit** — counts this IP's (hashed) recent rows in `recipe_audit_log` within the
-   `WRITES_PER_IP_HOURLY` window; over the limit → 429.
+2. **Member check** (M1c, `functions/_lib/write-guard.js`) — the bearer token is validated with
+   Supabase Auth and the user must belong to a household: no token → 401 `sign_in_required`, no
+   household → 403 `no_household`. This replaced the per-request Turnstile check.
+3. **Rate limit** — counts this *member's* recent rows in `recipe_audit_log` (`actor_user_id`)
+   within the `WRITES_PER_USER_HOURLY` window; over the limit → 429.
+3a. **Ownership** (edit, delete, restore) — `shared/permissions.js`'s `canEditRecipe`: the
+   contributing household, or the curator. Another household's pending recipe is a 404 (it can't
+   see it); its public one is a 403 `not_your_recipe`. Creates go through
+   `save_household_recipe()`, which stamps `created_by_household` and `catalogue_status`
+   (`public` for the curator, `pending` for everyone else) in the same transaction.
+   `POST /api/recipes/:id/approve` is the curator's pending → public.
 4. **Shared validation** (`public/js/shared/recipe-rules.js`'s `normalizeRecipeInput`) — the exact
    same validation the browser form runs, re-run server-side so a Function call bypassing the UI
    can't skip it. Whitelists writable fields (Appendix C), reconciles prep/cook/total time, and
@@ -119,14 +129,14 @@ caller to escalate to.
    `contains_meat`). The Function maps `PT400`/`PT404`/`PT409` to the matching HTTP status and a
    JSON error body the form displays inline.
 6. **Audit log** — every successful write appends a `recipe_audit_log` row (`source: 'manual'` or
-   `'ai'`, hashed IP, before/after snapshots). Deletes are soft (`is_deleted = true`); the only hard
+   `'ai'`, the acting member's user id, hashed IP, before/after snapshots). Deletes are soft (`is_deleted = true`); the only hard
    deletes this codebase ever performs are `__smoke__*` rows the smoke script itself created.
 
 ### 3.2 Generate pipeline (`POST /api/recipes/generate`)
 
-1. Origin check → Turnstile verify → rate limit, same shape as the write pipeline but against
-   `recipe_generations` and both a global (`GEN_GLOBAL_DAILY`) and per-IP (`GEN_PER_IP_DAILY`)
-   UTC-day window.
+1. Origin check → member check → quota, same shape as the write pipeline but against
+   `recipe_generations` and both a global (`GEN_GLOBAL_DAILY`) and per-household
+   (`GEN_PER_HOUSEHOLD_DAILY`) UTC-day window. Nutrition estimates share both budgets.
 2. **`similar_recipes()` pre-check** — if the prompt closely matches an existing recipe name
    (≥0.6 trigram similarity), the endpoint returns that match instead of spending a model call.
 3. **Workers AI** (binding `AI`, JSON schema mode) generates a draft against a prompt built from
@@ -182,9 +192,11 @@ default, not accidentally public. RLS is enabled on every table in `public`; `re
 (`migrations/000_lockdown.sql`) is the one that matters most, since it's what replaced the original
 schema's anonymous INSERT/UPDATE policies (the review's SEC-1 finding).
 
-There is no session, cookie, or bearer token tied to an end user anywhere in this system today —
-"the browser" and "an anonymous visitor" are the same trust level. Turnstile plus per-IP rate
-limits are the only anti-abuse layer (SEC-2, deferred by owner decision — see below).
+Since M1c every write and every AI call carries a Supabase Auth bearer token for a member of a
+household; anonymous visitors can only read the public catalogue. The anti-abuse layers are email
+verification (sign-in is by emailed link), per-member write limits, per-household AI quotas, and
+"private until approved" for new households' recipes. Turnstile protects the sign-in email instead
+of each write — see §5.
 
 ## 5. Authentication and households (M1 — in progress)
 
@@ -226,14 +238,18 @@ replaced that with **households as the tenant**. M1 is built in slices — see `
    reducers are already pure functions over a plan object, so swapping their persistence target
    from `localStorage` to this table is a smaller change than it sounds; the scoring engine
    (`planner-engine.js`) doesn't change at all.
-4. **Signed-in users could skip Turnstile** on writes (a known, rate-limitable identity is a
-   reasonable substitute for a bot check) and have their rate limits scoped to `auth.uid()` instead
-   of a hashed IP, which also fixes the one real gap hashed-IP limiting has today: a visitor behind
-   shared/rotating IPs (mobile carrier NAT, a corporate proxy) is rate-limited less precisely than a
-   stable per-user identity would allow.
-5. None of the above requires touching the AI generation pipeline (§3.2) — it's already
-   stateless per-request beyond the rate-limit counters, which would just move from IP-hash-keyed to
-   user-id-keyed.
+4. **Member-only writes (M1c — shipped).** See §3.1–3.2: writes and AI calls need a signed-in
+   household member; limits follow the member (writes) or household (AI) rather than a hashed IP,
+   so a family behind one carrier NAT no longer shares a budget with strangers. Migration 017 adds
+   `recipes.catalogue_status` and splits the recipes read policy — `anon`: public only;
+   `authenticated`: public, plus its own household's, plus (curator) every pending recipe. The read
+   views and `recipe_ingredients`' policy inherit this unchanged because they are
+   `security_invoker` / read through `recipes`.
+5. **Turnstile moved to sign-in.** The sign-in dialog obtains a Turnstile token (rendered inside the
+   modal, since a challenge under a modal can't be clicked) and passes it to Supabase as
+   `captchaToken`. It fails open, and Supabase only enforces it once its sign-in captcha is switched
+   on (`security_captcha_enabled`, provider `turnstile`, the Turnstile secret) — deliberately not
+   yet done; see `docs/operations.md`.
 
 ## 6. The shopping list (Phase 14, not built — `ENABLE_SHOPPING_LIST=false`)
 

@@ -31,10 +31,10 @@ convenience label for meal planning, not a nutritional guarantee.
 
 ```
 Browser (static, native ES modules, no build step)
-  ├── READS  ───────────────────────────────▶ Supabase PostgREST (anon key: SELECT only, is_deleted=false)
+  ├── READS  ───────────────────────────────▶ Supabase PostgREST (SELECT only; RLS: public recipes, plus a member's own household's)
   │                                            views: recipe_stats, cuisine_counts, tag_counts, planner_candidates
   └── WRITES + AI ──▶ Cloudflare Pages Functions (/api/*)
-                        ├─ origin check → Turnstile verify → rate limit (counts recent rows in Postgres)
+                        ├─ origin check → signed-in household member → per-member rate limit → ownership
                         ├─ shared validation (public/js/shared/recipe-rules.js)
                         ├─ save_recipe() RPC with the SECRET key ─▶ recipes, recipe_ingredients, recipe_audit_log
                         └─ /api/recipes/generate
@@ -101,14 +101,16 @@ with no other steps.
 Everything runs on free tiers by design (Cloudflare Pages + Functions + Workers AI + Turnstile,
 Supabase, GitHub Actions, Google AI Studio). The two limits you're likely to actually hit:
 
-- **AI generations**: `GEN_GLOBAL_DAILY` (default 18) per day site-wide, `GEN_PER_IP_DAILY`
-  (default 5) per visitor per day, both UTC-day windows. Once hit, `/api/recipes/generate` returns
+- **AI generations**: `GEN_GLOBAL_DAILY` (default 18) per day site-wide, `GEN_PER_HOUSEHOLD_DAILY`
+  (default 5) per household per day, both UTC-day windows. Once hit, `/api/recipes/generate` returns
   429 with a "come back after midnight UTC" message instead of failing silently — the AI dialog
   shows this to the user directly. Workers AI's own daily neuron allocation is a separate, larger
   ceiling; if that runs out first, the endpoint automatically falls back to Gemini when
   `GEMINI_API_KEY` is set.
-- **Writes**: `WRITES_PER_IP_HOURLY` (default 30) per visitor per hour, covering create/edit/delete
-  together.
+- **Writes**: `WRITES_PER_USER_HOURLY` (default 30) per signed-in member per hour, covering
+  create/edit/delete/restore/approve together.
+- **Sign-in emails**: 2 per hour for the whole project with Supabase's built-in sender, until a
+  custom SMTP sender is configured — see `docs/operations.md` → "Sign-in settings".
 
 Raising any of these is a `wrangler.toml` `[vars]` edit + merge, no redeploy trigger needed beyond
 the push itself — see `docs/operations.md`.

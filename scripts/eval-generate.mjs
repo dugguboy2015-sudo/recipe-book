@@ -13,7 +13,19 @@ function argValue(flag) {
   return idx !== -1 ? args[idx + 1] : undefined;
 }
 const base = (argValue('--base') || 'http://localhost:8788').replace(/\/$/, '');
-const TEST_TOKEN = 'eval-generate-turnstile-token';
+
+// M1c: generation needs a signed-in household member, and each household gets
+// GEN_PER_HOUSEHOLD_DAILY (5) a day — so a fresh throwaway member runs every 5 cases.
+const { loadEnv } = await import('./lib/env.mjs');
+const { createTestMember } = await import('./lib/test-member.mjs');
+const memberEnv = loadEnv({ required: ['SUPABASE_URL', 'SUPABASE_SECRET_KEY'] });
+const CASES_PER_MEMBER = 5;
+const members = [];
+async function memberFor(caseIndex) {
+  const slot = Math.floor(caseIndex / CASES_PER_MEMBER);
+  if (!members[slot]) members[slot] = await createTestMember(memberEnv, base, { label: 'eval' });
+  return members[slot];
+}
 
 const CASES = [
   { n: 1, prompt: 'paneer butter masala, lighter than restaurant style', constraints: {}, expected: '200; is_vegetarian:true; contains_dairy:true' },
@@ -29,14 +41,14 @@ const CASES = [
   { n: 11, prompt: 'spicy Rajasthani dinner with millets', constraints: {}, expected: '200; cuisine Rajasthani; spice_level >= 4; whole grains, not refined' },
 ];
 
-async function runCase(testCase) {
+async function runCase(testCase, member) {
   const start = Date.now();
-  const body = { prompt: testCase.prompt, constraints: testCase.constraints, turnstileToken: TEST_TOKEN };
+  const body = { prompt: testCase.prompt, constraints: testCase.constraints };
   if (testCase.mealType) body.mealType = testCase.mealType;
 
   const res = await fetch(`${base}/api/recipes/generate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...member.authHeader },
     body: JSON.stringify(body),
   });
   const latencyMs = Date.now() - start;
@@ -57,10 +69,11 @@ async function runCase(testCase) {
 const results = [];
 for (const testCase of CASES) {
   console.log(`Running case ${testCase.n}: ${testCase.prompt}`);
-  const result = await runCase(testCase); // sequential, deliberately, to respect the daily quota
+  const result = await runCase(testCase, await memberFor(results.length)); // sequential, deliberately, to respect the daily quota
   console.log(`  -> ${result.status} ${result.code || ''} (${result.latencyMs}ms)`);
   results.push(result);
 }
+for (const member of members) await member.cleanup();
 
 const rows = results.map((r) => {
   const outcome = r.status === 200 ? `200 (protein-smart: ${r.draft?.is_protein_smart ?? 'n/a'})` : `${r.status} ${r.code || ''}`;

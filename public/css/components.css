@@ -124,6 +124,8 @@
 
 .badge.veg { background: var(--ok-bg); color: var(--ok); }
 .badge.egg { background: var(--warn-bg); color: var(--warn); }
+.badge.pending { background: var(--surface-raised); color: var(--ink-muted); border: 1px dashed var(--line); }
+.pending-notice { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
 .badge.dairy { background: var(--cuisine-maharashtrian-bg); color: var(--cuisine-maharashtrian-ink); }
 .badge.protein-smart { background: var(--protein-bg); color: var(--protein); }
 .badge.packed-lunch { background: var(--cuisine-fusion-bg); color: var(--cuisine-fusion-ink); }

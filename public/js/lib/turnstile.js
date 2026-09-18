@@ -46,14 +46,14 @@ async function ensureWidget(container) {
 }
 
 /** Renders the widget into `container` (lazily, once) and resolves a single-use token. */
-export async function getToken(container) {
+export async function getToken(container, { timeoutMs = 30_000 } = {}) {
   const id = await ensureWidget(container);
   try {
     return await new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         pending = null;
         reject(new Error('Turnstile timed out.'));
-      }, 30_000);
+      }, timeoutMs);
       pending = {
         resolve: (token) => { clearTimeout(timeoutId); resolve(token); },
         reject: (err) => { clearTimeout(timeoutId); reject(err); },
