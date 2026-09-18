@@ -182,10 +182,32 @@ describe('normalizeRecipeInput', () => {
       expect(value.calories_kcal).toBe(250);
     });
 
-    it('caps salt_g at 20 (not the general 5000 nutritionMax) when nutrition is required', () => {
+    it('caps salt_g at its own per-serving ceiling of 20', () => {
       const { ok, errors } = normalizeRecipeInput({ ...validBase, ...nutrition, salt_g: 21 }, { cuisines, requireNutrition: true });
       expect(ok).toBe(false);
       expect(errors.salt_g).toBeTruthy();
+    });
+
+    // Regression: a blanket 5000 ceiling once let a junk row through with these exact values,
+    // which the site rendered as 468% and 902% of reference intake.
+    it('rejects physically impossible per-serving macros that the old blanket ceiling allowed', () => {
+      const protein = normalizeRecipeInput({ ...validBase, ...nutrition, protein_g: 234 }, { cuisines });
+      expect(protein.ok).toBe(false);
+      expect(protein.errors.protein_g).toBeTruthy();
+
+      const carbs = normalizeRecipeInput({ ...validBase, ...nutrition, carbs_g: 2345 }, { cuisines });
+      expect(carbs.ok).toBe(false);
+      expect(carbs.errors.carbs_g).toBeTruthy();
+
+      const fibre = normalizeRecipeInput({ ...validBase, ...nutrition, fibre_g: 345 }, { cuisines });
+      expect(fibre.ok).toBe(false);
+      expect(fibre.errors.fibre_g).toBeTruthy();
+    });
+
+    it('still accepts a genuinely high-protein serving', () => {
+      const { ok, value } = normalizeRecipeInput({ ...validBase, ...nutrition, protein_g: 45 }, { cuisines });
+      expect(ok).toBe(true);
+      expect(value.protein_g).toBe(45);
     });
 
     it('does not force nutrition on a partial (PATCH) update that never touches those fields', () => {
