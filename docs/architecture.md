@@ -38,15 +38,19 @@ involve.
 
 | Table | Purpose |
 |---|---|
-| `recipes` | The recipe itself: name, cuisine, times, steps (jsonb), spice level, nutrition (per serving), three dietary booleans, soft-delete (`is_deleted`/`deleted_at`), plus a legacy `ingredients` jsonb mirror kept in sync for backups/rollback but read by nothing new. |
+| `recipes` | The recipe itself: name, cuisine, times, steps (jsonb), spice level, nutrition (per serving), three dietary booleans, soft-delete (`is_deleted`/`deleted_at`), plus a legacy `ingredients` jsonb mirror *intended* to stay in sync for backups/rollback but read by nothing new — **it is not reliably in sync** (M0 found it empty on rows whose structured ingredients are intact; tracked as tech debt in `plan.md`). `created_by_household` (M1a) records which household contributed a recipe — for edit rights only; recipes remain one shared public catalogue. |
 | `ingredients` | The canonical ingredient catalogue: `name` (lowercase, unique), `display_name`, `category`, four allergen/diet flags (`contains_meat`/`egg`/`dairy`/`nuts`/`gluten` — never defaulted), and a `status` (`unreviewed`/`reviewed`) used to gate the dietary auto-suggestion feature. |
 | `ingredient_aliases` | Alternate spellings mapped to a canonical `ingredients.id`, so "cilantro" and "coriander leaves" resolve to the same row. |
 | `recipe_ingredients` | One row per ingredient line on a recipe: `group_name`/`group_position` (e.g. "For the dough"), `position` within the group, `quantity`/`unit`/`preparation`/`is_optional`/`scales`, and `original_text` (what the user typed, kept for reference). This is what makes "scale to N servings" and a future shopping list possible — quantities are structured, not flat text. |
 | `units` | The controlled unit vocabulary (cup, tbsp, tsp, g, ml, piece, to_taste, …) used for conversion (Appendix C.2's cup/spoon display). |
 | `cuisines` | The controlled cuisine vocabulary (a lookup + FK from `recipes.cuisine`, replacing the original free-text field). |
-| `recipe_audit_log` | Append-only: every create/update/delete/restore, `source` (`manual`/`ai`), the actor's **hashed** IP (`actor_ip_hash`, never the raw IP), and `before`/`after` jsonb snapshots. |
+| `recipe_audit_log` | Append-only: every create/update/delete/restore, `source` (`manual`/`ai`), the actor's **hashed** IP (`actor_ip_hash`, never the raw IP), `before`/`after` jsonb snapshots, and (M1a) `actor_user_id` for signed-in writes — per-member attribution lives here rather than on `recipes`, because recipes are publicly readable. |
 | `recipe_generations` | One row per AI model call (not per saved recipe): the prompt, `outcome` (`generated`/`refused`/`invalid`/`error`), the effective health goal, `is_protein_smart`, estimated neuron cost, and — if the draft was saved — the resulting `saved_recipe_id`. |
 | `schema_migrations` | Filenames already applied, written by `scripts/migrate.mjs`; never edited by hand. |
+| `households` | (M1a) One row per household — the tenant. |
+| `household_members` | (M1a) Which users belong to which household, with a `role` (`owner`/`member`) and a `display_name`. `user_id` is unique: one household per user. |
+| `household_invites` | (M1a) Unguessable, expiring invite codes. Bearer secrets — RLS on with no policy, so no client can read them; created and redeemed only through a Function. |
+| `household_settings` | (M1a) The per-household rules `config/household.json` holds today, stored as jsonb in the same shape. Not yet read by anything — M1d moves the consumers over. |
 
 ### 2.2 Views (all `security_invoker = true`, so they run with the *caller's* privileges, not the view owner's)
 
@@ -67,10 +71,18 @@ involve.
 | `match_ingredient(q text)` | `service_role` only | Trigram ingredient-name matching, used when resolving an AI draft's ingredient names to existing catalogue rows. |
 | `refresh_recipe_derived(recipe_id)` | called internally by `save_recipe` | Recomputes `is_protein_smart` and the nutrition-derived flags after a save. |
 | `set_updated_at()` | trigger only | Keeps `recipes.updated_at` current (the original schema had no such trigger — every row shared the same value as `created_at`). |
+| `current_household_id()` | `authenticated`, `service_role` | (M1a) The caller's own household id, keyed on `auth.uid()`. Used by every household RLS policy. |
 
 Every function is `security invoker` with `search_path = ''` (no privilege escalation, no
-search-path hijacking), and every one but the trigger function has `execute` revoked from
-`public`/`anon`/`authenticated` and granted only to `service_role` — the Pages Functions' key.
+search-path hijacking), and every one but the trigger function and `current_household_id()` has
+`execute` revoked from `public`/`anon`/`authenticated` and granted only to `service_role` — the
+Pages Functions' key.
+
+**The one exception is `current_household_id()`, which is `SECURITY DEFINER`.** A policy on
+`household_members` that reads `household_members` through an invoker function recurses, so the
+membership lookup has to bypass RLS. It is still safe: it takes no arguments, keeps
+`search_path = ''`, and only ever returns the *caller's own* household — there is nothing for a
+caller to escalate to.
 
 ### 2.4 Constraints worth knowing about
 
@@ -159,6 +171,9 @@ either can be tested without the other.
 | `INSERT`/`UPDATE`/`DELETE` `recipes` directly | ❌ | ❌ | ❌ — nothing has direct table write access; only `save_recipe()` writes, and only `service_role` can execute it |
 | Execute `save_recipe`/`similar_recipes`/`match_ingredient` | ❌ | ❌ | ✅ |
 | Read `recipe_audit_log` / `recipe_generations` | ❌ | ❌ | ✅ |
+| `SELECT` `households` / `household_members` / `household_settings` | ❌ | ✅ own household only (RLS via `current_household_id()`) | ✅ |
+| `SELECT` `household_invites` | ❌ | ❌ | ✅ |
+| Write any household table | ❌ | ❌ | ✅ — through Functions only, like recipes |
 
 The model is default-deny: `migrations/008_default_privileges.sql` revokes all table/sequence
 privileges and function execute rights from `anon`/`authenticated`/`public` for anything created
@@ -171,18 +186,22 @@ There is no session, cookie, or bearer token tied to an end user anywhere in thi
 "the browser" and "an anonymous visitor" are the same trust level. Turnstile plus per-IP rate
 limits are the only anti-abuse layer (SEC-2, deferred by owner decision — see below).
 
-## 5. Adding authentication later
+## 5. Authentication and households (M1 — in progress)
 
-Not built, but designed for. If sign-in is ever added:
+The original sketch here keyed everything on a per-user `owner_id`. Owner decisions on 2026-09-18
+(shared household login with members; recipes as one shared catalogue; commercialising later)
+replaced that with **households as the tenant**. M1 is built in slices — see `plan.md`:
 
-1. **Add an `owner_id uuid references auth.users` column** to `recipes` (nullable, for existing
-   rows created before auth existed) and to a new `meal_plan_entries` table (see below).
-2. **New RLS policies keyed on `auth.uid()`**: a signed-in user could get write access to rows they
-   own directly (bypassing the Functions layer for their own data, or keeping it — a policy choice,
-   not an architectural blocker either way), while `anon` keeps exactly the read-only access it has
-   today.
-3. **A `meal_plan_entries` table** replaces (or supplements) the browser-only planner: `owner_id,
-   week_of, day, slot, recipe_id, servings, source, reasons`. This lets a signed-in user's plan sync
+1. **Tenancy schema (M1a — shipped).** `households`, `household_members` (one household per user),
+   `household_invites`, `household_settings` — §2.1. Every household table is readable only by its
+   own members, through RLS on `current_household_id()` (§2.3); every write goes through a Function.
+   `anon` keeps exactly the read-only recipe access it has always had.
+2. **Recipes stay global.** Instead of `owner_id`, `recipes.created_by_household` records the
+   contributing household, which governs *edit* rights (M1c) and never visibility. There is
+   deliberately no user id on recipes, since they are public — per-member attribution goes to
+   `recipe_audit_log.actor_user_id`.
+3. **Planner storage (M1e)** replaces (or supplements) the browser-only planner, scoped by
+   `household_id` rather than `owner_id`, with per-member attribution on entries. This lets a signed-in user's plan sync
    across devices instead of living only in one browser's `localStorage` — `lib/planner-store.js`'s
    reducers are already pure functions over a plan object, so swapping their persistence target
    from `localStorage` to this table is a smaller change than it sounds; the scoring engine

@@ -371,3 +371,42 @@
   7. **AI usage totals** (`recipe_generations`, all-time): 0 calls, 0 neurons spent, 0 saved — see deviation 4.
 - Preview smoke: PASS https://phase-13-docs.recipe-book-9eo.pages.dev (7/7)   Production smoke: PASS https://recipe-book-9eo.pages.dev (7/7)
 - Notes: this is the last content phase. Phase 14 (shopping list) remains skipped per `ENABLE_SHOPPING_LIST=false` — `docs/architecture.md` §6 and `docs/progress.md`'s Phase 3 entries already describe what it would build on. The single highest-value follow-up for a human (not an automated agent) to do next is exactly what deviation 4 above describes: one real manual create, one real manual edit, and one real manual AI generation from an ordinary browser, to finally exercise the code paths that have only ever been verified against mocked responses and structural checks.
+
+---
+
+> **From here on, work follows `plan.md` (approved 2026-09-18), not `improvement_plan.md`.** Entries
+> are named after its milestones (M0, M1a, …). The UX uplift phases A–D that preceded it are
+> recorded in `docs/ux-uplift-plan.md` and PRs #33 and #37.
+
+## M0 — Data integrity — DONE
+- Date: 2026-09-18
+- Branch / PR: m0-data-integrity / [#39](https://github.com/dugguboy2015-sudo/recipe-book/pull/39) (merged 428db9a)
+- Migrations applied: none — data repaired over REST
+- Backup: `npm run backup` was itself blocked by an expired `SUPABASE_ACCESS_TOKEN`, so a full REST row-level snapshot of all 34 recipes stood in (`backups/recipes-rest-snapshot-2026-09-18T00-22-17-664Z.json`). Both changes are reversible from it.
+- Acceptance:
+  - [x] Junk recipe #2 (`aloo-paratha-roll-with-ketchup` — steps `asdfasdf`, 234 g protein, 2,345 g carbs) soft-deleted. It sorted first alphabetically, so it was the first recipe any visitor saw. Live count is now 31
+  - [x] `time_note` cleared on the 30 rows holding the bare string `"Cooking Time:"` — verified gone from the live detail view
+  - [x] Per-nutrient per-serving ceilings replace one blanket `nutritionMax: 5000`, with regression tests using the junk row's exact values
+- Deviations from spec / findings while building this:
+  1. **`task_cf7d7dfc` ("backfill `is_protein_smart`") rests on a false premise and should be closed.** It is a stored generated column (migration 006) and cannot be written. Its inputs are complete — `sugars_g` NULL on 1 row (the junk one), `refined_carb_heavy` and `protein_g` NULL on none. Only 2 of 32 recipes passed the protein maths and one was the junk row; the other was already correctly flagged. The flag is right; the collection genuinely is not protein-smart (15 of 32 are refined-carb-heavy). That is a content problem, not a data bug.
+  2. **"Basundi and Shrikhand have no ingredients" was a false alarm.** All 31 live recipes have structured `recipe_ingredients`. The survey had read the legacy `recipes.ingredients` jsonb, which the UI never queries — and which this document's §2.1 described as "kept in sync". It is not: it was `[]` on rows whose structured ingredients are intact. Logged as tech debt in `plan.md`.
+  3. **The review's "no nutrition bounds" was imprecise** — there was a bound, a single blanket 5000 for every nutrient. It was uselessly loose, not absent.
+- Production verification: live site re-checked after the data changes — 31 recipes, junk row absent, Basundi renders its full ingredient list, no dangling "Cooking Time:".
+
+## M1a — Tenancy schema — DONE
+- Date: 2026-09-18
+- Branch / PR: m1a-tenancy-schema / (this PR)
+- Migrations applied: `015_households.sql`
+- Backup: `backups/2026-09-18T05-29-41-263Z` (34 recipe rows, count verified against `select count(*)`)
+- Acceptance:
+  - [x] Trial-executed against production inside a transaction that rolled back — every statement ran against the real schema, and `to_regclass('public.households')` confirmed nothing persisted — before applying for real
+  - [x] Applied through `scripts/migrate.mjs`
+  - [x] RLS enabled on all four new tables; three member-read policies, and deliberately none on `household_invites`
+  - [x] Privileges verified with `has_table_privilege`: `anon` has nothing on any household table; `authenticated` has `SELECT` on `households`/`household_members`/`household_settings` only, and no writes anywhere; `household_invites` has no client access at all
+  - [x] Behaviour verified over REST: `anon` GET `households` and `household_invites` → 401 / `42501`; `anon` GET `recipes` → 200, including the new `created_by_household` column; `service_role` reads households
+  - [x] `current_household_id()` is `SECURITY DEFINER` with `search_path = ''`
+- Deviations from spec / findings while building this:
+  1. **`information_schema.role_table_grants` reported no grants for `authenticated`** even though they exist — an artifact of the restricted role that read-only SQL runs as. `has_table_privilege()` is the reliable check; worth knowing before trusting that view again.
+  2. **`current_household_id()` is `SECURITY DEFINER`**, an explicit exception to this schema's security-invoker rule, because a policy on `household_members` reading `household_members` through an invoker function recurses. Documented in `docs/architecture.md` §2.3.
+  3. **Found in the live Supabase auth config, blocking M1b:** `site_url` is `http://localhost:3000` (sign-in links would land on localhost), the redirect allowlist is empty, and the built-in email sender allows **2 auth emails per hour, project-wide**.
+- Notes for next slice: M1b (sign-in and the founding-household bootstrap) needs two owner decisions first — how people sign in (Google, custom SMTP, or both), and whether a new sign-up can create its own household or only join one by invite. Both are set out in `plan.md`.
