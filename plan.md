@@ -117,7 +117,7 @@ not 60%, before re-pointing the planner at the household goal).
 | **M1b** | Email sign-in, create a household (diet preset) or join one by invite link, founding household bootstrapped from `config/household.json` and claiming the existing recipes as curator | ✅ built and verified on preview — see below |
 | **M1c** | Only members can add/edit/delete; a household edits only recipes it contributed; new households' recipes private until the curator approves them; signed-in writes skip Turnstile, rate limits move from IP to user; AI generation requires sign-in, per-household quota | ✅ built and verified on preview |
 | **M1d** | Every `config/household.json` consumer (AI prompts, validation, planner engine, dashboard, "vegetarian" copy) reads the household's own settings, including its diet; catalogue and planner candidates filtered by that diet; a household settings editor; the file becomes the signed-out default | ✅ built and verified on preview |
-| **M1e** | Planner moves from `localStorage` to the database, one-time import of the existing browser plan, per-member attribution ("who added this", "who loved it") | |
+| **M1e** | Planner moves from `localStorage` to the database, one-time import of the existing browser plan, per-member attribution ("who added this", "who loved it"); a household chooses which meals it plans | ✅ built and verified on preview |
 
 ### Design decisions taken in M1a
 
@@ -247,6 +247,6 @@ features or cross-household sharing · recipe import-from-URL.
 
 **M0 → M1 → M2 → M3/M4 → M5**
 
-M0 is done. M1 is under way in slices (M1a–M1d shipped), running unattended through M1c → M1e
-then M2 → M5. M1 comes before M2 because building a shopping list on browser-only storage means building
-it twice.
+M0 is done. M1 is complete (M1a–M1e shipped); M2 (the shopping list) is next, then M3 → M5.
+M1 came before M2 because building a shopping list on browser-only storage would have meant
+building it twice.

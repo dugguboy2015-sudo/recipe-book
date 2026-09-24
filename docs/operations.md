@@ -186,18 +186,20 @@ by eye — these are estimates, not verified values).
 
 ## Where planner learning lives
 
-The weekly planner and everything it's learned (`localStorage` keys `recipeBookPlanner.v2` and
-`recipeBook.prefs.v1`) live **only in the browser that built them** — there is no server-side
-planner table today (see `docs/architecture.md` §5 for what adding one would look like). This
+A signed-in household's plan and its learned signals live in the database (`plan_weeks`,
+`plan_prefs`), shared between members and devices. **Signed out**, they live only in the browser
+that built them (`localStorage` keys `recipeBookPlanner.v3` and `recipeBook.prefs.v1`), which
 means:
 
 - Clearing site data/cookies for this domain, or switching browsers or devices, loses the plan and
   every preference signal (manual/kept/removed/loved/notAgain counts, the 12-week history).
 - **Export** (on the planner page) downloads both as one JSON file; **Import** on another
-  browser/device restores them exactly, after a confirmation. This is the only way to move a plan
-  between devices today.
-- There is nothing to back up or restore server-side for planner data — `npm run backup` only ever
-  covers the `recipes` table.
+  browser/device restores them exactly, after a confirmation. Signing in is the easier route now:
+  a household's plan follows its members, and a first sign-in on a browser that already has a plan
+  adopts it as the household's.
+- **Plan data is not in `npm run backup`**, which only ever covers the `recipes` table. A
+  household's `plan_weeks`/`plan_prefs` rows are recoverable only from Supabase's own backups, or
+  from a planner Export someone took.
 
 ## Troubleshooting
 

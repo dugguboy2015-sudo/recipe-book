@@ -466,3 +466,23 @@
   2. **The prompt's founding-family text was regenerated from settings**, not kept verbatim: it now reads "A family living in the United Kingdom" plus their diet, cuisines, spice and packed lunches, rather than hard-coding "An Indian family" and "their son". The real generation above confirms output quality for a vegetarian, egg-free household; the full 11-case eval hasn't been re-run (AI quota).
   3. **The settings editor offers diet presets, not free-form "never" lists.** It's a smaller surface to validate, and it covers the three diets households choose between at sign-up.
 - Notes for next slice: M1e moves the planner into the database. `getHousehold()` and the reload-on-household-change contract mean the planner page can read the household's plan once per load.
+
+## M1e — The planner moves into the database — DONE
+- Date: 2026-09-24
+- Branch / PR: m1e-planner-db / (this PR)
+- Migrations applied: `019_plan_tables.sql` — `plan_weeks` (one row per household per week) and `plan_prefs` (one per household), RLS-scoped to `current_household_id()`, explicit grants, nothing for `anon`
+- Backup: `backups/2026-09-24T05-56-36-636Z` (34 rows, count verified)
+- Acceptance:
+  - [x] Migration trial-run in a rolled-back transaction with two households: a member writes and reads their own household's week; the other household sees nothing and is **blocked** writing into it (42501); `anon` is blocked entirely; grants are select/insert/update/delete for `authenticated` only. Rollback left no tables
+  - [x] 8/8 end-to-end checks on the preview with a real two-member household plus an outsider: write, cross-member read, cross-household isolation both ways, signed-out refusal, shared update, shared prefs, and a member clearing their own week
+  - [x] Browser, preview: planned a dinner through the picker (card shows "Added by Test"); the row appeared in `plan_weeks` with `addedBy`; **clearing `localStorage` and reloading restored the plan from the database**; auto-fill wrote the whole week; the dashboard's tiles and today list read the household's plan
+  - [x] Meal slots: turning off Breakfast, Snacks and Dessert removed them from the day view, the week view, the auto-fill settings and the recipe detail's slot list, and auto-fill stopped filling them
+  - [x] All test users, households and plan rows removed; only the owner's real household remains
+  - [x] `npm run check` green (375 tests; new: the sync layer, `applyWeekCompletion`, attribution stamping, meal-slot rules)
+- Deviations from spec / findings while building this:
+  1. **Members write `plan_weeks`/`plan_prefs` directly under RLS** rather than through a Pages Function — the documented exception to Function-only writes. A plan is private household state whose tenant boundary is exactly `current_household_id()`, and a shuffle or a servings tweak should not wait on a round trip through a Function. Recipes, ingredients and the audit log are unchanged.
+  2. **The browser copy is still written on every change.** It is the signed-out store and the fallback if a database write fails, and it is what a first sign-in imports.
+  3. **Two write paths outside the planner page were reading/writing only the browser**: the recipe detail's quick "Add to planner" and "save an AI recipe straight into a slot". Both now write to the household as well; the dashboard reads the household's plan.
+  4. **Owner request during this slice: a household chooses which meals it plans** (`meal_slots`). `slotsForDay(day, settings)` in `shared/household-settings.js` became the single rule, and Packed Lunch now follows the household's own packed-lunch days instead of hard-coded weekdays.
+  5. **The founding household exists in production**: the owner signed in on 2026-09-18 and "The Babre's" claimed all 34 recipes as curator — the M1b bootstrap working for real.
+- Notes for next slice: M2 (shopping list) can now build on a household plan that every member shares — `plan_weeks` plus `recipe_ingredients`, with ticks shared across the household.

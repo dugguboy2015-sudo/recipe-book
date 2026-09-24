@@ -31,9 +31,9 @@ tables and views, enforced by Postgres Row-Level Security, not by client-side di
 write and every AI call goes through a Cloudflare Pages Function, which is the only code that ever
 sees `SUPABASE_SECRET_KEY`.
 
-The weekly planner is the one significant piece of app state that lives **only in the browser**
-(`localStorage`) — there is no `meal_plan_entries` table today. See §4 for what adding one would
-involve.
+Since M1e the weekly planner lives in the database for a signed-in household (`plan_weeks`,
+`plan_prefs`, §2.1) and in `localStorage` for everyone else; the browser copy is still written
+either way, as the signed-out store and a fallback if a save fails.
 
 ## 2. Data model
 
@@ -53,6 +53,8 @@ involve.
 | `households` | (M1a) One row per household — the tenant. |
 | `household_members` | (M1a) Which users belong to which household, with a `role` (`owner`/`member`) and a `display_name`. `user_id` is unique: one household per user. |
 | `household_invites` | (M1a) Unguessable, expiring invite codes. Bearer secrets — RLS on with no policy, so no client can read them; created and redeemed only through a Function. |
+| `plan_weeks` | (M1e) One row per household per week: `days` jsonb in the same shape the browser store uses, so the planner's reducers are unchanged. Written directly by members under RLS — see the migration for why this write path isn't a Function. |
+| `plan_prefs` | (M1e) One row per household: the planner's learned signals (manual/kept/removed/loved/notAgain per recipe) and its auto-fill settings, shared by the household's members. |
 | `household_settings` | (M1a) The per-household rules `config/household.json` holds today, stored as jsonb in the same shape. Read by members through RLS and by the Functions (M1d); written only by `PATCH /api/household/settings` (owner). |
 
 ### 2.2 Views (all `security_invoker = true`, so they run with the *caller's* privileges, not the view owner's)
@@ -164,15 +166,20 @@ caller to escalate to.
 
 `public/js/shared/planner-engine.js` is a pure, DOM-free, no-network module — the only pipeline
 that runs entirely in the browser with zero AI cost. Given the household profile, the current
-week's plan, and a small `localStorage`-backed preference record (`recipeBook.prefs.v1`: per-recipe
-manual/kept/removed/loved/notAgain counts and a 12-week history), it scores every candidate recipe
+week's plan, and a small preference record (per-recipe manual/kept/removed/loved/notAgain counts
+and a 12-week history — `plan_prefs` for a household, `recipeBook.prefs.v1` in the browser otherwise), it scores every candidate recipe
 on affinity, cuisine fit, slot fit, protein-smartness, day fit, novelty, and recency, then greedily
 fills empty slots and repairs the fill until at least 60% of Packed Lunch/Lunch/Dinner slots are
-protein-smart (or reports a shortfall instead of silently failing). `lib/planner-store.js` is the
-only thing that touches `localStorage` — schema versioning (a v1→v2 migration ran once, when this
-model replaced the original flat per-day array), week rollover/archival, and the reducers
-(add/remove/keep/shuffle) all live there, kept deliberately separate from the scoring logic so
-either can be tested without the other.
+protein-smart (or reports a shortfall instead of silently failing). `lib/planner-store.js` holds the schema,
+migrations (v1→v2→v3) and the reducers (add/remove/keep/shuffle/servings), and is the only thing
+that touches `localStorage`; `lib/planner-remote.js` puts the same shapes in the database for a
+household, debouncing and coalescing writes per week. Both are kept deliberately separate from the
+scoring logic, so any of the three can be tested without the others.
+
+The slots a household plans (`meal_slots`) and the days it needs a packed lunch come from its
+settings: `slotsForDay(day, settings)` in `shared/household-settings.js` is the single rule the
+planner's views, the dashboard's today list, the recipe detail's quick add and the engine's
+auto-fill all follow, so a meal a household doesn't plan is never shown or filled.
 
 ## 4. Trust boundaries
 
@@ -235,12 +242,13 @@ replaced that with **households as the tenant**. M1 is built in slices — see `
    contributing household, which governs *edit* rights (M1c) and never visibility. There is
    deliberately no user id on recipes, since they are public — per-member attribution goes to
    `recipe_audit_log.actor_user_id`.
-3. **Planner storage (M1e)** replaces (or supplements) the browser-only planner, scoped by
-   `household_id` rather than `owner_id`, with per-member attribution on entries. This lets a signed-in user's plan sync
-   across devices instead of living only in one browser's `localStorage` — `lib/planner-store.js`'s
-   reducers are already pure functions over a plan object, so swapping their persistence target
-   from `localStorage` to this table is a smaller change than it sounds; the scoring engine
-   (`planner-engine.js`) doesn't change at all.
+3. **Planner storage (M1e — shipped).** `plan_weeks`/`plan_prefs` (migration 019), scoped by
+   `household_id`, with per-member attribution on each entry (`addedBy`, shown as "Added by …"
+   once a household has more than one member). The scoring engine didn't change at all. A first
+   sign-in on a browser that already had a plan adopts it as the household's. Members write these
+   rows directly under RLS: a plan is private household state whose tenant boundary is exactly
+   `current_household_id()`, and every planner interaction should feel instant — recipes,
+   ingredients and the audit log keep their Function-only write path.
 4. **Member-only writes (M1c — shipped).** See §3.1–3.2: writes and AI calls need a signed-in
    household member; limits follow the member (writes) or household (AI) rather than a hashed IP,
    so a family behind one carrier NAT no longer shares a budget with strangers. Migration 017 adds
