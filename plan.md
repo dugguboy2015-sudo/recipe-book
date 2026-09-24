@@ -195,14 +195,14 @@ model was already built in Phase 3, and M1e's household plan made it worth build
 
 ---
 
-## M3 — Visual and shareable
+## M3 — Visual and shareable ✅ shipped (3.2 still deferred)
 
-| # | Item |
-|---|---|
-| 3.1 | **Curated illustrations now** (decision 3) — a small set mapped by cuisine/dish type, no storage cost, no upload flow. Replaces the initial-letter monograms |
-| 3.2 | **Real photo upload later** — Supabase Storage, resized on upload; needs `household_id` scoping from M1 |
-| 3.3 | **Print stylesheet** — there is no `@media print` anywhere today, so a recipe can't be printed for the counter |
-| 3.4 | **Share** — link + `navigator.share` |
+| # | Item | Status |
+|---|---|---|
+| 3.1 | **Curated illustrations now** (decision 3) — a small set mapped by dish type, no storage cost, no upload flow. Replaces the initial-letter monograms | ✅ 12 dish types drawn as flat line art on the cuisine tint; an unrecognised dish keeps the monogram |
+| 3.2 | **Real photo upload later** — Supabase Storage, resized on upload; needs `household_id` scoping from M1 | still deferred, by decision 3 ("photos later"). M1 has since made the scoping available whenever it's wanted |
+| 3.3 | **Print stylesheet** — there is no `@media print` anywhere today, so a recipe can't be printed for the counter | ✅ an open recipe prints on its own, without chrome or actions; the shopping list prints too (M2) |
+| 3.4 | **Share** — link + `navigator.share` | ✅ on a recipe (deep link with the servings you're viewing) and on the shopping list |
 
 ---
 

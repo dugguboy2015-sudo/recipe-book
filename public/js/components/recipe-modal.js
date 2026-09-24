@@ -1,7 +1,7 @@
 import { escapeHtml } from '../shared/html.js';
 import { fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
 import { normalizeRecipe, dietaryBadges, spiceMeter } from './recipe-card.js';
-import { monogramSvg } from './monogram.js';
+import { dishArtSvg } from './dish-art.js';
 import { wireDialog } from './dialog.js';
 import { showSnackbar } from '../lib/dom.js';
 import { scaleQuantity, displayQuantity, formatQuantity } from '../shared/units.js';
@@ -89,6 +89,8 @@ const MODAL_HTML = `
       </label>
       <button type="button" class="ghost-button" id="modalAddToPlanner">Add to planner</button>
       <button type="button" class="ghost-button" id="modalCookMode">Cook mode</button>
+      <button type="button" class="ghost-button" id="modalShareRecipe">Share</button>
+      <button type="button" class="ghost-button" id="modalPrintRecipe">Print</button>
       <button type="button" class="primary-button" id="modalApproveRecipe" hidden>Approve for the catalogue</button>
       <button type="button" class="ghost-button" id="modalEditRecipe" hidden>Edit</button>
       <button type="button" class="danger-button" id="modalDeleteRecipe" hidden>Delete</button>
@@ -244,6 +246,32 @@ export function mountRecipeModal() {
     if (!remote) showSnackbar("Couldn't save that to your household's plan. It's still saved in this browser.", 'error');
   });
 
+  // M3: a recipe you can hand to someone, or stick on the counter. The link is the deep link the
+  // recipes page already understands (?recipe=<slug>), with the servings you are looking at.
+  function shareUrlForCurrent() {
+    const url = new URL('recipes.html', window.location.href);
+    url.searchParams.set('recipe', current.recipe.slug);
+    if (current.targetServings) url.searchParams.set('serves', String(current.targetServings));
+    return url.toString();
+  }
+
+  document.getElementById('modalShareRecipe')?.addEventListener('click', async () => {
+    if (!current) return;
+    const url = shareUrlForCurrent();
+    if (typeof navigator.share === 'function') {
+      navigator.share({ title: current.recipe.name, text: `${current.recipe.name} — from our recipe book`, url }).catch(() => {});
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showSnackbar('Link copied — paste it to share this recipe.', 'success');
+    } catch {
+      showSnackbar("Couldn't copy the link. You can copy it from the address bar after opening the recipe.", 'error');
+    }
+  });
+
+  document.getElementById('modalPrintRecipe')?.addEventListener('click', () => window.print());
+
   document.getElementById('modalCookMode')?.addEventListener('click', () => {
     if (!current) return;
     openCookMode({
@@ -282,7 +310,7 @@ export async function openRecipeModal(client, id, { serves, onEdit, onDelete, on
   current = { recipe, ingredientGroups, targetServings: serves && serves > 0 ? serves : (recipe.serves || 4) };
 
   const normalized = normalizeRecipe(recipe);
-  document.getElementById('modalArt').innerHTML = monogramSvg(normalized);
+  document.getElementById('modalArt').innerHTML = dishArtSvg(normalized);
   document.getElementById('modalTitle').textContent = recipe.name;
   document.getElementById('modalHeroMeta').innerHTML = `
     <span class="tag">${escapeHtml(recipe.cuisine || 'General')}</span>

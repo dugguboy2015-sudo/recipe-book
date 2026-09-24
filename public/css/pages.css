@@ -240,10 +240,36 @@
 .shopping-item.is-checked .shopping-item-name, .shopping-item.is-checked .shopping-item-amount { text-decoration: line-through; color: var(--ink-muted); }
 .shopping-pantry { background: var(--surface-raised); }
 
+/* ---------- Print (M3) ----------
+   Two things are worth printing: the shopping list, and one recipe for the kitchen counter. A
+   recipe lives in a <dialog>, which the browser renders in the top layer — so when one is open it
+   is all that prints, and the page behind it is hidden. */
 @media print {
   .site-header, .sidebar-nav, .bottom-tab-bar, .site-footer, .shopping-controls, .add-item-form,
   .page-header .eyebrow, .shopping-item-for, .shopping-item .delete-button { display: none; }
   .shopping-aisle { break-inside: avoid; border: 0; box-shadow: none; }
+
+  /* The recipe itself: ink on white, no chrome, nothing clipped, and no actions you can't click. */
+  dialog.recipe-detail[open] {
+    position: static;
+    max-width: 100%;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  dialog.recipe-detail[open]::backdrop { background: transparent; }
+  dialog.recipe-detail[open] .detail-actions,
+  dialog.recipe-detail[open] .modal-footer,
+  dialog.recipe-detail[open] .servings-stepper,
+  dialog.recipe-detail[open] .icon-button { display: none; }
+  dialog.recipe-detail[open] .recipe-hero-art { max-width: 90px; }
+  dialog.recipe-detail[open] .detail-grid { display: block; }
+  dialog.recipe-detail[open] .detail-panel { break-inside: avoid; margin-bottom: var(--sp-4); }
+  dialog.recipe-detail[open] #modalIngredients li,
+  dialog.recipe-detail[open] #modalSteps li { break-inside: avoid; }
+  a[href]::after { content: ''; } /* no URL trails after every link */
 }
 .slot-card-added-by { color: var(--ink-muted); font-size: var(--fs-1); margin: 0; }
 .slot-recipe-link { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--brand-ink); text-align: left; text-decoration: underline; cursor: pointer; }
@@ -326,3 +352,8 @@
 @media (max-width: 480px) {
   .content-head { align-items: flex-start; }
 }
+
+/* Styleguide only: the dish-illustration set, side by side. */
+.sg-dish-art { margin: 0; display: grid; gap: var(--sp-1); justify-items: center; width: 84px; }
+.sg-dish-art .recipe-card-art { width: 72px; }
+.sg-dish-art figcaption { font-size: var(--fs-1); color: var(--ink-muted); }
