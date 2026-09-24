@@ -542,3 +542,21 @@
   3. **Icons are generated** by `scripts/build-icons.mjs`, which rasterises the shapes and encodes PNG with `zlib` — a manifest needs PNGs (Chrome ignores SVG manifest icons; iOS needs a PNG) and this repo has no image tooling. Output is committed; re-run only when the design or brand colours change.
   4. **Not verified: a real offline load and a home-screen install.** Cache contents are proven, but this environment can't toggle the network or install a PWA. Worth one airplane-mode test and one "Add to Home Screen" on her phone.
 - Notes for next slice: M5 (favourites, ingredient search, leftovers, cooked history) and the polish backlog are what remain in `plan.md`.
+
+## M5 — Depth: favourites, fridge search, leftovers, cooked history — DONE
+- Date: 2026-09-24
+- Branch / PR: m5-depth / (this PR)
+- Migrations applied: none — favourites and the new entry flags live in the jsonb already there (`plan_prefs.prefs`, `plan_weeks.days`)
+- Backup: not needed (no schema change)
+- Acceptance:
+  - [x] **Favourites**: heart on every card, Favourites filter chip, stored beside the recipe's other signals. Browser, preview: starred two, filter showed exactly those two; the star reached the household's `plan_prefs`
+  - [x] **What's in the fridge**: picked "paneer" on the preview and got real results ranked by what's left to buy ("Uses 1 of your 1 · 5 more to buy" first, 16-to-buy last). Ranking is pure, with 8 unit tests covering ordering, tie-breaks, pantry staples, and the empty cases
+  - [x] **Leftovers**: one tap plans the same meal for tomorrow (crossing into next week correctly). Browser, preview: planned Thursday's dinner as Friday's leftovers, and the shopping list still listed 4 potatoes and 1½ cups of flour — **not doubled**
+  - [x] **Cooked history**: ticking a meal showed "Cooked 1 of 1 planned — the whole week"; the flag persisted to the household's `plan_weeks`
+  - [x] All test users and households removed; `npm run check` green (421 tests)
+- Deviations from spec / findings while building this:
+  1. **A lost update, found by testing in the browser rather than by the unit tests.** Starring two recipes quickly saved only one: each toggle read the household's prefs, changed them and wrote them back, and the second read landed before the first write. Prefs writes are now queued. The regression test had to be written carefully — the first version passed against the broken code because the fake client returned the row as it stood when the read *resolved*, not when it started; with that corrected it fails on the old implementation (`['2']` instead of `['1','2']`) and passes on the new one.
+  2. **Leftovers had to be taught to the shopping list in the same change.** A leftover is a planned meal that is never cooked again, so `buildShoppingList` skips it — otherwise the feature would have quietly doubled the week's shopping.
+  3. **Favourites are separate from the planner's "loved" signal.** Loved/not-again still come from the week review and still drive auto-fill scoring; the heart is the deliberate, visible thing. Kept in the same per-recipe record so a recipe's history stays in one place.
+  4. **Fridge search runs three bounded queries** (recipes using any of your ingredients → those recipes' full ingredient lists → the recipe rows), which is fine at this catalogue's size and stays within the "no full-table reads" rule.
+- Notes for next: `plan.md`'s polish backlog is what remains — vegetarian/egg-free badges that carry no information, the spice meter's missing text equivalent, the "0 recipes" flash while loading, the 48-field add-recipe form, the unexplained prep/cook/total gap, and "% of adult reference intake" on a family app.
