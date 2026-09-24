@@ -55,6 +55,7 @@ either way, as the signed-out store and a fallback if a save fails.
 | `household_invites` | (M1a) Unguessable, expiring invite codes. Bearer secrets — RLS on with no policy, so no client can read them; created and redeemed only through a Function. |
 | `plan_weeks` | (M1e) One row per household per week: `days` jsonb in the same shape the browser store uses, so the planner's reducers are unchanged. Written directly by members under RLS — see the migration for why this write path isn't a Function. |
 | `plan_prefs` | (M1e) One row per household: the planner's learned signals (manual/kept/removed/loved/notAgain per recipe) and its auto-fill settings, shared by the household's members. |
+| `shopping_lists` | (M2) One row per household per week holding only what a person *did* to the shopping list — which items are ticked and any added by hand. The list itself is always derived from the plan (§6), never stored. |
 | `household_settings` | (M1a) The per-household rules `config/household.json` holds today, stored as jsonb in the same shape. Read by members through RLS and by the Functions (M1d); written only by `PATCH /api/household/settings` (owner). |
 
 ### 2.2 Views (all `security_invoker = true`, so they run with the *caller's* privileges, not the view owner's)
@@ -278,11 +279,25 @@ replaced that with **households as the tenant**. M1 is built in slices — see `
      `applySettingsUpdate` — diet preset, servings, spice, cuisines, packed-lunch days and who
      they're for. Health goals, measurements and country stay as the template set them.
 
-## 6. The shopping list (Phase 14, not built — `ENABLE_SHOPPING_LIST=false`)
+## 6. The shopping list (M2 — shipped; Phase 14's `ENABLE_SHOPPING_LIST` deferral)
 
-If ever enabled, it builds directly on the ingredient model in §2.1: one `recipe_ingredients`
-query (`in.(...)` over every planned recipe's id) scaled by `entry.servings ÷ recipe.serves`,
-aggregated by `ingredient_id` and unit kind (volume/count/weight), and grouped by
-`ingredients.category` into aisles. No new tables — the data model was built with this in mind from
-Phase 3 onward, which is why `recipe_ingredients` stores structured quantities and units instead of
-the original flat ingredient text.
+Built on the ingredient model from §2.1, exactly as that model was designed for: two bounded
+queries over every recipe planned in the week (`recipes` for name and `serves`,
+`recipe_ingredients` with its ingredient, both `in.(…)`), each line scaled by
+`entry.servings ÷ recipe.serves`, aggregated by `ingredient_id` **and unit kind** so volumes,
+counts and weights never get added together, and grouped into aisles by `ingredients.category`.
+
+- `shared/shopping-list.js` is the whole calculation, and is pure — `buildShoppingList()` and
+  `shoppingListText()` take plain data and return plain data, so the maths is unit-tested rather
+  than clicked through.
+- **The list is never stored.** It is derived on every load, so it cannot drift from the plan;
+  re-planning a meal or changing its servings changes the list immediately.
+- Volumes are summed in millilitres and shown back in cups and spoons (`shared/units.js`'s
+  `bestCupSpoon`), weights in g/kg, counts per unit ("4 cloves"). One ingredient appearing in two
+  unit kinds keeps two lines rather than a wrong total.
+- Two product rules (plan.md): a row that is `to_taste` or has no quantity never gets a number,
+  and pantry staples (`spice`, `oil_fat`, `sweetener`, `condiment`) go to a separate **"Check you
+  have these"** section instead of padding the list you shop from.
+- `shopping_lists` (migration 020) stores only what a person *did*: which keys are ticked and any
+  items added by hand, one row per household per week, written directly by members under RLS for
+  the same reason as `plan_weeks` (§5.3). Signed out, that state lives in `localStorage`.
