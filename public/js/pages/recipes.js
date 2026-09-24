@@ -12,6 +12,7 @@ import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
 import { loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf } from '../lib/planner-store.js';
+import { addRemoteEntry, applyRemotePrefEvent } from '../lib/planner-remote.js';
 import { getHousehold } from '../lib/household.js';
 import { dietRecipeFilter } from '../shared/household-settings.js';
 
@@ -322,8 +323,18 @@ export async function initRecipesPage() {
                   // showing a future week when "Suggest something new" was clicked); fall back to
                   // the current week for older pending-slot entries saved before this existed.
                   const weekOf = pendingSlot.weekOf || mondayOf();
-                  persistStore(addEntryToWeek(store, weekOf, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, household?.default_servings || 4, 'manual'));
+                  const servings = household?.default_servings || 4;
+                  persistStore(addEntryToWeek(store, weekOf, pendingSlot.day, pendingSlot.slot, savedAiRecipe.id, servings, 'manual'));
                   persistPrefs(applyPrefEvent(prefs, savedAiRecipe.id, 'manual', weekOf));
+                  // M1e: and into the household's shared plan, when signed in.
+                  const account = getAccountState();
+                  if (account.household) {
+                    const ids = { householdId: account.household.id, userId: account.session.user.id, weekOf };
+                    await Promise.all([
+                      addRemoteEntry(supabase, { ...ids, day: pendingSlot.day, slot: pendingSlot.slot, recipeId: savedAiRecipe.id, servings }),
+                      applyRemotePrefEvent(supabase, { ...ids, recipeId: savedAiRecipe.id, event: 'manual' }),
+                    ]);
+                  }
                   showSnackbar(`Added to ${pendingSlot.day}'s ${pendingSlot.slot}.`, 'success');
                 },
               });
