@@ -2,9 +2,11 @@
 
 All 13 phases of `improvement_plan.md` (v2.0) are complete — see `docs/progress.md` for the full
 build log (one entry per phase, acceptance results, and every deviation from the original spec)
-and its final report for the Appendix H findings traceability. Phase 14 (shopping list) is skipped
-by owner setting (`ENABLE_SHOPPING_LIST=false`). Read `docs/progress.md` before making further
-changes — it's the actual history of what this codebase is and why, in more detail than fits here.
+and its final report for the Appendix H findings traceability. Work since then follows `plan.md`
+(approved 2026-09-18): M0 (data integrity) and M1a–M1e (accounts, households, member-only writes,
+per-household settings, the planner in the database) are shipped, and the shopping list — Phase
+14's `ENABLE_SHOPPING_LIST` deferral — is now built as M2. Read `docs/progress.md` before making
+further changes — it's the actual history of what this codebase is and why, in more detail than fits here.
 The full spec is still `improvement_plan.md` if you need the original reasoning behind a
 constraint; `README.md`, `docs/architecture.md`, and `docs/operations.md` are the maintained,
 current-state references for running, understanding, and operating the app day to day.
@@ -13,6 +15,7 @@ current-state references for running, understanding, and operating the app day t
 
 ```
 public/            static site served by Cloudflare Pages (no build step; native ES modules only)
+  index.html, recipes.html, planner.html, shopping.html   the four pages
   js/               front-end logic — pages/, components/, lib/, shared/
   css/              tokens.css (design tokens) → base.css → components.css → pages.css
   styleguide.html   every design-system component in every state, both themes (not in the nav)
