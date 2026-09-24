@@ -108,6 +108,29 @@ export function applyPrefEvent(prefs, recipeId, event, weekOf) {
   return { ...prefs, recipes: { ...prefs.recipes, [key]: next } };
 }
 
+/**
+ * M5: favourites. The planner has always recorded "loved" quietly from the week review; this is the
+ * deliberate version — a household marks a recipe as one of theirs, and can then find it again.
+ * Kept in the same per-recipe record so there is one place a recipe's history lives.
+ */
+export function setFavourite(prefs, recipeId, favourite) {
+  const key = String(recipeId);
+  const current = prefs.recipes?.[key] || { manual: 0, kept: 0, removed: 0, loved: 0, notAgain: 0, lastPlanned: null, lastNotAgain: null };
+  return { ...prefs, recipes: { ...prefs.recipes, [key]: { ...current, favourite: Boolean(favourite) } } };
+}
+
+export function isFavourite(prefs, recipeId) {
+  return Boolean(prefs?.recipes?.[String(recipeId)]?.favourite);
+}
+
+/** Every recipe id this household has starred, newest signal first is not meaningful — ids only. */
+export function favouriteIds(prefs) {
+  return Object.entries(prefs?.recipes || {})
+    .filter(([, stats]) => stats?.favourite)
+    .map(([id]) => Number(id))
+    .filter((id) => Number.isFinite(id));
+}
+
 export function dismissWeekReview(prefs, weekOf) {
   return { ...prefs, lastReviewedWeekOf: weekOf };
 }
@@ -149,6 +172,23 @@ export function keepEntry(days, day, slot, recipeId) {
   return { ...days, [day]: existing.map((e) => (entryMatches(e, slot, recipeId)
     ? { recipeId, slot, servings: e.servings, source: 'manual', ...(e.addedBy ? { addedBy: e.addedBy } : {}) }
     : e)) };
+}
+
+/**
+ * M5: cook once, eat twice. A leftover entry is a real planned meal — it shows in the plan and on
+ * the day it's eaten — but it is *not* cooked again, so the shopping list ignores it (see
+ * shared/shopping-list.js) and auto-fill leaves the slot alone because it is already filled.
+ */
+export function addLeftoverEntry(days, day, slot, recipeId, servings, addedBy = null) {
+  const existing = days[day] || [];
+  if (existing.some((e) => entryMatches(e, slot, recipeId))) return days;
+  return { ...days, [day]: [...existing, { recipeId, slot, servings, source: 'manual', leftover: true, ...(addedBy ? { addedBy } : {}) }] };
+}
+
+/** M5: ticking off what actually got cooked, so "planned" and "eaten" stop being the same thing. */
+export function markCooked(days, day, slot, recipeId, cooked) {
+  const existing = days[day] || [];
+  return { ...days, [day]: existing.map((e) => (entryMatches(e, slot, recipeId) ? { ...e, cooked: Boolean(cooked) } : e)) };
 }
 
 export function replaceEntry(days, day, slot, recipeId, replacement) {

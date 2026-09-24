@@ -75,6 +75,9 @@ export function buildShoppingList({ entries = [], recipesById = {}, ingredientRo
   const items = new Map(); // key -> item
 
   for (const entry of entries) {
+    // Leftovers are eaten, not cooked again — buying their ingredients twice is the one thing a
+    // shopping list must never do (M5).
+    if (entry.leftover) continue;
     const recipe = recipesById[entry.recipeId];
     const rows = rowsByRecipe.get(entry.recipeId) || [];
     for (const row of rows) {

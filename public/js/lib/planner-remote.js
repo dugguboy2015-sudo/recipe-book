@@ -1,4 +1,4 @@
-import { defaultStore, defaultPrefs, DEFAULT_AUTO_SLOTS, setWeekDays, addEntry, emptyDays, applyPrefEvent } from './planner-store.js';
+import { defaultStore, defaultPrefs, DEFAULT_AUTO_SLOTS, setWeekDays, addEntry, emptyDays, applyPrefEvent, setFavourite } from './planner-store.js';
 
 // M1e: the household's plan in the database (migration 019), so it follows them between devices and
 // members. Members read and write their own household's rows directly under RLS — see the
@@ -140,6 +140,26 @@ export async function addRemoteEntry(client, { householdId, userId, weekOf, day,
     return false;
   }
   return true;
+}
+
+/** Reads the household's prefs, applies `mutate`, and writes them back. */
+async function updateRemotePrefs(client, { householdId, userId }, mutate) {
+  const { data, error } = await client.from('plan_prefs').select('prefs').eq('household_id', householdId).maybeSingle();
+  if (error) {
+    console.error(error);
+    return false;
+  }
+  const write = await upsertPrefs(client, householdId, userId, mutate(data?.prefs || defaultPrefs()));
+  if (write.error) {
+    console.error(write.error);
+    return false;
+  }
+  return true;
+}
+
+/** M5: starring a recipe, from anywhere in the app. */
+export function setRemoteFavourite(client, { householdId, userId, recipeId, favourite }) {
+  return updateRemotePrefs(client, { householdId, userId }, (prefs) => setFavourite(prefs, recipeId, favourite));
 }
 
 /** The household's prefs with one signal applied (the quick add's "planned manually"). */

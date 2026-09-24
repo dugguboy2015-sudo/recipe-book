@@ -10,14 +10,14 @@ import { nearestWidthClass } from '../shared/nutrition-ri.js';
 import { planWeek, shuffleEntry } from '../shared/planner-engine.js';
 import {
   DAYS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
-  replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
+  replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData, addLeftoverEntry, markCooked,
   parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf, stampAddedBy,
   applyWeekCompletion,
 } from '../lib/planner-store.js';
 import { fetchRemotePlan, uploadPlan, createPlanSync } from '../lib/planner-remote.js';
 import { getReadyAccount } from '../components/account.js';
 import { fetchHouseholdMembers } from '../lib/auth.js';
-import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay } from '../shared/plan-summary.js';
+import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay, countCooked } from '../shared/plan-summary.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
 import { MEAL_TYPES } from '../shared/html.js';
@@ -313,6 +313,8 @@ export async function initPlannerPage() {
     // slot-eligibility settings — are available in every view, contextually scoped.
   }
 
+  const cookedText = document.getElementById('cookedCount');
+
   function renderHeaderStats() {
     const weekOf = selectedWeekOf();
     const days = getWeekDays(state.store, weekOf);
@@ -324,6 +326,14 @@ export async function initPlannerPage() {
       const pct = Math.round(share * 100);
       proteinShareText.textContent = `Protein-smart: ${pct}% of this week's meals`;
       proteinShareBar.className = `progress-bar-fill ${nearestWidthClass(pct)}`;
+    }
+
+    // M5: what actually got cooked, so the week is honest about itself rather than just planned.
+    const cooked = countCooked(days);
+    if (cookedText) {
+      cookedText.textContent = cooked.planned === 0
+        ? ''
+        : `Cooked ${cooked.cooked} of ${cooked.planned} planned${cooked.cooked === cooked.planned ? ' — the whole week' : ''}`;
     }
 
     // Always real tomorrow (not "the day after whatever's selected") — correctly resolves across
@@ -439,6 +449,14 @@ export async function initPlannerPage() {
     }
     // reasons (why planWeek picked this recipe) stay on the entry for scoring/debugging — showing
     // them as chips on every card was more clutter than signal, so they're no longer rendered.
+    const cookedButton = `<button type="button" class="icon-button cooked-button${entry.cooked ? ' is-cooked' : ''}" data-tooltip="${entry.cooked ? 'Not cooked after all' : 'We cooked this'}"
+        aria-pressed="${Boolean(entry.cooked)}" aria-label="${entry.cooked ? 'Unmark' : 'Mark'} ${escapeHtml(recipe.name)} as cooked"
+        data-cooked-day="${day}" data-cooked-slot="${entry.slot}" data-cooked-id="${entry.recipeId}" data-week-of="${weekOf}">${entry.cooked ? '✅' : '☑'}</button>`;
+    // Leftovers are offered only on the meal actually cooked, never on a leftover of a leftover.
+    const leftoverButton = entry.leftover
+      ? ''
+      : `<button type="button" class="icon-button" data-tooltip="Plan leftovers tomorrow" aria-label="Plan leftovers of ${escapeHtml(recipe.name)} for tomorrow"
+        data-leftover-day="${day}" data-leftover-slot="${entry.slot}" data-leftover-id="${entry.recipeId}" data-week-of="${weekOf}">🍱</button>`;
     const autoActions = entry.source === 'auto'
       ? `
         <button type="button" class="icon-button" data-tooltip="Shuffle" aria-label="Shuffle" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}" data-week-of="${weekOf}">🔀</button>
@@ -456,8 +474,11 @@ export async function initPlannerPage() {
           <output>${entry.servings}</output>
           <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="More servings">+</button>
         </div>
+        ${entry.leftover ? '<p class="slot-card-leftover">Leftovers — already bought for</p>' : ''}
         ${addedByLine(entry)}
         <div class="slot-card-actions">
+          ${cookedButton}
+          ${leftoverButton}
           ${autoActions}
           ${removeButton}
         </div>
@@ -665,6 +686,40 @@ export async function initPlannerPage() {
         mutateWeek(weekOf, keepEntry(getWeekDays(state.store, weekOf), day, slot, recipeId));
         renderView();
         showSnackbar('Kept — auto-fill will leave this alone.', 'success');
+      });
+    });
+
+    container.querySelectorAll('[data-cooked-day]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const { cookedDay: day, cookedSlot: slot, weekOf } = button.dataset;
+        const recipeId = Number(button.dataset.cookedId);
+        const days = getWeekDays(state.store, weekOf);
+        const entry = (days[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
+        mutateWeek(weekOf, markCooked(days, day, slot, recipeId, !entry?.cooked));
+        await renderAll();
+      });
+    });
+
+    // Cook once, eat twice: the same meal on the next day, marked so the shopping list doesn't buy
+    // for it again. Tomorrow can be in next week, so the target week is computed, not assumed.
+    container.querySelectorAll('[data-leftover-day]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const { leftoverDay: day, leftoverSlot: slot, weekOf } = button.dataset;
+        const recipeId = Number(button.dataset.leftoverId);
+        const entry = (getWeekDays(state.store, weekOf)[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
+        if (!entry) return;
+        const tomorrowIso = addDaysIso(isoOfDayInWeek(weekOf, day), 1);
+        const targetWeek = mondayOf(parseLocalDate(tomorrowIso));
+        const targetDay = dayNameForIso(tomorrowIso);
+        const before = getWeekDays(state.store, targetWeek);
+        const after = addLeftoverEntry(before, targetDay, slot, recipeId, entry.servings, state.userId);
+        if (after === before) {
+          showSnackbar(`${targetDay}'s ${slot} already has that.`, 'error');
+          return;
+        }
+        mutateWeek(targetWeek, after);
+        await renderAll();
+        showSnackbar(`Leftovers planned for ${targetDay}. You won't buy for it twice.`, 'success');
       });
     });
 

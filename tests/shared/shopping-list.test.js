@@ -113,3 +113,25 @@ describe('shoppingListText', () => {
     expect(text).toContain('- Salt');
   });
 });
+
+describe('leftovers (M5)', () => {
+  it('never buys twice for a meal that is eaten again', () => {
+    const once = buildShoppingList({ entries: [{ recipeId: 1, servings: 4 }], recipesById, ingredientRows });
+    const twice = buildShoppingList({
+      entries: [{ recipeId: 1, servings: 4 }, { recipeId: 1, servings: 4, leftover: true }],
+      recipesById,
+      ingredientRows,
+    });
+    expect(find(twice, 'Toor dal').amount).toBe(find(once, 'Toor dal').amount);
+    expect(twice.totalItems).toBe(once.totalItems);
+  });
+
+  it('still buys for a meal genuinely cooked twice', () => {
+    const list = buildShoppingList({
+      entries: [{ recipeId: 1, servings: 4 }, { recipeId: 1, servings: 4 }],
+      recipesById,
+      ingredientRows,
+    });
+    expect(find(list, 'Toor dal').amount).toBe('2 cups');
+  });
+});

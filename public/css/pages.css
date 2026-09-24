@@ -222,6 +222,22 @@
 .slot-card { border: 1px dashed var(--line); border-radius: var(--radius-control); padding: var(--sp-2); background: var(--surface); display: grid; gap: var(--sp-2); }
 .slot-card-header { display: flex; align-items: center; gap: var(--sp-2); }
 
+/* ---------- Leftovers and cooked history (M5) ---------- */
+.slot-card-leftover { color: var(--ink-muted); font-size: var(--fs-1); margin: 0; }
+.icon-button.cooked-button { border-color: transparent; background: transparent; }
+.icon-button.cooked-button.is-cooked { color: var(--ok); }
+.cooked-count { color: var(--ink-muted); font-size: var(--fs-2); }
+
+/* ---------- Fridge search (M5) ---------- */
+.fridge-search summary { font-family: 'Fraunces', serif; font-size: var(--fs-5); color: var(--brand-ink); cursor: pointer; }
+.fridge-search > *:not(summary) { margin-top: var(--sp-3); }
+.fridge-picker { position: relative; }
+.fridge-suggestions { list-style: none; margin: var(--sp-1) 0 0; padding: 0; position: absolute; z-index: 10; left: 0; right: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-control); box-shadow: var(--shadow-2); }
+.fridge-suggestions button { display: block; width: 100%; text-align: left; padding: var(--sp-2) var(--sp-3); background: transparent; border: 0; color: var(--ink); font: inherit; min-height: 44px; }
+.fridge-suggestions button:hover { background: var(--surface-raised); }
+.fridge-match { color: var(--ink-muted); font-size: var(--fs-1); margin-top: var(--sp-1); }
+.results-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
+
 /* ---------- Shopping list (M2) ---------- */
 .shopping-controls { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
 .shopping-actions { margin: 0; }

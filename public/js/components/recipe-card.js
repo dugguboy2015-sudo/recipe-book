@@ -39,16 +39,19 @@ export function spiceMeter(level) {
 
 /**
  * @param {object} recipe - normalized recipe (see normalizeRecipe)
- * @param {{ actions?: boolean, showTime?: boolean, tagLimit?: number }} [options] - `actions` shows Edit and
+ * @param {{ actions?: boolean, showTime?: boolean, tagLimit?: number, favourite?: boolean }} [options] - `actions` shows Edit and
  *   Delete, so pass whether this viewer may change this recipe (shared/permissions.js), not just `true`.
  */
-export function renderRecipeCard(recipe, { actions = false, showTime = false, tagLimit = 3 } = {}) {
-  const actionButtons = actions
-    ? `<div class="recipe-card-actions">
+export function renderRecipeCard(recipe, { actions = false, showTime = false, tagLimit = 3, favourite = false } = {}) {
+  // M5: the heart is for everyone — a household's favourites, or this browser's when signed out.
+  const favouriteButton = `<button type="button" class="icon-button favourite-button${favourite ? ' is-favourite' : ''}" data-action="favourite" data-id="${recipe.id}"
+      data-tooltip="${favourite ? 'Remove from favourites' : 'Add to favourites'}" aria-pressed="${favourite}" aria-label="${favourite ? 'Remove' : 'Add'} ${escapeHtml(recipe.name)} ${favourite ? 'from' : 'to'} favourites">${favourite ? '♥' : '♡'}</button>`;
+  const actionButtons = `<div class="recipe-card-actions">
+        ${favouriteButton}
+        ${actions ? `
         <button type="button" class="icon-button edit-button" data-action="edit" data-id="${recipe.id}" aria-label="Edit recipe">✎</button>
-        <button type="button" class="icon-button delete-button" data-action="delete" data-id="${recipe.id}" aria-label="Delete recipe">🗑</button>
-      </div>`
-    : '';
+        <button type="button" class="icon-button delete-button" data-action="delete" data-id="${recipe.id}" aria-label="Delete recipe">🗑</button>` : ''}
+      </div>`;
 
   const timeMeta = showTime
     ? `<span>•</span><span>${recipe.totalTime !== '—' ? `${recipe.totalTime} min` : 'Time TBD'}</span>`

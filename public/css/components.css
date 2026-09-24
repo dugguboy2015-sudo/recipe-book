@@ -61,6 +61,8 @@
 
 .icon-button:hover { transform: translateY(-1px); border-color: var(--brand); }
 .icon-button.edit-button:hover { background: var(--protein-bg); }
+.icon-button.favourite-button { border-color: transparent; background: transparent; color: var(--ink-muted); }
+.icon-button.favourite-button.is-favourite { color: var(--spice); }
 .icon-button.delete-button { color: var(--danger); }
 .icon-button.delete-button:hover { background: var(--danger-bg); }
 

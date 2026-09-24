@@ -10,6 +10,19 @@ import { DAYS, PROTEIN_SMART_SLOTS } from './planner-constants.js';
 export { slotsForDay } from './household-settings.js';
 import { getWeekDays, mondayOf } from '../lib/planner-store.js';
 
+/** M5: how much of the week was actually cooked, not just planned. */
+export function countCooked(days) {
+  let planned = 0;
+  let cooked = 0;
+  for (const day of DAYS) {
+    for (const entry of days[day] || []) {
+      planned += 1;
+      if (entry.cooked) cooked += 1;
+    }
+  }
+  return { planned, cooked };
+}
+
 export function parseLocalDate(iso) {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y, m - 1, d);
