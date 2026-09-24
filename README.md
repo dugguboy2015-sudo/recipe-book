@@ -17,8 +17,10 @@ Live at **https://recipe-book-9eo.pages.dev**.
 - **Plan the week**: a browser-only planner that learns from what you keep, remove, and rate.
   "Auto-fill my week" scores the catalogue against your household's preferences (favourite
   cuisines, a 60%-protein-smart target, recency, novelty) and fills empty slots; Shuffle and Keep
-  let you steer it. Everything is saved to `localStorage` — there's no server-side planner state —
-  and Export/Import move a plan between devices.
+  let you steer it. A signed-in household's plan is saved to the database and shared between its
+  members and devices; signed out, it stays in this browser's `localStorage`. Export/Import still
+  move a plan between browsers. Each household also chooses which meals it plans, so a family that
+  never plans breakfast doesn't see it.
 - Recipes scale to any number of servings (ingredients are structured rows with per-recipe
   `serves`, not flat text), and every recipe records who it's safe for via three dietary flags that
   are never defaulted — a missing answer is always treated as "don't know," never "safe."

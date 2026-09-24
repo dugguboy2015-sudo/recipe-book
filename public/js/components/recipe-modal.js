@@ -9,9 +9,13 @@ import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { mountTip } from './tips.js';
 import { percentRI, trafficLightClass, nearestWidthClass } from '../shared/nutrition-ri.js';
 import { getHousehold } from '../lib/household.js';
+import { enabledSlots } from '../shared/household-settings.js';
+import { supabase } from '../lib/supabase-client.js';
+import { getReadyAccount } from './account.js';
+import { addRemoteEntry, applyRemotePrefEvent } from '../lib/planner-remote.js';
 import { openCookMode } from './cook-mode.js';
 import {
-  DAYS, SLOTS, loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf,
+  DAYS, loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf,
 } from '../lib/planner-store.js';
 
 const NUTRITION_ROWS = [
@@ -184,7 +188,8 @@ function renderNotes(recipe) {
 
 function renderPlannerPickers() {
   document.getElementById('modalPlannerDay').innerHTML = DAYS.map((day) => `<option value="${day}">${day}</option>`).join('');
-  document.getElementById('modalPlannerSlot').innerHTML = SLOTS.map((slot) => `<option value="${slot}">${slot}</option>`).join('');
+  // Only the meals this household plans (M1e); re-rendered once the household profile arrives.
+  document.getElementById('modalPlannerSlot').innerHTML = enabledSlots(household).map((slot) => `<option value="${slot}">${slot}</option>`).join('');
 }
 
 export function mountRecipeModal() {
@@ -217,15 +222,26 @@ export function mountRecipeModal() {
     renderServings(current.targetServings);
   });
 
-  document.getElementById('modalAddToPlanner')?.addEventListener('click', () => {
+  document.getElementById('modalAddToPlanner')?.addEventListener('click', async () => {
     if (!current) return;
     const day = document.getElementById('modalPlannerDay').value;
     const slot = document.getElementById('modalPlannerSlot').value;
     const { store, prefs } = loadPlanState();
     const weekOf = mondayOf(); // this quick picker is day-of-week only (no week navigation), so it always targets the current week
-    persistStore(addEntryToWeek(store, weekOf, day, slot, current.recipe.id, current.targetServings, 'manual'));
-    persistPrefs(applyPrefEvent(prefs, current.recipe.id, 'manual', weekOf));
+    const recipeId = current.recipe.id;
+    const servings = current.targetServings;
+    persistStore(addEntryToWeek(store, weekOf, day, slot, recipeId, servings, 'manual'));
+    persistPrefs(applyPrefEvent(prefs, recipeId, 'manual', weekOf));
     showSnackbar(`Added to ${day} ${slot}.`, 'success');
+
+    // M1e: a signed-in member is planning for their household, not just this browser.
+    const account = await getReadyAccount().catch(() => null);
+    if (!account?.household) return;
+    const [remote] = await Promise.all([
+      addRemoteEntry(supabase, { householdId: account.household.id, userId: account.session.user.id, weekOf, day, slot, recipeId, servings }),
+      applyRemotePrefEvent(supabase, { householdId: account.household.id, userId: account.session.user.id, recipeId, event: 'manual', weekOf }),
+    ]);
+    if (!remote) showSnackbar("Couldn't save that to your household's plan. It's still saved in this browser.", 'error');
   });
 
   document.getElementById('modalCookMode')?.addEventListener('click', () => {
@@ -237,7 +253,10 @@ export function mountRecipeModal() {
     });
   });
 
-  getHousehold().then((data) => { household = data; }).catch(() => {});
+  getHousehold().then((data) => {
+    household = data;
+    renderPlannerPickers();
+  }).catch(() => {});
 }
 
 /**

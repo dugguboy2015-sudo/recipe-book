@@ -11,6 +11,8 @@ import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { getHousehold } from '../lib/household.js';
 import { dietRecipeFilter } from '../shared/household-settings.js';
 import { loadPlanState, DAYS, getWeekDays, mondayOf } from '../lib/planner-store.js';
+import { fetchRemotePlan } from '../lib/planner-remote.js';
+import { getReadyAccount } from '../components/account.js';
 import { computeProteinSmartShare, todayIso, addDaysIso, entriesOnDate, dayNameForIso, slotsForDay } from '../shared/plan-summary.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 
@@ -112,6 +114,22 @@ function todaySlotRowHtml(slot, entries, resolvedById) {
   return resolvedEntries.map((entry) => mealRowHtml(slot, entry, resolvedById.get(entry.recipeId))).join('');
 }
 
+// M1e: a signed-in member sees their household's plan here, not just this browser's. Read once per
+// page load — both the tiles and the "This week" card ask for it.
+let planStorePromise = null;
+function loadPlanStore(household) {
+  if (!planStorePromise) {
+    planStorePromise = (async () => {
+      const local = loadPlanState({ defaultServings: household?.default_servings || 4 }).store;
+      const account = await getReadyAccount().catch(() => null);
+      if (!account?.household) return local;
+      const remote = await fetchRemotePlan(supabase, account.household.id);
+      return remote.ok && !remote.isEmpty ? remote.store : local;
+    })();
+  }
+  return planStorePromise;
+}
+
 export async function initDashboardPage() {
   mountRecipeModal();
   const askDialog = mountAskDialog();
@@ -144,7 +162,7 @@ export async function initDashboardPage() {
   async function renderThisWeek() {
     if (!thisWeekBody) return;
     const household = await getHousehold().catch(() => null);
-    const { store } = loadPlanState({ defaultServings: household?.default_servings || 4 });
+    const store = await loadPlanStore(household);
     const thisWeekDays = getWeekDays(store, mondayOf());
     const weekEmpty = isWeekEmpty(thisWeekDays);
 
@@ -167,7 +185,7 @@ export async function initDashboardPage() {
     const todayIsoDate = todayIso();
     const todayName = dayNameForIso(todayIsoDate);
     const todayEntries = entriesOnDate(store, todayIsoDate);
-    const todayHtml = slotsForDay(todayName)
+    const todayHtml = slotsForDay(todayName, household)
       .map((slot) => todaySlotRowHtml(slot, todayEntries.filter((entry) => entry.slot === slot), resolvedById))
       .join('');
     // A whole-week auto-fill shortcut sits alongside the per-slot view below, not instead of it —
@@ -230,7 +248,7 @@ export async function initDashboardPage() {
 
     // Cuisine count is a nice-to-have 4th tile, not core data — don't hard-fail the page for it.
     const cuisineCount = cuisineResult.ok ? cuisineResult.data.filter((row) => row.recipes > 0).length : 0;
-    const { store } = loadPlanState({ defaultServings: household?.default_servings || 4 });
+    const store = await loadPlanStore(household);
     const thisWeekDays = getWeekDays(store, mondayOf());
     const thisWeekPlannedCount = DAYS.reduce((sum, day) => sum + (thisWeekDays[day] || []).length, 0);
 

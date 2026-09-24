@@ -117,15 +117,25 @@ function entryMatches(entry, slot, recipeId) {
 }
 
 /** Adds a manual entry; a no-op if that recipe is already in that day/slot (task 11.3). Operates on one week's `days` map. */
-export function addEntry(days, day, slot, recipeId, servings, source = 'manual') {
+export function addEntry(days, day, slot, recipeId, servings, source = 'manual', addedBy = null) {
   const existing = days[day] || [];
   if (existing.some((e) => entryMatches(e, slot, recipeId))) return days;
-  return { ...days, [day]: [...existing, { recipeId, slot, servings, source }] };
+  return { ...days, [day]: [...existing, { recipeId, slot, servings, source, ...(addedBy ? { addedBy } : {}) }] };
+}
+
+/** Stamps whoever is signed in onto entries that don't name anyone yet (M1e attribution). */
+export function stampAddedBy(days, userId) {
+  if (!userId) return days;
+  const next = {};
+  for (const day of DAYS) {
+    next[day] = (days[day] || []).map((entry) => (entry.addedBy ? entry : { ...entry, addedBy: userId }));
+  }
+  return next;
 }
 
 /** Convenience for the common "add one entry to one week" call site — read, reduce, and re-wrap in one step. */
-export function addEntryToWeek(store, weekOf, day, slot, recipeId, servings, source = 'manual') {
-  return setWeekDays(store, weekOf, addEntry(getWeekDays(store, weekOf), day, slot, recipeId, servings, source));
+export function addEntryToWeek(store, weekOf, day, slot, recipeId, servings, source = 'manual', addedBy = null) {
+  return setWeekDays(store, weekOf, addEntry(getWeekDays(store, weekOf), day, slot, recipeId, servings, source, addedBy));
 }
 
 export function removeEntry(days, day, slot, recipeId) {
@@ -136,7 +146,9 @@ export function removeEntry(days, day, slot, recipeId) {
 /** Pins an auto-filled entry as manual (the Keep button) so auto-fill never touches it again. */
 export function keepEntry(days, day, slot, recipeId) {
   const existing = days[day] || [];
-  return { ...days, [day]: existing.map((e) => (entryMatches(e, slot, recipeId) ? { recipeId, slot, servings: e.servings, source: 'manual' } : e)) };
+  return { ...days, [day]: existing.map((e) => (entryMatches(e, slot, recipeId)
+    ? { recipeId, slot, servings: e.servings, source: 'manual', ...(e.addedBy ? { addedBy: e.addedBy } : {}) }
+    : e)) };
 }
 
 export function replaceEntry(days, day, slot, recipeId, replacement) {
@@ -221,31 +233,44 @@ export function loadPlanState({ defaultServings = 4 } = {}) {
 
     store = pruneOldWeeks(store, today);
 
-    // K.1's week-completion signals fire once, for only the single most-recently-completed week
-    // (not a backlog of every missed week) — older weeks stay fully intact and browsable, they
-    // just don't retroactively re-trigger these one-time signals.
-    const latestCompletedWeekOf = addDaysIso(today, -7);
-    const completedEntries = DAYS.flatMap((day) => (getWeekDays(store, latestCompletedWeekOf)[day] || []).map((e) => ({ ...e, day })));
-
-    let weekReview = null;
-    if (completedEntries.length > 0) {
-      if (prefs.lastKeptCreditedWeekOf !== latestCompletedWeekOf) {
-        for (const entry of completedEntries) {
-          if (entry.source === 'auto') prefs = applyPrefEvent(prefs, entry.recipeId, 'kept', latestCompletedWeekOf);
-        }
-        prefs = { ...prefs, lastKeptCreditedWeekOf: latestCompletedWeekOf };
-        persistPrefs(prefs);
-      }
-      if (prefs.lastReviewedWeekOf !== latestCompletedWeekOf) {
-        weekReview = { weekOf: latestCompletedWeekOf, entries: completedEntries };
-      }
-    }
+    // Fires once, for only the single most-recently-completed week (not a backlog of every missed
+    // week) — older weeks stay fully intact and browsable.
+    const completion = applyWeekCompletion(store, prefs, today);
+    prefs = completion.prefs;
+    const weekReview = completion.weekReview;
+    if (completion.prefsChanged) persistPrefs(prefs);
 
     persistStore(store);
     return { store, prefs, weekReview, storageAvailable };
   } catch {
     return { store: defaultStore(), prefs, weekReview: null, storageAvailable: false };
   }
+}
+
+/**
+ * K.1's week-completion signals for the single most-recently-completed week: the "kept" credit for
+ * auto-filled entries that survived it, and the one-time "How was last week?" review card. Pure, so
+ * it runs the same way over a plan loaded from localStorage or from the database (M1e).
+ * @returns {{ prefs: object, weekReview: {weekOf: string, entries: Array}|null, prefsChanged: boolean }}
+ */
+export function applyWeekCompletion(store, prefs, today = mondayOf()) {
+  const latestCompletedWeekOf = addDaysIso(today, -7);
+  const completedEntries = DAYS.flatMap((day) => (getWeekDays(store, latestCompletedWeekOf)[day] || []).map((e) => ({ ...e, day })));
+  if (completedEntries.length === 0) return { prefs, weekReview: null, prefsChanged: false };
+
+  let nextPrefs = prefs;
+  let prefsChanged = false;
+  if (prefs.lastKeptCreditedWeekOf !== latestCompletedWeekOf) {
+    for (const entry of completedEntries) {
+      if (entry.source === 'auto') nextPrefs = applyPrefEvent(nextPrefs, entry.recipeId, 'kept', latestCompletedWeekOf);
+    }
+    nextPrefs = { ...nextPrefs, lastKeptCreditedWeekOf: latestCompletedWeekOf };
+    prefsChanged = true;
+  }
+  const weekReview = nextPrefs.lastReviewedWeekOf === latestCompletedWeekOf
+    ? null
+    : { weekOf: latestCompletedWeekOf, entries: completedEntries };
+  return { prefs: nextPrefs, weekReview, prefsChanged };
 }
 
 export function exportPlanData(store, prefs) {

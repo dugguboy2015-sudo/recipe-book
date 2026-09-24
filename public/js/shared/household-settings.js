@@ -2,6 +2,8 @@
 // household; M1d moves every consumer onto them. Shared by the Functions and the browser, the same
 // way recipe-rules.js is, so both sides agree on what a valid household looks like.
 
+import { SLOTS, WEEKDAYS as SCHOOL_WEEKDAYS } from './planner-constants.js';
+
 const NON_VEGETARIAN = ['meat', 'poultry', 'fish', 'seafood', 'gelatine', 'fish sauce', 'oyster sauce', 'animal rennet'];
 
 /** The starting diets offered when a household is created. M1d's settings editor refines these. */
@@ -34,12 +36,41 @@ export function buildNewHouseholdSettings(template, dietKey) {
   return {
     ...base,
     diet: structuredClone(preset.diet),
+    meal_slots: [...SLOTS],
     default_servings: 4,
     favourite_cuisines: [],
     exploring_cuisines: [],
     spice: { ...base.spice, preference: 'medium', default_level: 3 },
     packed_lunch: { for: null, days: [], requirements: [] },
   };
+}
+
+export const ALL_SLOTS = SLOTS;
+
+/**
+ * The meals this household plans (M1e). A household that never plans breakfast shouldn't have to
+ * look at an empty Breakfast row all week. Settings written before this existed mean "all of them".
+ */
+export function enabledSlots(settings) {
+  const chosen = settings?.meal_slots;
+  if (!Array.isArray(chosen)) return SLOTS;
+  const kept = SLOTS.filter((slot) => chosen.includes(slot));
+  return kept.length ? kept : SLOTS; // never leave a household with no planner at all
+}
+
+/** The days a packed lunch is needed: the household's own days, falling back to weekdays. */
+export function packedLunchDays(settings) {
+  const days = settings?.packed_lunch?.days;
+  return Array.isArray(days) && days.length ? days : SCHOOL_WEEKDAYS;
+}
+
+/**
+ * The slots to show for one day: the meals this household plans, with Packed Lunch only on the
+ * days it actually needs one (its own days since M1d, weekdays by default).
+ */
+export function slotsForDay(day, settings) {
+  const days = packedLunchDays(settings);
+  return enabledSlots(settings).filter((slot) => slot !== 'Packed Lunch' || days.includes(day));
 }
 
 export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -126,6 +157,11 @@ export function applySettingsUpdate(current, body, { cuisines = [] } = {}) {
     const list = cleanList(body[field], { max: 12, maxLength: 40, allowed: cuisines.length ? cuisines : undefined });
     if (!list) errors[field] = 'Pick from the listed cuisines (up to 12).';
     else next[key] = list;
+  }
+  if (body?.mealSlots !== undefined) {
+    const chosen = cleanList(body.mealSlots, { max: SLOTS.length, maxLength: 20, allowed: SLOTS });
+    if (!chosen || chosen.length === 0) errors.mealSlots = 'Choose at least one meal to plan.';
+    else next.meal_slots = SLOTS.filter((slot) => chosen.includes(slot));
   }
   if (body?.packedLunch !== undefined) {
     const lunch = body.packedLunch || {};

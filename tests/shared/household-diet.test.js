@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import template from '../../config/household.json';
 import {
-  applySettingsUpdate, buildNewHouseholdSettings, dietAdjective, dietPhrase, dietPresetKey, dietRecipeFilter, recipeFitsDiet,
+  ALL_SLOTS, applySettingsUpdate, buildNewHouseholdSettings, dietAdjective, dietPhrase, dietPresetKey, dietRecipeFilter,
+  enabledSlots, recipeFitsDiet, slotsForDay,
 } from '../../public/js/shared/household-settings.js';
 
 const omnivore = buildNewHouseholdSettings(template, 'omnivore');
@@ -69,5 +70,35 @@ describe('applySettingsUpdate', () => {
     expect(ok).toBe(false);
     expect(Object.keys(errors).sort()).toEqual(['defaultServings', 'diet', 'favouriteCuisines', 'packedLunch', 'spiceLevel']);
     expect(JSON.stringify(template)).toBe(before);
+  });
+});
+
+describe('meal slots a household plans (M1e)', () => {
+  it('defaults to every meal, including for settings written before the option existed', () => {
+    expect(enabledSlots(template)).toEqual(ALL_SLOTS);
+    expect(enabledSlots({})).toEqual(ALL_SLOTS);
+    expect(enabledSlots(null)).toEqual(ALL_SLOTS);
+  });
+
+  it('keeps the chosen meals in the canonical order and ignores anything unknown', () => {
+    expect(enabledSlots({ meal_slots: ['Dinner', 'Breakfast', 'Elevenses'] })).toEqual(['Breakfast', 'Dinner']);
+  });
+
+  it('never leaves a household with no planner at all', () => {
+    expect(enabledSlots({ meal_slots: [] })).toEqual(ALL_SLOTS);
+  });
+
+  it('shows only the chosen meals for a day, with packed lunch on that household\'s days', () => {
+    const settings = { meal_slots: ['Packed Lunch', 'Dinner'], packed_lunch: { days: ['Monday'] } };
+    expect(slotsForDay('Monday', settings)).toEqual(['Packed Lunch', 'Dinner']);
+    expect(slotsForDay('Tuesday', settings)).toEqual(['Dinner']);
+    expect(slotsForDay('Sunday', template)).toEqual(['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Dessert']);
+  });
+
+  it('validates the meals chosen in the settings editor', () => {
+    const { value } = applySettingsUpdate(template, { mealSlots: ['Dinner', 'Breakfast'] });
+    expect(value.meal_slots).toEqual(['Breakfast', 'Dinner']);
+    expect(applySettingsUpdate(template, { mealSlots: [] }).errors.mealSlots).toBeTruthy();
+    expect(applySettingsUpdate(template, { mealSlots: ['Brunch'] }).errors.mealSlots).toBeTruthy();
   });
 });

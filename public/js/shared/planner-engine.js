@@ -10,6 +10,7 @@ export {
 import {
   DAYS, WEEKDAYS, WEEKEND_DAYS, PROTEIN_SMART_SLOTS, NOT_AGAIN_EXCLUSION_WEEKS,
 } from './planner-constants.js';
+import { slotsForDay } from './household-settings.js';
 
 const REASON_TEXT = {
   highProtein: 'High protein',
@@ -191,6 +192,7 @@ export function planWeek({ recipes, plan, prefs, household, weekOf }) {
   const shortfallCounts = {};
 
   for (const { day, slot } of buildFillOrder()) {
+    if (!slotsForDay(day, household).includes(slot)) continue; // a meal this household doesn't plan
     if (!isSlotEnabled(prefs?.settings?.autoSlots, slot, day)) continue;
     if ((workingPlan[day] || []).some((e) => e.slot === slot)) continue; // not empty — never touch
 
