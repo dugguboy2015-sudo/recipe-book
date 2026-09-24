@@ -507,7 +507,7 @@
 
 ## M3 — Visual and shareable — DONE (photos still deferred)
 - Date: 2026-09-24
-- Branch / PR: m3-visual-shareable / (this PR)
+- Branch / PR: m3-visual-shareable / [#46](https://github.com/dugguboy2015-sudo/recipe-book/pull/46)
 - Migrations applied: none
 - Backup: not needed (no schema or data change)
 - Acceptance:
