@@ -142,19 +142,29 @@ export async function addRemoteEntry(client, { householdId, userId, weekOf, day,
   return true;
 }
 
-/** Reads the household's prefs, applies `mutate`, and writes them back. */
-async function updateRemotePrefs(client, { householdId, userId }, mutate) {
-  const { data, error } = await client.from('plan_prefs').select('prefs').eq('household_id', householdId).maybeSingle();
-  if (error) {
-    console.error(error);
-    return false;
-  }
-  const write = await upsertPrefs(client, householdId, userId, mutate(data?.prefs || defaultPrefs()));
-  if (write.error) {
-    console.error(write.error);
-    return false;
-  }
-  return true;
+// Prefs updates are read-modify-write, so two of them must never overlap: starring two recipes
+// quickly used to lose one, because the second read happened before the first write landed. They
+// are queued here instead. (Two members editing at the same instant is still last-write-wins,
+// which is fine for preferences.)
+let prefsQueue = Promise.resolve();
+
+/** Reads the household's prefs, applies `mutate`, and writes them back — one at a time. */
+function updateRemotePrefs(client, { householdId, userId }, mutate) {
+  const result = prefsQueue.then(async () => {
+    const { data, error } = await client.from('plan_prefs').select('prefs').eq('household_id', householdId).maybeSingle();
+    if (error) {
+      console.error(error);
+      return false;
+    }
+    const write = await upsertPrefs(client, householdId, userId, mutate(data?.prefs || defaultPrefs()));
+    if (write.error) {
+      console.error(write.error);
+      return false;
+    }
+    return true;
+  });
+  prefsQueue = result.catch(() => {}); // a failure must not block later writes
+  return result;
 }
 
 /** M5: starring a recipe, from anywhere in the app. */
