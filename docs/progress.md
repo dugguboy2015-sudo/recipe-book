@@ -504,3 +504,21 @@
   3. **Copy could not be verified in the automated browser** — clipboard writes need a real user gesture there. The code path is the standard `navigator.clipboard.writeText` with a snackbar on failure, and Share is correctly hidden where `navigator.share` is missing. Worth one check on a phone.
   4. **`ENABLE_SHOPPING_LIST` is retired**: it was a build-time switch for the original agent run, and the feature now exists. Noted in `.env.local.example` and `CLAUDE.md`.
 - Notes for next slice: M3 (illustrations, print, share) keeps the print stylesheet this added; the recipe-level print view is the part still missing.
+
+## M3 — Visual and shareable — DONE (photos still deferred)
+- Date: 2026-09-24
+- Branch / PR: m3-visual-shareable / (this PR)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance:
+  - [x] 12 dish types matched from the recipe's own name (`shared/dish-type.js`), taking the main dish rather than the side it's served with ("Dal Fry with Jeera Rice" → curry, not rice), falling back to the meal type for puddings and to null — hence the monogram — for anything unrecognised. 9 unit tests, including every name in the live collection
+  - [x] `components/dish-art.js` draws each type as flat line art on the recipe's cuisine tint. No image files, no upload flow, no storage cost; every colour is a token, so both themes and all 9 cuisine tints stay correct. Asserted in tests: no colour literals anywhere in the output
+  - [x] Browser, preview: the styleguide renders all 12 plus the monogram; the recipes list showed 6 different types across 12 cards; the recipe detail shows its type and both new buttons
+  - [x] Share on a recipe uses `navigator.share` where available and copies the deep link (`?recipe=<slug>&serves=<n>`) otherwise; the shopping list already had the same pair from M2
+  - [x] `npm run check` green (401 tests)
+- Deviations from spec / findings while building this:
+  1. **The first print stylesheet matched nothing.** It was written against guessed class names (`.servings-control`, `.modal-art`, `.ingredient-list`); the modal actually uses `.servings-stepper`, `.recipe-hero-art` and `#modalIngredients`/`#modalSteps`. Caught by reading the modal's markup rather than trusting the CSS — worth remembering that CSS fails silently.
+  2. **Printing relies on the top layer.** A recipe lives in a `<dialog>`, which the browser paints in the top layer, so an open recipe is all that prints and the page behind it doesn't need hiding rule by rule. The rules that remain strip the actions, the servings stepper and the icon buttons, lay the detail grid out in one column and keep panels off page breaks.
+  3. **Not verified in a real print preview.** The rules are loaded and their selectors match the live DOM (checked in the browser), but this environment can't emulate print media. Worth one Ctrl+P on a recipe and on the shopping list.
+  4. **3.2 (photo upload) stays deferred** by decision 3. M1's household scoping is now in place for whenever it's wanted.
+- Notes for next slice: M4 (mobile and the kitchen) — a PWA/offline shell, mobile IA, and the header-actions polish; the print and share work here is done.
