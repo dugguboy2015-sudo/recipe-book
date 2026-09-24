@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Book | Shopping List</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <script src="js/theme.js"></script>
+</head>
+<body data-page="shopping">
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <aside class="sidebar-nav" aria-label="Main navigation">
+    <span class="sidebar-wordmark">Recipe Book</span>
+    <nav class="sidebar-nav-links">
+      <a href="index.html"><span class="icon" aria-hidden="true">🏠</span> Dashboard</a>
+      <a href="recipes.html"><span class="icon" aria-hidden="true">🍲</span> Recipes</a>
+      <a href="planner.html"><span class="icon" aria-hidden="true">🗓️</span> Weekly Planner</a>
+      <a href="shopping.html" aria-current="page"><span class="icon" aria-hidden="true">🛒</span> Shopping List</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="recipes.html?add=1" class="primary-button sidebar-add-recipe">Add a recipe</a>
+    </div>
+  </aside>
+
+  <div class="wrap">
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Dashboard</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="planner.html">Weekly Planner</a>
+        <a href="shopping.html" aria-current="page">Shopping List</a>
+        <button type="button" data-open-ask-dialog>Ask for a recipe</button>
+      </nav>
+      <div class="header-actions">
+        <div class="account-slot" id="accountSlot"></div>
+        <button type="button" class="icon-button theme-toggle-button" id="themeToggleButton"></button>
+      </div>
+    </header>
+
+    <main id="content">
+      <header class="page-header">
+        <span class="eyebrow">What to buy</span>
+        <h1>Your shopping list,<br><em>straight from the plan</em></h1>
+      </header>
+
+      <section class="panel shopping-controls">
+        <div class="week-nav">
+          <button type="button" class="icon-button" id="prevWeek" aria-label="Previous week">‹</button>
+          <span id="weekLabel" class="week-label">This week</span>
+          <button type="button" class="icon-button" id="nextWeek" aria-label="Next week">›</button>
+          <button type="button" class="ghost-button" id="thisWeek">This week</button>
+        </div>
+        <div class="actions-row shopping-actions">
+          <button type="button" class="ghost-button" id="copyList">Copy</button>
+          <button type="button" class="ghost-button" id="shareList" hidden>Share</button>
+          <button type="button" class="ghost-button" id="printList">Print</button>
+          <button type="button" class="ghost-button" id="clearTicks">Clear ticks</button>
+        </div>
+      </section>
+
+      <div class="status-region" id="shoppingStatus" aria-live="polite"></div>
+      <p class="notice" id="shoppingSummary"></p>
+
+      <form class="panel add-item-form" id="addItemForm">
+        <label class="sr-only" for="addItemInput">Add an item</label>
+        <input type="text" id="addItemInput" class="search-box" maxlength="80" placeholder="Add something else — kitchen roll, bin bags…" autocomplete="off" />
+        <button type="submit" class="primary-button">Add</button>
+      </form>
+
+      <div id="shoppingList"></div>
+    </main>
+
+    <footer class="site-footer">
+      <p>Made with love, for one family's kitchen.</p>
+    </footer>
+  </div>
+
+  <nav class="bottom-tab-bar" aria-label="Main navigation">
+    <a href="index.html">Dashboard</a>
+    <a href="recipes.html">Recipes</a>
+    <a href="planner.html">Planner</a>
+    <a href="shopping.html" aria-current="page">Shopping</a>
+  </nav>
+
+  <div id="snackbar" class="snackbar" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js" integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP" crossorigin="anonymous"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

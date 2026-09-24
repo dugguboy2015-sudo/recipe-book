@@ -486,3 +486,21 @@
   4. **Owner request during this slice: a household chooses which meals it plans** (`meal_slots`). `slotsForDay(day, settings)` in `shared/household-settings.js` became the single rule, and Packed Lunch now follows the household's own packed-lunch days instead of hard-coded weekdays.
   5. **The founding household exists in production**: the owner signed in on 2026-09-18 and "The Babre's" claimed all 34 recipes as curator — the M1b bootstrap working for real.
 - Notes for next slice: M2 (shopping list) can now build on a household plan that every member shares — `plan_weeks` plus `recipe_ingredients`, with ticks shared across the household.
+
+## M2 — The shopping list — DONE
+- Date: 2026-09-24
+- Branch / PR: m2-shopping-list / [#45](https://github.com/dugguboy2015-sudo/recipe-book/pull/45)
+- Migrations applied: `020_shopping_lists.sql` — one row per household per week holding only the ticks and hand-added items, RLS-scoped to `current_household_id()` like `plan_weeks`
+- Backup: `backups/2026-09-24T06-17-36-953Z` (34 rows, count verified)
+- Acceptance:
+  - [x] Migration trial-run in a rolled-back transaction: a member writes and reads their own household's row, another household sees nothing and is blocked from writing into it (42501), `anon` is blocked entirely
+  - [x] 11 unit tests for the maths: one ingredient summed across two meals, each meal scaled by its own servings, `scales: false` rows left alone, "to taste" given no number, pantry staples separated, volumes summed and shown in cups and spoons, two unit kinds for one ingredient kept on separate lines, aisles in shop order, empty week, and a planned recipe whose ingredients are missing
+  - [x] Browser, preview, real data: a week with three planned recipes produced 19 items across 5 aisles and 14 pantry items; Dal Fry planned for 8 (serves 4) doubled its garlic 2 → 4 cloves and its toor dal 0.5 → 1 cup; coriander from two recipes combined into 6 tbsp
+  - [x] Ticks and a hand-added item persisted, and **came back after clearing `localStorage`** — they were read from the household's row
+  - [x] `npm run check` green (392 tests); the smoke script now also checks `/shopping.html`
+- Deviations from spec / findings while building this:
+  1. **The list itself is not stored.** Phase 14 planned "tick-off state in localStorage per week"; since M1e the plan is a household's, so the ticks are too — but only the ticks and manual items. The list is derived on every load, so it can never drift from the plan.
+  2. **Two bugs found by testing in the browser, not by the unit tests**: every tick re-rendered the whole list (which would lose your place mid-shop — now only the tapped row updates), and the checkbox sat inside its own `<label>`, which can toggle twice from one tap (the input now sits beside its label).
+  3. **Copy could not be verified in the automated browser** — clipboard writes need a real user gesture there. The code path is the standard `navigator.clipboard.writeText` with a snackbar on failure, and Share is correctly hidden where `navigator.share` is missing. Worth one check on a phone.
+  4. **`ENABLE_SHOPPING_LIST` is retired**: it was a build-time switch for the original agent run, and the feature now exists. Noted in `.env.local.example` and `CLAUDE.md`.
+- Notes for next slice: M3 (illustrations, print, share) keeps the print stylesheet this added; the recipe-level print view is the part still missing.

@@ -292,3 +292,30 @@ export async function fetchRecipeIngredients(client, recipeId) {
   }
   return groups;
 }
+
+/** Name and serves for every recipe planned in a week — the scaling base for the shopping list (M2). */
+export async function fetchRecipesForShopping(client, ids) {
+  const unique = [...new Set(ids)].filter((id) => id != null);
+  if (unique.length === 0) return { ok: true, data: [], error: null };
+  const { data, error } = await client.from('recipes').select('id,name,serves').in('id', unique);
+  if (error) {
+    console.error(error);
+    return { ok: false, data: [], error };
+  }
+  return { ok: true, data: data || [], error: null };
+}
+
+/** Every ingredient line for a set of recipes in one query (Phase 14's `in.(…)`, M2's aggregation input). */
+export async function fetchIngredientsForRecipes(client, ids) {
+  const unique = [...new Set(ids)].filter((id) => id != null);
+  if (unique.length === 0) return { ok: true, data: [], error: null };
+  const { data, error } = await client
+    .from('recipe_ingredients')
+    .select('recipe_id,quantity,unit,scales,ingredient:ingredients(id,display_name,category)')
+    .in('recipe_id', unique);
+  if (error) {
+    console.error(error);
+    return { ok: false, data: [], error };
+  }
+  return { ok: true, data: data || [], error: null };
+}

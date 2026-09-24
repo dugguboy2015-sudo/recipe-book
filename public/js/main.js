@@ -6,6 +6,7 @@ const pageModules = {
   dashboard: () => import('./pages/dashboard.js').then((m) => m.initDashboardPage()),
   recipes: () => import('./pages/recipes.js').then((m) => m.initRecipesPage()),
   planner: () => import('./pages/planner.js').then((m) => m.initPlannerPage()),
+  shopping: () => import('./pages/shopping.js').then((m) => m.initShoppingPage()),
 };
 
 async function initApp() {

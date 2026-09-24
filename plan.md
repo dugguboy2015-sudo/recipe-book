@@ -181,14 +181,17 @@ nullable `recipes.created_by_household` (edit rights only), not a join table or 
 
 ---
 
-## M2 — The shopping list
-**The planner's missing payoff.** Deferred since Phase 14 (`ENABLE_SHOPPING_LIST=false`) — but the
-data model was already built in Phase 3.
+## M2 — The shopping list ✅ shipped
+**The planner's missing payoff.** Deferred since Phase 14 (`ENABLE_SHOPPING_LIST=false`) — the data
+model was already built in Phase 3, and M1e's household plan made it worth building once.
 
-- Generate from any planned range, aggregating duplicate ingredients across meals
-- Group by aisle; scale quantities to planned servings
-- Tickable, persistent, and **attributed per member** (decision 1) — "who added this"
-- Printable and shareable (overlaps M3)
+- ✅ Built from the week's plan, adding one ingredient up across meals and scaling each meal by its
+  own planned servings
+- ✅ Grouped into aisles; volumes shown in cups and spoons, counts per unit, weights in g/kg
+- ✅ "To taste" never gets a number; pantry staples sit in "Check you have these" (owner decisions)
+- ✅ Tickable and shared across the household, so one person can shop while another watches it
+  shrink; hand-added items too
+- ✅ Copy, Share and Print (the print stylesheet that M3 would otherwise have needed)
 
 ---
 

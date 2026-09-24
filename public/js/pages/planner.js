@@ -820,6 +820,13 @@ export async function initPlannerPage() {
     );
   }
 
+  // The shopping list is always for the week being looked at.
+  const shoppingListLink = document.getElementById('shoppingListLink');
+  function syncShoppingLink() {
+    if (shoppingListLink) shoppingListLink.href = `shopping.html?week=${selectedWeekOf()}`;
+  }
+  syncShoppingLink();
+
   autoFillWeek.addEventListener('click', () => {
     if (state.viewMode === 'day') return runDayAutoFill();
     if (state.viewMode === 'month') return runMonthAutoFill();

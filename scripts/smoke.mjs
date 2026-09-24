@@ -18,7 +18,7 @@ async function check(name, fn) {
   }
 }
 
-for (const path of ['/', '/recipes.html', '/planner.html']) {
+for (const path of ['/', '/recipes.html', '/planner.html', '/shopping.html']) {
   await check(`GET ${path} -> 200 text/html`, async () => {
     const res = await fetch(`${base}${path}`);
     if (res.status !== 200) throw new Error(`status ${res.status}`);
