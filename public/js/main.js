@@ -25,6 +25,17 @@ async function initApp() {
   await init();
 }
 
+// M4: the service worker makes the app open on patchy kitchen wifi and lets it live on a home
+// screen. Registered after load so it never competes with the first render, and only where the
+// page is served over https (it is a no-op on file:// and unsupported browsers).
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator) || window.location.protocol !== 'https:') return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((error) => console.warn('Offline support unavailable:', error));
+  });
+}
+registerServiceWorker();
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => initApp());
 } else {

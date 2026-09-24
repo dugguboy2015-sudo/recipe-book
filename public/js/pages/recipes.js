@@ -10,7 +10,7 @@ import { canEditRecipe, canApproveRecipe } from '../shared/permissions.js';
 import { MEAL_TYPES } from '../shared/html.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
-import { takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
+import { mountAskDialog, takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
 import { loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf } from '../lib/planner-store.js';
 import { addRemoteEntry, applyRemotePrefEvent } from '../lib/planner-remote.js';
 import { getHousehold } from '../lib/household.js';
@@ -77,6 +77,9 @@ export async function initRecipesPage() {
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
   mountRecipeModal();
+  // Wires every [data-open-ask-dialog] — the bottom bar's Ask, and the mobile-only button that
+  // replaces the inline panel.
+  mountAskDialog();
 
   // recipes.html already has the inline "Describe a recipe" panel (10.1) — its header button
   // scrolls to and focuses that instead of opening a second, redundant dialog for the same flow.
