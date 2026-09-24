@@ -3,9 +3,11 @@
 All 13 phases of `improvement_plan.md` (v2.0) are complete — see `docs/progress.md` for the full
 build log (one entry per phase, acceptance results, and every deviation from the original spec)
 and its final report for the Appendix H findings traceability. Work since then follows `plan.md`
-(approved 2026-09-18): M0 (data integrity) and M1a–M1e (accounts, households, member-only writes,
-per-household settings, the planner in the database) are shipped, and the shopping list — Phase
-14's `ENABLE_SHOPPING_LIST` deferral — is now built as M2. Read `docs/progress.md` before making
+(approved 2026-09-18), and **every milestone in it is shipped**: M0 (data integrity), M1a–M1e
+(accounts, households, member-only writes, per-household settings, the planner in the database),
+M2 (the shopping list — Phase 14's `ENABLE_SHOPPING_LIST` deferral), M3 (dish illustrations, print,
+share), M4 (PWA/offline and mobile IA) and M5 (favourites, fridge search, leftovers, cooked
+history). What remains is `plan.md`'s polish backlog. Read `docs/progress.md` before making
 further changes — it's the actual history of what this codebase is and why, in more detail than fits here.
 The full spec is still `improvement_plan.md` if you need the original reasoning behind a
 constraint; `README.md`, `docs/architecture.md`, and `docs/operations.md` are the maintained,

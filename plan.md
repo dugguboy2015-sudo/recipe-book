@@ -12,10 +12,10 @@ Companion docs: `docs/ux-uplift-plan.md` (completed A–D uplift), `docs/progres
 
 | | |
 |---|---|
-| **Live** | Phases A, B, C and D — all deployed and verified on production |
-| **Merged** | #37 (synced B/C/D to `main`), #38 (dead CSS removed) |
-| **Repo** | Clean. One branch (`main`), no stray files. Every PR now cuts from and targets `main` — no stacking |
-| **Blocker** | ✅ Resolved 2026-09-18 — the Supabase management PAT was rotated; `npm run preflight` is fully green |
+| **Live** | Everything in this plan: M0, M1a–M1e, M2, M3, M4 and M5, all deployed and verified on production |
+| **Merged** | #39–#48, one PR per slice, each from and to `main` |
+| **Repo** | Clean. Every PR cuts from and targets `main` — no stacking |
+| **What's left** | The polish backlog below, and the two things only the owner can do: a custom SMTP sender (Supabase's built-in one allows 2 sign-in emails an hour) and switching on the sign-in captcha |
 
 ---
 
