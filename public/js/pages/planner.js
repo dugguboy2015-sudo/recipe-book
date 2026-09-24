@@ -5,11 +5,11 @@ import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js
 import { monogramSvg } from '../components/monogram.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
-import { dietAdjective, dietRecipeFilter } from '../shared/household-settings.js';
+import { dietAdjective, dietRecipeFilter, enabledSlots } from '../shared/household-settings.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 import { planWeek, shuffleEntry } from '../shared/planner-engine.js';
 import {
-  DAYS, SLOTS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
+  DAYS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
   replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
   parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf, stampAddedBy,
   applyWeekCompletion,
@@ -350,7 +350,8 @@ export async function initPlannerPage() {
   }
 
   function renderAutoFillSettings() {
-    autoFillSettingsGrid.innerHTML = SLOTS.map((slot) => {
+    // Only the meals this household plans — the rest aren't shown anywhere in the planner.
+    autoFillSettingsGrid.innerHTML = enabledSlots(state.household).map((slot) => {
       if (slot === 'Lunch') {
         const value = state.prefs.settings.autoSlots.Lunch;
         return `
@@ -490,7 +491,7 @@ export async function initPlannerPage() {
     const weekOf = selectedWeekOf();
     const days = getWeekDays(state.store, weekOf);
     plannerGrid.innerHTML = DAYS.map((day) => {
-      const slotsMarkup = slotsForDay(day).map((slot) => renderMealSlot(weekOf, day, slot, days)).join('');
+      const slotsMarkup = slotsForDay(day, state.household).map((slot) => renderMealSlot(weekOf, day, slot, days)).join('');
       const isToday = isoOfDayInWeek(weekOf, day) === todayIso();
       return `
         <div class="planner-day" data-day="${day}">
@@ -507,7 +508,7 @@ export async function initPlannerPage() {
     const weekOf = mondayOf(parseLocalDate(iso));
     const dayName = dayNameForIso(iso);
     const days = getWeekDays(state.store, weekOf);
-    dayViewSlots.innerHTML = slotsForDay(dayName).map((slot) => renderMealSlot(weekOf, dayName, slot, days)).join('');
+    dayViewSlots.innerHTML = slotsForDay(dayName, state.household).map((slot) => renderMealSlot(weekOf, dayName, slot, days)).join('');
     wirePlannerBoardEvents(dayViewSlots);
   }
 

@@ -1,4 +1,4 @@
-import { defaultStore, defaultPrefs, DEFAULT_AUTO_SLOTS, setWeekDays } from './planner-store.js';
+import { defaultStore, defaultPrefs, DEFAULT_AUTO_SLOTS, setWeekDays, addEntry, emptyDays, applyPrefEvent } from './planner-store.js';
 
 // M1e: the household's plan in the database (migration 019), so it follows them between devices and
 // members. Members read and write their own household's rows directly under RLS — see the
@@ -119,4 +119,41 @@ export function createPlanSync({ client, householdId, userId, onError }) {
     },
     flush,
   };
+}
+
+/**
+ * Adds one entry to a household's stored week — the recipe detail's quick "Add to planner", which
+ * has no planner state of its own. Reads that week's row, applies the same reducer the planner
+ * uses, and writes it back.
+ */
+export async function addRemoteEntry(client, { householdId, userId, weekOf, day, slot, recipeId, servings }) {
+  const { data, error } = await client.from('plan_weeks').select('days').eq('household_id', householdId).eq('week_of', weekOf).maybeSingle();
+  if (error) {
+    console.error(error);
+    return false;
+  }
+  const days = addEntry(data?.days || emptyDays(), day, slot, recipeId, servings, 'manual', userId);
+  const write = await client.from('plan_weeks')
+    .upsert({ household_id: householdId, week_of: weekOf, days, updated_by: userId, updated_at: new Date().toISOString() }, { onConflict: 'household_id,week_of' });
+  if (write.error) {
+    console.error(write.error);
+    return false;
+  }
+  return true;
+}
+
+/** The household's prefs with one signal applied (the quick add's "planned manually"). */
+export async function applyRemotePrefEvent(client, { householdId, userId, recipeId, event, weekOf }) {
+  const { data, error } = await client.from('plan_prefs').select('prefs').eq('household_id', householdId).maybeSingle();
+  if (error) {
+    console.error(error);
+    return false;
+  }
+  const prefs = applyPrefEvent(data?.prefs || defaultPrefs(), recipeId, event, weekOf);
+  const write = await upsertPrefs(client, householdId, userId, prefs);
+  if (write.error) {
+    console.error(write.error);
+    return false;
+  }
+  return true;
 }

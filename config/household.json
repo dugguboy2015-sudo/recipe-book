@@ -7,6 +7,7 @@
     "dairy_ok": true,
     "never": ["meat", "poultry", "fish", "seafood", "egg", "gelatine", "fish sauce", "oyster sauce", "animal rennet"]
   },
+  "meal_slots": ["Breakfast", "Packed Lunch", "Lunch", "Dinner", "Snacks", "Dessert"],
   "default_servings": 4,
   "favourite_cuisines": ["South Indian", "North Indian", "Maharashtrian", "Rajasthani", "Chaat", "Indo-Chinese"],
   "exploring_cuisines": ["British", "Continental", "Fusion"],

@@ -167,7 +167,7 @@ export async function initDashboardPage() {
     const todayIsoDate = todayIso();
     const todayName = dayNameForIso(todayIsoDate);
     const todayEntries = entriesOnDate(store, todayIsoDate);
-    const todayHtml = slotsForDay(todayName)
+    const todayHtml = slotsForDay(todayName, household)
       .map((slot) => todaySlotRowHtml(slot, todayEntries.filter((entry) => entry.slot === slot), resolvedById))
       .join('');
     // A whole-week auto-fill shortcut sits alongside the per-slot view below, not instead of it —

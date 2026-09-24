@@ -2,7 +2,7 @@ import { escapeHtml } from '../shared/html.js';
 import { showSnackbar } from '../lib/dom.js';
 import { wireDialog } from './dialog.js';
 import { sendSignInEmail, signOut, postAsUser, patchAsUser, fetchHouseholdMembers, fetchHouseholdSettings, fetchCuisineNames } from '../lib/auth.js';
-import { DIET_PRESETS, WEEKDAYS, dietPresetKey } from '../shared/household-settings.js';
+import { DIET_PRESETS, WEEKDAYS, ALL_SLOTS, dietPresetKey, enabledSlots } from '../shared/household-settings.js';
 import { setFlash } from './account.js';
 import { getPendingInvite, setPendingInvite, clearPendingInvite, inviteCodeFrom, isInviteCode } from '../lib/pending-invite.js';
 
@@ -420,7 +420,9 @@ async function renderAccount() {
 function settingsSummary(settings) {
   if (!settings) return 'Settings unavailable right now.';
   const diet = DIET_PRESETS[dietPresetKey(settings)]?.label || 'Custom diet';
+  const slots = enabledSlots(settings);
   const parts = [diet, `serves ${settings.default_servings || 4}`, `spice ${settings.spice?.default_level ?? 3} of 5`];
+  if (slots.length < ALL_SLOTS.length) parts.push(`plans ${slots.join(', ').toLowerCase()}`);
   const lunch = settings.packed_lunch;
   if (lunch?.days?.length) parts.push(`packed lunches ${lunch.days.map((d) => d.slice(0, 3)).join(', ')}`);
   return parts.join(' · ');
@@ -470,6 +472,8 @@ async function renderSettings() {
         <select id="settingsSpice">${[1, 2, 3, 4, 5].map((n) => `<option value="${n}"${n === spiceLevel ? ' selected' : ''}>${n} — ${SPICE_WORDS[n - 1]}</option>`).join('')}</select>
       </label>
       <small class="field-error" data-error-for="spiceLevel" role="alert"></small>
+      <fieldset class="choice-list compact"><legend>Which meals do you plan?</legend>${checkboxes('mealSlot', ALL_SLOTS, enabledSlots(settings))}</fieldset>
+      <small class="field-error" data-error-for="mealSlots" role="alert"></small>
       <fieldset class="choice-list compact"><legend>Favourite cuisines</legend>${checkboxes('favourite', cuisines, favourites)}</fieldset>
       <small class="field-error" data-error-for="favouriteCuisines" role="alert"></small>
       <fieldset class="choice-list compact"><legend>Cuisines you're exploring</legend>${checkboxes('exploring', cuisines, exploring)}</fieldset>
@@ -493,6 +497,7 @@ async function renderSettings() {
       diet: form.querySelector('input[name="diet"]:checked')?.value,
       defaultServings: Number(form.querySelector('#settingsServings').value),
       spiceLevel: Number(form.querySelector('#settingsSpice').value),
+      mealSlots: checked('mealSlot'),
       favouriteCuisines: checked('favourite'),
       exploringCuisines: checked('exploring'),
       packedLunch: { days: checked('lunchDay'), for: form.querySelector('#settingsLunchFor').value },
