@@ -14,6 +14,11 @@
 const CACHE = 'recipe-book-v1';
 
 const SUPABASE_ORIGIN = 'https://xtxufygmwqicrgzjwdxc.supabase.co';
+// The public key every browser already holds (it is in js/config.js). supabase-js sends it as the
+// bearer token when nobody is signed in, which is exactly the case whose responses are safe to
+// keep: a signed-in member's reads can include their household's pending recipes, so those are
+// left uncached rather than risk showing them to the next person on a shared phone.
+const PUBLISHABLE_BEARER = 'Bearer sb_publishable_G7NG8ND3HlxS5FFdj57TBQ_WRdgc23V';
 // The public catalogue: readable by anyone, identical for everyone, and the part worth having offline.
 const PUBLIC_TABLES = /\/rest\/v1\/(recipes|recipe_ingredients|ingredients|ingredient_aliases|units|cuisines|recipe_stats|cuisine_counts|tag_counts|planner_candidates|recipe_dietary_derived)\b/;
 
@@ -34,7 +39,11 @@ self.addEventListener('activate', (event) => {
 function isCacheable(request, url) {
   if (request.method !== 'GET') return false;
   if (url.origin === self.location.origin) return true;
-  if (url.origin === SUPABASE_ORIGIN) return PUBLIC_TABLES.test(url.pathname) && !request.headers.has('Authorization');
+  if (url.origin === SUPABASE_ORIGIN) {
+    if (!PUBLIC_TABLES.test(url.pathname)) return false;
+    const auth = request.headers.get('Authorization');
+    return !auth || auth === PUBLISHABLE_BEARER;
+  }
   return false; // fonts, the Supabase library on its CDN, auth — straight to the network
 }
 
