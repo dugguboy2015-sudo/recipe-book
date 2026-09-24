@@ -221,6 +221,7 @@
 
 .slot-card { border: 1px dashed var(--line); border-radius: var(--radius-control); padding: var(--sp-2); background: var(--surface); display: grid; gap: var(--sp-2); }
 .slot-card-header { display: flex; align-items: center; gap: var(--sp-2); }
+.slot-card-added-by { color: var(--ink-muted); font-size: var(--fs-1); margin: 0; }
 .slot-recipe-link { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--brand-ink); text-align: left; text-decoration: underline; cursor: pointer; }
 .slot-unavailable { font-style: italic; color: var(--ink-muted); }
 .slot-card-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }

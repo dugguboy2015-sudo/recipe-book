@@ -3,6 +3,7 @@ import {
   DAYS, migratePlanV1ToWeek, migratePlanV2ToV3, applyPrefEvent, defaultStore, defaultPrefs,
   emptyDays, getWeekDays, setWeekDays, resetWeekDays, pruneOldWeeks,
   addEntry, removeEntry, keepEntry, replaceEntry, updateServings, parseImportedPlanData, mondayOf,
+  applyWeekCompletion, stampAddedBy,
 } from '../../public/js/lib/planner-store.js';
 
 describe('mondayOf', () => {
@@ -166,5 +167,54 @@ describe('parseImportedPlanData', () => {
 describe('DAYS', () => {
   it('re-exports the seven days from the planner engine', () => {
     expect(DAYS).toEqual(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
+  });
+});
+
+describe('applyWeekCompletion (M1e: runs over a plan from anywhere)', () => {
+  const lastWeek = '2026-09-14';
+  const today = '2026-09-21';
+  const storeWith = (entries) => setWeekDays(defaultStore(), lastWeek, { ...emptyDays(), Monday: entries });
+
+  it('credits surviving auto entries once and offers the review card', () => {
+    const store = storeWith([
+      { recipeId: 1, slot: 'Dinner', servings: 4, source: 'auto' },
+      { recipeId: 2, slot: 'Lunch', servings: 4, source: 'manual' },
+    ]);
+    const first = applyWeekCompletion(store, defaultPrefs(), today);
+    expect(first.prefsChanged).toBe(true);
+    expect(first.prefs.recipes['1'].kept).toBe(1);
+    expect(first.prefs.recipes['2']).toBeUndefined(); // manual entries were never auto-filled
+    expect(first.weekReview.weekOf).toBe(lastWeek);
+    expect(first.weekReview.entries).toHaveLength(2);
+
+    const second = applyWeekCompletion(store, first.prefs, today);
+    expect(second.prefsChanged).toBe(false);
+    expect(second.prefs.recipes['1'].kept).toBe(1);
+  });
+
+  it('does nothing for a week nobody planned', () => {
+    const result = applyWeekCompletion(defaultStore(), defaultPrefs(), today);
+    expect(result.prefsChanged).toBe(false);
+    expect(result.weekReview).toBeNull();
+  });
+
+  it('stops offering the review once it has been dismissed', () => {
+    const prefs = { ...defaultPrefs(), lastReviewedWeekOf: lastWeek };
+    const result = applyWeekCompletion(storeWith([{ recipeId: 1, slot: 'Dinner', servings: 4, source: 'auto' }]), prefs, today);
+    expect(result.weekReview).toBeNull();
+  });
+});
+
+describe('stampAddedBy (M1e attribution)', () => {
+  it('names whoever is signed in on entries that name nobody, and leaves the rest alone', () => {
+    const days = { ...emptyDays(), Monday: [{ recipeId: 1, slot: 'Dinner' }, { recipeId: 2, slot: 'Lunch', addedBy: 'someone-else' }] };
+    const stamped = stampAddedBy(days, 'me');
+    expect(stamped.Monday[0].addedBy).toBe('me');
+    expect(stamped.Monday[1].addedBy).toBe('someone-else');
+  });
+
+  it('is a no-op when signed out', () => {
+    const days = { ...emptyDays(), Monday: [{ recipeId: 1, slot: 'Dinner' }] };
+    expect(stampAddedBy(days, null)).toBe(days);
   });
 });

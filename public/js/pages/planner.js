@@ -11,8 +11,12 @@ import { planWeek, shuffleEntry } from '../shared/planner-engine.js';
 import {
   DAYS, SLOTS, loadPlanState, persistStore, persistPrefs, addEntry, removeEntry, keepEntry,
   replaceEntry, updateServings, applyPrefEvent, dismissWeekReview, exportPlanData,
-  parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf,
+  parseImportedPlanData, resetWeekDays, getWeekDays, setWeekDays, mondayOf, stampAddedBy,
+  applyWeekCompletion,
 } from '../lib/planner-store.js';
+import { fetchRemotePlan, uploadPlan, createPlanSync } from '../lib/planner-remote.js';
+import { getReadyAccount } from '../components/account.js';
+import { fetchHouseholdMembers } from '../lib/auth.js';
 import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay } from '../shared/plan-summary.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
@@ -117,6 +121,9 @@ const state = {
   candidates: [], // the bounded planner_candidates pool, for planWeek/shuffleEntry
   resolvedById: new Map(), // planned-recipe display data, resolved by id
   household: null,
+  userId: null, // the signed-in member, stamped onto entries they plan (M1e)
+  sync: null, // the household's database plan writer, or null when signed out
+  members: new Map(), // user id -> display name, for "added by" on planned cards
   pickerContext: null, // { weekOf, day, slot } while the add-recipe picker dialog is open
   viewMode: 'week', // 'day' | 'week' | 'month'
   selectedDate: todayIso(), // the navigation anchor (an exact ISO date, not just a weekday name)
@@ -130,9 +137,24 @@ function isoOfDayInWeek(weekOf, dayName) {
   return addDaysIso(weekOf, DAYS.indexOf(dayName));
 }
 
+/**
+ * The one place a week's entries change. The browser copy is always written — it is the signed-out
+ * store, and a safety net if a database write fails — and a signed-in household's row is queued
+ * (M1e). Entries are stamped with whoever is signed in, so cards can say who planned a meal.
+ */
 function mutateWeek(weekOf, days) {
-  state.store = setWeekDays(state.store, weekOf, days);
+  state.store = setWeekDays(state.store, weekOf, stampAddedBy(days, state.userId));
+  saveWeek(weekOf);
+}
+
+function saveWeek(weekOf) {
   persistStore(state.store);
+  state.sync?.queueWeek(weekOf, getWeekDays(state.store, weekOf));
+}
+
+function savePrefs() {
+  persistPrefs(state.prefs);
+  state.sync?.queuePrefs(state.prefs);
 }
 
 function idsForWeek(weekOf) {
@@ -212,6 +234,34 @@ export async function initPlannerPage() {
   state.prefs = loaded.prefs;
   state.weekReview = loaded.weekReview;
   state.storageAvailable = loaded.storageAvailable;
+
+  // M1e: a signed-in member plans against their household's stored plan instead of this browser's.
+  const account = await getReadyAccount().catch(() => null);
+  if (account?.household) {
+    state.userId = account.session.user.id;
+    state.sync = createPlanSync({
+      client: supabase,
+      householdId: account.household.id,
+      userId: state.userId,
+      onError: () => showSnackbar("Couldn't save your plan to your household. It's still saved in this browser.", 'error'),
+    });
+    const remote = await fetchRemotePlan(supabase, account.household.id);
+    if (!remote.ok) {
+      showSnackbar("Couldn't load your household's plan. Showing this browser's copy.", 'error');
+    } else if (remote.isEmpty && Object.keys(state.store.weeks).length > 0) {
+      // First sign-in on a browser that already had a plan: adopt it as the household's.
+      const uploaded = await uploadPlan(supabase, account.household.id, state.userId, state.store, state.prefs);
+      if (uploaded) showSnackbar('Your existing plan is now shared with your household.', 'success');
+    } else {
+      state.store = remote.store;
+      state.prefs = remote.prefs;
+      const completion = applyWeekCompletion(state.store, state.prefs);
+      state.prefs = completion.prefs;
+      state.weekReview = completion.weekReview;
+      if (completion.prefsChanged) savePrefs();
+    }
+    state.members = new Map((await fetchHouseholdMembers(account.household.id)).map((member) => [member.user_id, member.display_name || 'A member']));
+  }
   if (plannerStorageWarning) plannerStorageWarning.hidden = state.storageAvailable !== false;
 
   const candidatesResult = await fetchPlannerCandidates(supabase, dietRecipeFilter(state.household));
@@ -326,7 +376,7 @@ export async function initPlannerPage() {
         const slot = el.dataset.autoSlot;
         const value = slot === 'Lunch' ? (el.value === 'on' ? true : el.value === 'weekends' ? 'weekends' : false) : el.checked;
         state.prefs = { ...state.prefs, settings: { autoSlots: { ...state.prefs.settings.autoSlots, [slot]: value } } };
-        persistPrefs(state.prefs);
+        savePrefs();
       });
     });
   }
@@ -360,11 +410,19 @@ export async function initPlannerPage() {
         const action = button.dataset.reviewAction;
         if (action === 'loved') state.prefs = applyPrefEvent(state.prefs, entry.recipeId, 'loved', state.weekReview.weekOf);
         else if (action === 'notAgain') state.prefs = applyPrefEvent(state.prefs, entry.recipeId, 'notAgain', state.weekReview.weekOf);
-        persistPrefs(state.prefs);
+        savePrefs();
         state.weekReview.entries.splice(index, 1);
         renderWeekReview();
       });
     });
+  }
+
+  // M1e: who planned this, but only in a household with someone else in it — in a household of
+  // one, "Added by Ash" on every card is noise.
+  function addedByLine(entry) {
+    if (state.members.size < 2 || !entry.addedBy) return '';
+    const name = state.members.get(entry.addedBy);
+    return name ? `<p class="slot-card-added-by">Added by ${escapeHtml(name)}</p>` : '';
   }
 
   function renderSlotCard(weekOf, day, entry) {
@@ -397,6 +455,7 @@ export async function initPlannerPage() {
           <output>${entry.servings}</output>
           <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="More servings">+</button>
         </div>
+        ${addedByLine(entry)}
         <div class="slot-card-actions">
           ${autoActions}
           ${removeButton}
@@ -538,7 +597,7 @@ export async function initPlannerPage() {
     mutateWeek(weekOf, addEntry(days, day, slot, recipeId, servings ?? state.household?.default_servings ?? 4, source));
     if (source === 'manual') {
       state.prefs = applyPrefEvent(state.prefs, recipeId, 'manual', weekOf);
-      persistPrefs(state.prefs);
+      savePrefs();
     }
     ensureResolvedIds([recipeId]).then(() => { renderHeaderStats(); renderView(); });
   }
@@ -590,7 +649,7 @@ export async function initPlannerPage() {
           return;
         }
         state.prefs = applyPrefEvent(state.prefs, recipeId, 'removed', weekOf);
-        persistPrefs(state.prefs);
+        savePrefs();
         mutateWeek(weekOf, replaceEntry(days, day, slot, recipeId, replacement));
         ensureResolvedIds([replacement.recipeId]).then(() => { renderHeaderStats(); renderView(); });
       });
@@ -618,7 +677,7 @@ export async function initPlannerPage() {
         const entry = (days[day] || []).find((e) => e.slot === slot && e.recipeId === recipeId);
         if (entry?.source === 'auto') {
           state.prefs = applyPrefEvent(state.prefs, recipeId, 'removed', weekOf);
-          persistPrefs(state.prefs);
+          savePrefs();
         }
         mutateWeek(weekOf, removeEntry(days, day, slot, recipeId));
         renderHeaderStats();
@@ -747,10 +806,9 @@ export async function initPlannerPage() {
     for (const weekOf of weeks) {
       const days = getWeekDays(state.store, weekOf);
       const result = planWeek({ recipes: state.candidates, plan: days, prefs: state.prefs, household: state.household, weekOf });
-      state.store = setWeekDays(state.store, weekOf, result.plan);
+      mutateWeek(weekOf, result.plan);
       addedTotal += result.added.length;
     }
-    persistStore(state.store);
     await ensureResolvedForView();
     renderHeaderStats();
     renderView();
@@ -770,7 +828,7 @@ export async function initPlannerPage() {
   // ---------- Week review (task 11.5) ----------
   dismissWeekReviewButton.addEventListener('click', () => {
     state.prefs = dismissWeekReview(state.prefs, state.weekReview.weekOf);
-    persistPrefs(state.prefs);
+    savePrefs();
     state.weekReview = null;
     weekReviewCard.hidden = true;
   });
@@ -784,7 +842,7 @@ export async function initPlannerPage() {
   document.getElementById('confirmResetWeek')?.addEventListener('click', () => {
     const weekOf = selectedWeekOf();
     state.store = resetWeekDays(state.store, weekOf);
-    persistStore(state.store);
+    saveWeek(weekOf);
     resetDialog.close();
     renderHeaderStats();
     renderView();
@@ -827,7 +885,8 @@ export async function initPlannerPage() {
     state.prefs = pendingImport.prefs;
     state.weekReview = null;
     persistStore(state.store);
-    persistPrefs(state.prefs);
+    savePrefs();
+    for (const weekOf of Object.keys(state.store.weeks)) state.sync?.queueWeek(weekOf, getWeekDays(state.store, weekOf));
     pendingImport = null;
     importDialog.close();
     await renderAll();
