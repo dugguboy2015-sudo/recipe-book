@@ -69,6 +69,17 @@ function manualRow(item) {
     </li>`;
 }
 
+/** "3 of 19 ticked off" — recomputed on every tick, without re-rendering the list itself. */
+function renderSummary() {
+  const buyable = [...state.list.aisles.flatMap((aisle) => aisle.items), ...state.shopping.manual];
+  const ticked = buyable.filter((item) => state.shopping.checked[item.key]).length;
+  const pantryCount = state.list.pantry.length;
+  const summary = document.getElementById('shoppingSummary');
+  summary.textContent = buyable.length
+    ? `${ticked} of ${buyable.length} ticked off${pantryCount ? ` · ${pantryCount} to check at home` : ''}`
+    : `${pantryCount} things to check you have`;
+}
+
 function render() {
   const container = document.getElementById('shoppingList');
   const summary = document.getElementById('shoppingSummary');
@@ -77,7 +88,6 @@ function render() {
   const { aisles, pantry } = state.list;
   const manual = state.shopping.manual;
   const buyable = [...aisles.flatMap((aisle) => aisle.items), ...manual];
-  const ticked = buyable.filter((item) => state.shopping.checked[item.key]).length;
 
   if (buyable.length === 0 && pantry.length === 0) {
     summary.textContent = '';
@@ -90,9 +100,7 @@ function render() {
     return;
   }
 
-  summary.textContent = buyable.length
-    ? `${ticked} of ${buyable.length} ticked off${pantry.length ? ` · ${pantry.length} to check at home` : ''}`
-    : `${pantry.length} things to check you have`;
+  renderSummary();
 
   const section = (label, itemsHtml, extraClass = '') => `
     <section class="panel shopping-aisle${extraClass}">
@@ -113,11 +121,14 @@ function render() {
       : '',
   ].join('');
 
+  // Ticking updates just that row: re-rendering the whole list under someone's finger in a shop
+  // would lose their place, and the rest of the list hasn't changed.
   container.querySelectorAll('[data-item-key]').forEach((input) => {
     input.addEventListener('change', () => {
       state.shopping = toggleChecked(state.shopping, input.dataset.itemKey);
+      input.closest('.shopping-item')?.classList.toggle('is-checked', input.checked);
+      renderSummary();
       saveShopping();
-      render();
     });
   });
   container.querySelectorAll('[data-remove-manual]').forEach((button) => {
