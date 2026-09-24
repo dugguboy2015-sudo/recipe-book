@@ -469,7 +469,7 @@
 
 ## M1e — The planner moves into the database — DONE
 - Date: 2026-09-24
-- Branch / PR: m1e-planner-db / (this PR)
+- Branch / PR: m1e-planner-db / [#44](https://github.com/dugguboy2015-sudo/recipe-book/pull/44)
 - Migrations applied: `019_plan_tables.sql` — `plan_weeks` (one row per household per week) and `plan_prefs` (one per household), RLS-scoped to `current_household_id()`, explicit grants, nothing for `anon`
 - Backup: `backups/2026-09-24T05-56-36-636Z` (34 rows, count verified)
 - Acceptance:
