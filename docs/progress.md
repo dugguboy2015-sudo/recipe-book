@@ -545,7 +545,7 @@
 
 ## M5 — Depth: favourites, fridge search, leftovers, cooked history — DONE
 - Date: 2026-09-24
-- Branch / PR: m5-depth / (this PR)
+- Branch / PR: m5-depth / [#48](https://github.com/dugguboy2015-sudo/recipe-book/pull/48)
 - Migrations applied: none — favourites and the new entry flags live in the jsonb already there (`plan_prefs.prefs`, `plan_weeks.days`)
 - Backup: not needed (no schema change)
 - Acceptance:
