@@ -5,7 +5,7 @@ import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js'
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { mountAskDialog } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
-import { monogramSvg } from '../components/monogram.js';
+import { dishArtSvg } from '../components/dish-art.js';
 import { openCookMode } from '../components/cook-mode.js';
 import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { getHousehold } from '../lib/household.js';
@@ -89,7 +89,7 @@ function mealRowHtml(slot, entry, recipe) {
   return `
     <div class="today-meal-row">
       <span class="meal-slot-label">${escapeHtml(slot)}</span>
-      <div class="slot-card-art" aria-hidden="true">${monogramSvg(recipe)}</div>
+      <div class="slot-card-art" aria-hidden="true">${dishArtSvg(recipe)}</div>
       <strong>${escapeHtml(recipe.name)}</strong>
       <div class="today-meal-actions">
         <button type="button" class="ghost-button" data-open-today="${entry.recipeId}" data-servings="${entry.servings}">Open</button>

@@ -1,5 +1,5 @@
 import { escapeHtml } from '../shared/html.js';
-import { monogramSvg } from './monogram.js';
+import { dishArtSvg } from './dish-art.js';
 
 export function normalizeRecipe(recipe) {
   return {
@@ -57,7 +57,7 @@ export function renderRecipeCard(recipe, { actions = false, showTime = false, ta
   return `
     <article class="recipe-card" data-id="${recipe.id}">
       <div class="recipe-card-header">
-        <div class="recipe-card-art" aria-hidden="true">${monogramSvg(recipe)}</div>
+        <div class="recipe-card-art" aria-hidden="true">${dishArtSvg(recipe)}</div>
         <div class="recipe-card-title-wrap">
           <span class="cuisine-band" data-cuisine="${escapeHtml(recipe.cuisine)}">${escapeHtml(recipe.cuisine)}</span>
           <h3><button type="button" class="recipe-card-title-button">${escapeHtml(recipe.name)}</button></h3>

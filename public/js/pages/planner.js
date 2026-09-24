@@ -2,7 +2,7 @@ import { escapeHtml, showSnackbar } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes, fetchPlannerCandidates, fetchPlannerRecipesByIds } from '../lib/queries.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
-import { monogramSvg } from '../components/monogram.js';
+import { dishArtSvg } from '../components/dish-art.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { dietAdjective, dietRecipeFilter, enabledSlots } from '../shared/household-settings.js';
@@ -448,7 +448,7 @@ export async function initPlannerPage() {
     return `
       <div class="slot-card">
         <div class="slot-card-header">
-          <div class="slot-card-art" aria-hidden="true">${monogramSvg(recipe)}</div>
+          <div class="slot-card-art" aria-hidden="true">${dishArtSvg(recipe)}</div>
           <button type="button" class="slot-recipe-link" data-open-recipe="${entry.recipeId}" data-servings="${entry.servings}">${escapeHtml(recipe.name)}</button>
         </div>
         <div class="servings-stepper">

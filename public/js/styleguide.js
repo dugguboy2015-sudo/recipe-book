@@ -2,6 +2,8 @@ import { showSnackbar } from './lib/dom.js';
 import { wireDialog } from './components/dialog.js';
 import { renderRecipeCard, normalizeRecipe } from './components/recipe-card.js';
 import { wireThemeToggle } from './components/theme-toggle.js';
+import { dishArtSvg } from './components/dish-art.js';
+import { DISH_TYPES } from './shared/dish-type.js';
 
 // Same shared toggle the app itself uses (js/theme.js applies the stored choice pre-paint).
 wireThemeToggle(document.getElementById('themeToggle'));
@@ -13,6 +15,12 @@ const sampleRecipes = [
 ];
 document.getElementById('recipeCardDemo').innerHTML = sampleRecipes
   .map((r) => renderRecipeCard(normalizeRecipe(r), { actions: true, showTime: true, tagLimit: 4 }))
+  .join('');
+
+// Dish illustrations: one of each, plus the monogram fallback.
+const artCuisines = ['South Indian', 'North Indian', 'Maharashtrian', 'Rajasthani', 'Chaat', 'Indo-Chinese', 'Gujarati', 'Fusion'];
+document.getElementById('dishArtDemo').innerHTML = [...DISH_TYPES.map((type, i) => ({ name: type.keywords[0], cuisine: artCuisines[i % artCuisines.length], label: type.id })), { name: 'Something new', cuisine: 'Other', label: 'monogram' }]
+  .map((sample) => `<figure class="sg-dish-art"><div class="recipe-card-art">${dishArtSvg({ ...sample, slug: sample.label })}</div><figcaption>${sample.label}</figcaption></figure>`)
   .join('');
 
 // ServingsStepper demo
