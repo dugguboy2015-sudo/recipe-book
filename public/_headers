@@ -5,3 +5,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 /api/*
   Cache-Control: no-store
+/sw.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache

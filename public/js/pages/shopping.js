@@ -2,6 +2,7 @@ import { escapeHtml, showSnackbar } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
 import { fetchRecipesForShopping, fetchIngredientsForRecipes } from '../lib/queries.js';
 import { getReadyAccount } from '../components/account.js';
+import { mountAskDialog } from '../components/ask-dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { DAYS, loadPlanState, getWeekDays, mondayOf } from '../lib/planner-store.js';
 import { fetchRemotePlan } from '../lib/planner-remote.js';
@@ -195,6 +196,7 @@ function setWeek(weekOf) {
 export async function initShoppingPage() {
   const container = document.getElementById('shoppingList');
   if (!container) return;
+  mountAskDialog(); // the bottom bar's Ask button exists on this page too
 
   const params = new URLSearchParams(window.location.search);
   const requested = params.get('week');

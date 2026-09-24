@@ -206,14 +206,15 @@ model was already built in Phase 3, and M1e's household plan made it worth build
 
 ---
 
-## M4 — Mobile and the kitchen
+## M4 — Mobile and the kitchen ✅ shipped
 
-| # | Item | Measured |
+| # | Item | Outcome |
 |---|---|---|
-| 4.1 | **PWA + offline** | No service worker or manifest. Patchy kitchen wifi shows a blank app, and it can't go on her home screen |
-| 4.2 | **Recipes page IA on mobile** | The recipe list starts ~1,960px down, behind the AI panel and filters. Collapse the AI panel into a button/sheet |
-| 4.3 | **Planner on mobile** | Was 6.4 screens of scrolling. **Phase D has since shipped** — re-measure before doing more |
-| 4.4 | **Header actions vanish below 760px** | `.site-nav` is `display:none`, taking "Ask for a recipe" with it; bottom tabs hold only three links |
+| 4.1 | **PWA + offline** | ✅ manifest, generated PNG icons, and a runtime-only service worker (network first, cache fallback). Caches this site and the public catalogue; never caches household data |
+| 4.2 | **Recipes page IA on mobile** | ✅ the AI panel becomes one button that opens the ask dialog: the recipe list moved from **1,461px down to 598px** |
+| 4.3 | **Planner on mobile** | ✅ nothing needed — re-measured at **1.9 screens** (was 6.4 before Phase D) |
+| 4.4 | **Header actions vanish below 760px** | ✅ "Ask" is a fifth bottom tab, on every page |
+| — | **Horizontal overflow on phones** (found while measuring) | ✅ every page laid out 449–658px wide on a 375px phone: hidden radio inputs took their width from the viewport, and five unshrinkable tabs did it again. Both fixed; no overflow anywhere now |
 
 ---
 

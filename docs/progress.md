@@ -522,3 +522,23 @@
   3. **Not verified in a real print preview.** The rules are loaded and their selectors match the live DOM (checked in the browser), but this environment can't emulate print media. Worth one Ctrl+P on a recipe and on the shopping list.
   4. **3.2 (photo upload) stays deferred** by decision 3. M1's household scoping is now in place for whenever it's wanted.
 - Notes for next slice: M4 (mobile and the kitchen) — a PWA/offline shell, mobile IA, and the header-actions polish; the print and share work here is done.
+
+## M4 — Mobile and the kitchen — DONE
+- Date: 2026-09-24
+- Branch / PR: m4-mobile-kitchen / [#47](https://github.com/dugguboy2015-sudo/recipe-book/pull/47)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (measured on a 375px viewport, before → after):
+  - [x] **Horizontal overflow, found while measuring and fixed first**: every page laid itself out 658px wide on a 375px phone. Cause: `.yes-no-radio input` was `position: absolute` with no positioned ancestor, so each hidden radio took its width from the viewport, and three of them set the page width. Fixed by insetting them inside their own label. The new five-item bottom bar then did the same at 449px (flex items don't shrink below their text) — fixed with `min-width: 0`. `scrollWidth === clientWidth` now on recipes, planner and shopping
+  - [x] **Recipes IA**: first recipe card 1,461px → **598px** down the page; the AI panel is one button that opens the existing ask dialog
+  - [x] **Ask on mobile**: was unreachable below 760px (it lived in `.site-nav`, which is hidden); now a fifth bottom tab on all four pages
+  - [x] **Planner on mobile**: re-measured at **1.9 screens** of scrolling (the plan's 6.4 predates Phase D) — nothing further needed, as the plan anticipated
+  - [x] **PWA**: manifest, three generated PNG icons, `theme-color`, `apple-touch-icon`; the service worker registers and activates on the preview, with 53 entries cached
+  - [x] Cache contents inspected directly: this site's pages/CSS/JS plus `recipes`, `cuisine_counts`, `tag_counts`; **zero** entries for `plan_weeks`, `plan_prefs`, `shopping_lists` or `household_*`
+  - [x] `npm run check` green (401 tests)
+- Deviations from spec / findings while building this:
+  1. **No precache list in the service worker.** With no build step there is no hashed asset manifest to invalidate, and a hand-written list would go stale the first time someone forgot it. Network first with a cache fallback is always fresh online and still works offline.
+  2. **The first cache rule cached nothing at all.** It skipped any request carrying an `Authorization` header — but supabase-js always sends one (the public key when signed out), so the catalogue was never cached and offline would have been an empty app. Now: signed-out reads of public tables are cached; a member's reads are not, because those can include their household's pending recipes.
+  3. **Icons are generated** by `scripts/build-icons.mjs`, which rasterises the shapes and encodes PNG with `zlib` — a manifest needs PNGs (Chrome ignores SVG manifest icons; iOS needs a PNG) and this repo has no image tooling. Output is committed; re-run only when the design or brand colours change.
+  4. **Not verified: a real offline load and a home-screen install.** Cache contents are proven, but this environment can't toggle the network or install a PWA. Worth one airplane-mode test and one "Add to Home Screen" on her phone.
+- Notes for next slice: M5 (favourites, ingredient search, leftovers, cooked history) and the polish backlog are what remain in `plan.md`.

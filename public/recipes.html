@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/pages.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a3d2f" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <script src="js/theme.js"></script>
 </head>
 <body data-page="recipes">
@@ -47,6 +50,7 @@
         <h1>Find the right dish<br><em>for the moment</em></h1>
       </header>
 
+      <button type="button" class="primary-button ask-on-mobile" data-open-ask-dialog>Ask AI for a recipe</button>
       <div id="generatePanelContainer"></div>
 
       <div class="recipes-row">
@@ -139,6 +143,7 @@
     <a href="recipes.html" aria-current="page">Recipes</a>
     <a href="planner.html">Planner</a>
     <a href="shopping.html">Shopping</a>
+    <button type="button" class="tab-ask" data-open-ask-dialog>Ask</button>
   </nav>
 
   <dialog id="addRecipeModal" class="recipe-detail add-recipe-panel" aria-labelledby="addRecipeTitle">
