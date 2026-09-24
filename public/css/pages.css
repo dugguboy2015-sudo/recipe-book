@@ -262,12 +262,13 @@
   dialog.recipe-detail[open]::backdrop { background: transparent; }
   dialog.recipe-detail[open] .detail-actions,
   dialog.recipe-detail[open] .modal-footer,
-  dialog.recipe-detail[open] .servings-control,
+  dialog.recipe-detail[open] .servings-stepper,
   dialog.recipe-detail[open] .icon-button { display: none; }
-  dialog.recipe-detail[open] .modal-art,
-  dialog.recipe-detail[open] #modalArt { max-width: 90px; }
-  dialog.recipe-detail[open] .ingredient-list li,
-  dialog.recipe-detail[open] .method-list li { break-inside: avoid; }
+  dialog.recipe-detail[open] .recipe-hero-art { max-width: 90px; }
+  dialog.recipe-detail[open] .detail-grid { display: block; }
+  dialog.recipe-detail[open] .detail-panel { break-inside: avoid; margin-bottom: var(--sp-4); }
+  dialog.recipe-detail[open] #modalIngredients li,
+  dialog.recipe-detail[open] #modalSteps li { break-inside: avoid; }
   a[href]::after { content: ''; } /* no URL trails after every link */
 }
 .slot-card-added-by { color: var(--ink-muted); font-size: var(--fs-1); margin: 0; }
