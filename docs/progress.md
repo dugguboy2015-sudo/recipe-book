@@ -525,7 +525,7 @@
 
 ## M4 — Mobile and the kitchen — DONE
 - Date: 2026-09-24
-- Branch / PR: m4-mobile-kitchen / (this PR)
+- Branch / PR: m4-mobile-kitchen / [#47](https://github.com/dugguboy2015-sudo/recipe-book/pull/47)
 - Migrations applied: none
 - Backup: not needed (no schema or data change)
 - Acceptance (measured on a 375px viewport, before → after):
