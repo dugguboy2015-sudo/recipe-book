@@ -43,30 +43,42 @@ function saveShopping() {
   state.sync?.queue(state.shopping);
 }
 
-function itemRow(item) {
-  const checked = Boolean(state.shopping.checked[item.key]);
-  const recipes = item.recipes.length ? `<span class="shopping-item-for">${escapeHtml(item.recipes.join(', '))}</span>` : '';
+// The checkbox sits next to its label rather than inside it: a checkbox nested in its own label
+// can toggle twice from one tap in some browsers, which showed up as ticks that wouldn't stick.
+function domId(key) {
+  return `shop-${key.replace(/[^a-zA-Z0-9]+/g, '-')}`;
+}
+
+function checkboxRow(key, label, extras = '', trailing = '') {
+  const checked = Boolean(state.shopping.checked[key]);
+  const id = domId(key);
   return `
     <li class="shopping-item${checked ? ' is-checked' : ''}">
-      <label>
-        <input type="checkbox" data-item-key="${escapeHtml(item.key)}"${checked ? ' checked' : ''} />
-        <span class="shopping-item-name">${escapeHtml(item.name)}</span>
-        ${item.amount ? `<span class="shopping-item-amount">${escapeHtml(item.amount)}</span>` : ''}
+      <input type="checkbox" id="${id}" data-item-key="${escapeHtml(key)}"${checked ? ' checked' : ''} />
+      <label for="${id}">
+        <span class="shopping-item-name">${label}</span>
+        ${extras}
       </label>
-      ${recipes}
+      ${trailing}
     </li>`;
 }
 
+function itemRow(item) {
+  return checkboxRow(
+    item.key,
+    escapeHtml(item.name),
+    item.amount ? `<span class="shopping-item-amount">${escapeHtml(item.amount)}</span>` : '',
+    item.recipes.length ? `<span class="shopping-item-for">${escapeHtml(item.recipes.join(', '))}</span>` : '',
+  );
+}
+
 function manualRow(item) {
-  const checked = Boolean(state.shopping.checked[item.key]);
-  return `
-    <li class="shopping-item${checked ? ' is-checked' : ''}">
-      <label>
-        <input type="checkbox" data-item-key="${escapeHtml(item.key)}"${checked ? ' checked' : ''} />
-        <span class="shopping-item-name">${escapeHtml(item.text)}</span>
-      </label>
-      <button type="button" class="icon-button delete-button" data-remove-manual="${escapeHtml(item.key)}" data-tooltip="Remove" aria-label="Remove ${escapeHtml(item.text)}">🗑</button>
-    </li>`;
+  return checkboxRow(
+    item.key,
+    escapeHtml(item.text),
+    '',
+    `<button type="button" class="icon-button delete-button" data-remove-manual="${escapeHtml(item.key)}" data-tooltip="Remove" aria-label="Remove ${escapeHtml(item.text)}">🗑</button>`,
+  );
 }
 
 /** "3 of 19 ticked off" — recomputed on every tick, without re-rendering the list itself. */
