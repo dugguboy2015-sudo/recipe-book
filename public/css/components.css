@@ -562,6 +562,15 @@ header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(
     box-shadow: 0 -4px 16px var(--shadow-color);
     z-index: 40;
   }
+  /* min-width: 0 matters: flex items won't shrink below their text by default, so five tabs
+     forced the whole page 449px wide on a 375px phone. */
+  .bottom-tab-bar a, .bottom-tab-bar .tab-ask {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .bottom-tab-bar a {
     flex: 1;
     display: flex;
