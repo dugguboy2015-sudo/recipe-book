@@ -36,6 +36,8 @@ function applySearchFilters(query, filters = {}) {
   if (dietary.spiceMax) q = q.lte('spice_level', dietary.spiceMax);
   // RLS already limits pending recipes to their own household and the curator.
   if (filters.pendingOnly) q = q.eq('catalogue_status', 'pending');
+  // M5 favourites: an explicit id list. An empty list means "none", not "no filter" — hence -1.
+  if (filters.ids) q = q.in('id', filters.ids.length ? filters.ids : [-1]);
   return q;
 }
 
@@ -318,4 +320,50 @@ export async function fetchIngredientsForRecipes(client, ids) {
     return { ok: false, data: [], error };
   }
   return { ok: true, data: data || [], error: null };
+}
+
+/** Recipe ids that use any of these ingredients (M5's "what's in the fridge" first pass). */
+export async function fetchRecipeIdsUsingIngredients(client, ingredientIds) {
+  const unique = [...new Set(ingredientIds)].filter((id) => id != null);
+  if (unique.length === 0) return [];
+  const { data, error } = await client.from('recipe_ingredients').select('recipe_id').in('ingredient_id', unique);
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return [...new Set((data || []).map((row) => row.recipe_id))];
+}
+
+/** Every ingredient id on each of these recipes — what the ranking needs to say "2 more to buy". */
+export async function fetchIngredientIndexForRecipes(client, recipeIds) {
+  const unique = [...new Set(recipeIds)].filter((id) => id != null);
+  if (unique.length === 0) return [];
+  const { data, error } = await client.from('recipe_ingredients').select('recipe_id,ingredient_id').in('recipe_id', unique);
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data || [];
+}
+
+/** Ingredient ids in the store-cupboard categories, so staples don't count as "to buy" (M5). */
+export async function fetchPantryIngredientIds(client, categories) {
+  const { data, error } = await client.from('ingredients').select('id').in('category', categories);
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return (data || []).map((row) => row.id);
+}
+
+/** Recipes by id, in the shape the cards render (used by favourites and fridge search). */
+export async function fetchRecipesByIds(client, ids) {
+  const unique = [...new Set(ids)].filter((id) => id != null);
+  if (unique.length === 0) return [];
+  const { data, error } = await client.from('recipes').select(RECIPE_LIST_COLUMNS).in('id', unique).eq('is_deleted', false);
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data || [];
 }

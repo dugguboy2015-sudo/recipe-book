@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, computeProteinSmartShare, slotsForDay } from '../../public/js/shared/plan-summary.js';
+import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, computeProteinSmartShare, slotsForDay, countCooked } from '../../public/js/shared/plan-summary.js';
 import { defaultStore, setWeekDays, emptyDays } from '../../public/js/lib/planner-store.js';
 
 describe('todayIso / addDaysIso', () => {
@@ -70,5 +70,20 @@ describe('computeProteinSmartShare', () => {
       Tuesday: [{ recipeId: 2, slot: 'Lunch' }],
     };
     expect(computeProteinSmartShare(planDays, resolvedById)).toBe(0.5);
+  });
+});
+
+describe('countCooked (M5)', () => {
+  it('counts what was cooked against what was planned', () => {
+    const days = {
+      ...emptyDays(),
+      Monday: [{ recipeId: 1, slot: 'Dinner', cooked: true }, { recipeId: 2, slot: 'Lunch' }],
+      Tuesday: [{ recipeId: 3, slot: 'Dinner', cooked: true }],
+    };
+    expect(countCooked(days)).toEqual({ planned: 3, cooked: 2 });
+  });
+
+  it('is zero for an empty week', () => {
+    expect(countCooked(emptyDays())).toEqual({ planned: 0, cooked: 0 });
   });
 });

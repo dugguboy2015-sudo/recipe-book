@@ -11,15 +11,24 @@ import { MEAL_TYPES } from '../shared/html.js';
 import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { mountAskDialog, takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
-import { loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf } from '../lib/planner-store.js';
-import { addRemoteEntry, applyRemotePrefEvent } from '../lib/planner-remote.js';
+import {
+  loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf,
+  setFavourite, isFavourite, favouriteIds,
+} from '../lib/planner-store.js';
+import { addRemoteEntry, applyRemotePrefEvent, fetchRemotePlan, setRemoteFavourite } from '../lib/planner-remote.js';
+import { createFridgeSearch } from '../components/fridge-search.js';
+import { rankByIngredients, describeMatch } from '../shared/fridge-search.js';
+import { PANTRY_CATEGORIES } from '../shared/shopping-list.js';
+import {
+  fetchRecipeIdsUsingIngredients, fetchIngredientIndexForRecipes, fetchPantryIngredientIds, fetchRecipesByIds,
+} from '../lib/queries.js';
 import { getHousehold } from '../lib/household.js';
 import { dietRecipeFilter } from '../shared/household-settings.js';
 
 function defaultFilters() {
   return {
     search: '', cuisine: '', tags: [], mealTypes: [],
-    dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null, pendingOnly: false,
+    dairyFree: false, proteinSmart: false, nutFree: false, spiceMax: null, pendingOnly: false, favouritesOnly: false,
   };
 }
 
@@ -45,6 +54,14 @@ const state = {
 };
 
 let pendingDeleteRecipeId = null;
+
+// M5: the household's recipe signals (favourites live here beside the planner's loved/not-again),
+// and the "what's in the fridge" results when that search is running.
+const m5 = { prefs: null, fridge: null };
+
+function favouriteSet() {
+  return new Set(favouriteIds(m5.prefs || { recipes: {} }));
+}
 
 function syncUrl() {
   const params = filtersToSearchParams(state.filters, state.page);
@@ -77,6 +94,62 @@ export async function initRecipesPage() {
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
   mountRecipeModal();
+
+  // Favourites are the household's when signed in, this browser's otherwise — the same rule the
+  // planner follows, and the same prefs record.
+  const account = getAccountState();
+  m5.prefs = loadPlanState().prefs;
+  if (account.household) {
+    const remote = await fetchRemotePlan(supabase, account.household.id);
+    if (remote.ok && !remote.isEmpty) m5.prefs = remote.prefs;
+  }
+
+  async function toggleFavourite(recipeId) {
+    const next = !isFavourite(m5.prefs, recipeId);
+    m5.prefs = setFavourite(m5.prefs, recipeId, next);
+    persistPrefs(m5.prefs);
+    const who = getAccountState();
+    if (who.household) {
+      const saved = await setRemoteFavourite(supabase, { householdId: who.household.id, userId: who.session.user.id, recipeId, favourite: next });
+      if (!saved) showSnackbar("Couldn't save that to your household. It's still saved in this browser.", 'error');
+    }
+    if (state.filters.favouritesOnly) await refreshRecipes();
+    return next;
+  }
+
+  // "What's in the fridge": ranks the catalogue by how much of it you already have. The results
+  // replace the normal list (keeping the same cards) until cleared.
+  const fridgeContainer = document.getElementById('fridgeSearchContainer');
+  let pantryIds = null;
+  async function runFridgeSearch(haveIds) {
+    if (haveIds.length === 0) return;
+    if (!pantryIds) pantryIds = await fetchPantryIngredientIds(supabase, PANTRY_CATEGORIES);
+    const candidateIds = await fetchRecipeIdsUsingIngredients(supabase, haveIds);
+    const rows = await fetchIngredientIndexForRecipes(supabase, candidateIds);
+    const recipes = await fetchRecipesByIds(supabase, candidateIds);
+    const recipesById = Object.fromEntries(recipes.map((recipe) => [recipe.id, recipe]));
+    const ranked = rankByIngredients({ have: haveIds, rows, recipesById, pantryIds }).slice(0, 24);
+    m5.fridge = {
+      order: ranked.map((result) => result.recipeId),
+      matches: new Map(ranked.map((result) => [result.recipeId, describeMatch(result, haveIds.length)])),
+      haveCount: haveIds.length,
+    };
+    state.page = 1;
+    await refreshRecipes();
+    recipeGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function clearFridgeSearch() {
+    if (!m5.fridge) return;
+    m5.fridge = null;
+    state.page = 1;
+    refreshRecipes();
+  }
+
+  if (fridgeContainer) {
+    createFridgeSearch({ container: fridgeContainer, client: supabase, onSearch: runFridgeSearch, onClear: clearFridgeSearch });
+  }
+
   // Wires every [data-open-ask-dialog] — the bottom bar's Ask, and the mobile-only button that
   // replaces the inline panel.
   mountAskDialog();
@@ -136,7 +209,7 @@ export async function initRecipesPage() {
 
   document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => {
     const key = chip.dataset.dietary;
-    const stateKey = { 'dairy-free': 'dairyFree', 'protein-smart': 'proteinSmart', 'nut-free': 'nutFree' }[key];
+    const stateKey = { 'dairy-free': 'dairyFree', 'protein-smart': 'proteinSmart', 'nut-free': 'nutFree', favourites: 'favouritesOnly' }[key];
     if (stateKey && state.filters[stateKey]) chip.classList.add('active');
     chip.addEventListener('click', () => {
       const active = chip.classList.contains('active');
@@ -194,7 +267,17 @@ export async function initRecipesPage() {
     }
 
     const who = viewer();
-    recipeGrid.innerHTML = recipes.map((recipe) => renderRecipeCard(recipe, { actions: canEditRecipe(who, recipe), showTime: true, tagLimit: 4 })).join('');
+    if (m5.fridge) {
+      // Ranked results come back in relevance order; the query returns them by name, so re-sort.
+      const rank = new Map(m5.fridge.order.map((id, index) => [id, index]));
+      recipes = [...recipes].sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99));
+    }
+    const favourites = favouriteSet();
+    recipeGrid.innerHTML = recipes.map((recipe) => {
+      const card = renderRecipeCard(recipe, { actions: canEditRecipe(who, recipe), showTime: true, tagLimit: 4, favourite: favourites.has(recipe.id) });
+      const match = m5.fridge?.matches.get(recipe.id);
+      return match ? card.replace('</article>', `<p class="fridge-match">${escapeHtml(match)}</p></article>`) : card;
+    }).join('');
 
     recipeGrid.querySelectorAll('.recipe-card').forEach((card) => {
       card.addEventListener('click', (event) => {
@@ -211,6 +294,12 @@ export async function initRecipesPage() {
           (await loadRecipeForm()).openEdit(id);
         } else if (button.dataset.action === 'delete') {
           openDeleteConfirm(id);
+        } else if (button.dataset.action === 'favourite') {
+          const now = await toggleFavourite(id);
+          button.classList.toggle('is-favourite', now);
+          button.textContent = now ? '♥' : '♡';
+          button.setAttribute('aria-pressed', String(now));
+          button.dataset.tooltip = now ? 'Remove from favourites' : 'Add to favourites';
         }
       });
     });
@@ -218,13 +307,28 @@ export async function initRecipesPage() {
     updateStatus();
   }
 
+  function renderResultsBanner() {
+    const banner = document.getElementById('fridgeResultsBanner');
+    if (!banner) return;
+    if (!m5.fridge) {
+      banner.innerHTML = '';
+      return;
+    }
+    banner.innerHTML = `<p class="notice results-banner">Recipes you can nearly cook with what you have.
+      <button type="button" class="ghost-button" id="fridgeBackToAll">Show all recipes</button></p>`;
+    banner.querySelector('#fridgeBackToAll').addEventListener('click', clearFridgeSearch);
+  }
+
   async function refreshRecipes() {
     syncUrl();
+    renderResultsBanner();
     renderSkeleton();
     const household = await getHousehold().catch(() => null);
     const filters = {
       term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes,
       dietary: toDietaryFilter(state.filters), pendingOnly: state.filters.pendingOnly, householdDiet: dietRecipeFilter(household),
+      ...(state.filters.favouritesOnly ? { ids: favouriteIds(m5.prefs || { recipes: {} }) } : {}),
+      ...(m5.fridge ? { ids: m5.fridge.order } : {}),
     };
     renderPendingNotice();
     const result = await searchRecipes(supabase, filters, { page: state.page, pageSize: state.pageSize });

@@ -218,11 +218,17 @@ model was already built in Phase 3, and M1e's household plan made it worth build
 
 ---
 
-## M5 — Depth (after 0–4)
+## M5 — Depth ✅ shipped
 
-Favourites surfaced at recipe level (the planner already records loved/not-again privately — she
-just can't see or sort by it) · ingredient-led "what's in the fridge" search (the structured
-ingredient model already exists) · leftovers and batch cooking · cooked history vs planned.
+- ✅ **Favourites at recipe level** — a heart on every card, a Favourites filter, kept with the
+  recipe's other history in the household's prefs (this browser's when signed out)
+- ✅ **"What's in the fridge"** — pick what you have, get the recipes closest to cookable: most of
+  your ingredients used, then fewest things left to buy, then quickest. Staples aren't counted as
+  missing
+- ✅ **Leftovers** — plan tomorrow's lunch from tonight's dinner in one tap; the shopping list never
+  buys for it twice
+- ✅ **Cooked history vs planned** — tick what actually got cooked; the planner header says
+  "Cooked 3 of 12 planned"
 
 ---
 

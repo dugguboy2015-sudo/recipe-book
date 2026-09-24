@@ -3,7 +3,7 @@ import {
   DAYS, migratePlanV1ToWeek, migratePlanV2ToV3, applyPrefEvent, defaultStore, defaultPrefs,
   emptyDays, getWeekDays, setWeekDays, resetWeekDays, pruneOldWeeks,
   addEntry, removeEntry, keepEntry, replaceEntry, updateServings, parseImportedPlanData, mondayOf,
-  applyWeekCompletion, stampAddedBy,
+  applyWeekCompletion, stampAddedBy, setFavourite, isFavourite, favouriteIds, addLeftoverEntry, markCooked,
 } from '../../public/js/lib/planner-store.js';
 
 describe('mondayOf', () => {
@@ -216,5 +216,59 @@ describe('stampAddedBy (M1e attribution)', () => {
   it('is a no-op when signed out', () => {
     const days = { ...emptyDays(), Monday: [{ recipeId: 1, slot: 'Dinner' }] };
     expect(stampAddedBy(days, null)).toBe(days);
+  });
+});
+
+describe('favourites (M5)', () => {
+  it('stars and unstars a recipe without disturbing its other history', () => {
+    let prefs = applyPrefEvent(defaultPrefs(), 7, 'loved', '2026-09-21');
+    prefs = setFavourite(prefs, 7, true);
+    expect(isFavourite(prefs, 7)).toBe(true);
+    expect(prefs.recipes['7'].loved).toBe(1);
+    prefs = setFavourite(prefs, 7, false);
+    expect(isFavourite(prefs, 7)).toBe(false);
+    expect(prefs.recipes['7'].loved).toBe(1);
+  });
+
+  it('stars a recipe with no history yet', () => {
+    const prefs = setFavourite(defaultPrefs(), 3, true);
+    expect(isFavourite(prefs, 3)).toBe(true);
+    expect(prefs.recipes['3'].manual).toBe(0);
+  });
+
+  it('lists the starred ids', () => {
+    let prefs = setFavourite(defaultPrefs(), 3, true);
+    prefs = setFavourite(prefs, 9, true);
+    prefs = setFavourite(prefs, 9, false);
+    prefs = setFavourite(prefs, 11, true);
+    expect(favouriteIds(prefs).sort((a, b) => a - b)).toEqual([3, 11]);
+  });
+
+  it('never mutates the prefs it was given', () => {
+    const before = defaultPrefs();
+    setFavourite(before, 1, true);
+    expect(isFavourite(before, 1)).toBe(false);
+  });
+});
+
+describe('leftovers and cooked history (M5)', () => {
+  const base = { ...emptyDays(), Monday: [{ recipeId: 1, slot: 'Dinner', servings: 4, source: 'manual' }] };
+
+  it('plans leftovers as a real entry that is flagged not to be cooked again', () => {
+    const days = addLeftoverEntry(base, 'Tuesday', 'Lunch', 1, 2, 'user-1');
+    expect(days.Tuesday[0]).toMatchObject({ recipeId: 1, slot: 'Lunch', servings: 2, leftover: true, addedBy: 'user-1' });
+    expect(days.Monday[0].leftover).toBeUndefined();
+  });
+
+  it('will not double up leftovers in the same slot', () => {
+    const once = addLeftoverEntry(base, 'Tuesday', 'Lunch', 1, 2);
+    expect(addLeftoverEntry(once, 'Tuesday', 'Lunch', 1, 2)).toBe(once);
+  });
+
+  it('ticks a meal as cooked and back again', () => {
+    const cooked = markCooked(base, 'Monday', 'Dinner', 1, true);
+    expect(cooked.Monday[0].cooked).toBe(true);
+    expect(markCooked(cooked, 'Monday', 'Dinner', 1, false).Monday[0].cooked).toBe(false);
+    expect(base.Monday[0].cooked).toBeUndefined();
   });
 });

@@ -99,3 +99,35 @@ describe('createPlanSync', () => {
     vi.useRealTimers();
   });
 });
+
+describe('prefs writes are serialised (M5)', () => {
+  it('does not lose the first star when two are made in quick succession', async () => {
+    const { setRemoteFavourite } = await import('../../public/js/lib/planner-remote.js');
+    let stored = { version: 1, recipes: {} };
+    const client = {
+      from() {
+        const builder = {
+          select() { return builder; },
+          eq() { return builder; },
+          async maybeSingle() {
+            // A real read sends what the row held when it was read, not when it arrives — which is
+            // exactly how the second star used to overwrite the first.
+            const snapshot = stored;
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            return { data: { prefs: snapshot }, error: null };
+          },
+          upsert(row) {
+            stored = row.prefs;
+            return Promise.resolve({ error: null });
+          },
+        };
+        return builder;
+      },
+    };
+    await Promise.all([
+      setRemoteFavourite(client, { householdId: 'h', userId: 'u', recipeId: 1, favourite: true }),
+      setRemoteFavourite(client, { householdId: 'h', userId: 'u', recipeId: 2, favourite: true }),
+    ]);
+    expect(Object.keys(stored.recipes).sort()).toEqual(['1', '2']);
+  });
+});
