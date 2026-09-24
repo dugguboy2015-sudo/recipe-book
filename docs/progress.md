@@ -489,7 +489,7 @@
 
 ## M2 — The shopping list — DONE
 - Date: 2026-09-24
-- Branch / PR: m2-shopping-list / (this PR)
+- Branch / PR: m2-shopping-list / [#45](https://github.com/dugguboy2015-sudo/recipe-book/pull/45)
 - Migrations applied: `020_shopping_lists.sql` — one row per household per week holding only the ticks and hand-added items, RLS-scoped to `current_household_id()` like `plan_weeks`
 - Backup: `backups/2026-09-24T06-17-36-953Z` (34 rows, count verified)
 - Acceptance:
