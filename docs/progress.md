@@ -560,3 +560,23 @@
   3. **Favourites are separate from the planner's "loved" signal.** Loved/not-again still come from the week review and still drive auto-fill scoring; the heart is the deliberate, visible thing. Kept in the same per-recipe record so a recipe's history stays in one place.
   4. **Fridge search runs three bounded queries** (recipes using any of your ingredients → those recipes' full ingredient lists → the recipe rows), which is fine at this catalogue's size and stays within the "no full-table reads" rule.
 - Notes for next: `plan.md`'s polish backlog is what remains — vegetarian/egg-free badges that carry no information, the spice meter's missing text equivalent, the "0 recipes" flash while loading, the 48-field add-recipe form, the unexplained prep/cook/total gap, and "% of adult reference intake" on a family app.
+
+## M6 — The polish backlog — DONE
+- Date: 2026-09-25
+- Branch / PR: m6-polish / [#50](https://github.com/dugguboy2015-sudo/recipe-book/pull/50)
+- Migrations applied: none — every item was presentation, not data
+- Backup: not needed (no schema or data change)
+- Acceptance (all six items from `plan.md`'s backlog, verified in a real browser):
+  - [x] **Badges that said nothing**: "Vegetarian" and "Egg-free" are now suppressed when the viewing household's own diet already guarantees them — which is why they have vanished from every card and recipe here, and why they would still appear for a household that eats meat or egg. Signed out, the app's default household profile applies, so the catalogue reads the same way it does signed in
+  - [x] **Spice meter**: the level now reads as text ("3/5") beside the chillies and as "Spice 3 of 5, medium" to a screen reader, so it no longer depends on telling two colours apart. On the recipe detail an unrecorded level says "Spice not recorded" instead of showing nothing, which read as "not spicy"
+  - [x] **"0 recipes" flash**: measured the sequence through a real search — `31 recipes → Searching… → 5 recipes`. No zero, and the aria-live region stays silent until there is a real count
+  - [x] **The 48-field form**: four steps (Basics · Ingredients & method · Dietary & nutrition · Notes) with free navigation between them. Saving still validates everything at once, marks each step with how many fields it is waiting on, and jumps to the first one — an empty save showed 4 / 2 / 11 and landed on the recipe name
+  - [x] **The prep/cook/total gap**: named rather than "fixed" — "15 min of that is hands-off — soaking, marinating, resting or proving" under the times, on the 9 recipes where the gap is real (`handsOffMinutes`, 4 unit tests)
+  - [x] **Nutrition wording**: "% of adult reference intake" became a caption that says what the comparison is and that children and teenagers need different amounts; the column header is now "Share of an adult's day"
+  - [x] `npm run check` green (433 tests)
+- Deviations from spec / findings while building this:
+  1. **Hidden buttons were never actually hidden.** Every button in this app sets its own `display`, which beats the browser's `[hidden]` rule — so a signed-out visitor was being shown **Edit, Delete and "Approve for the catalogue"** on every recipe. The server always refused those writes (RLS plus the Function guards), so nothing was ever at risk, but the buttons should not have been there. Found while checking the new step navigation, whose Back/Next buttons had the same problem; fixed once for the whole app with `[hidden] { display: none !important; }` in `base.css`
+  2. **The step tabs wrap badly on a phone.** Four tabs stacked into 200px of navigation above the first field — the exact "scroll before you can start" problem being fixed. They are now one horizontally scrolling row (48px), and the current step scrolls itself into view
+  3. **The step tabs are navigation, not a wizard.** Nothing blocks moving between steps: an edit that changes one field should not have to walk through four screens, and Save is what checks the whole form
+  4. **`handsOffMinutes` lives in `shared/recipe-rules.js`**, next to `reconcileTimes`, rather than in the modal — the rest of the prep/cook/total arithmetic is there, and this project's tests only reach DOM-free modules
+- Notes for next: nothing is left in `plan.md`. The two owner-only items remain (a custom SMTP sender, and switching on the sign-in captcha), plus the manual checks noted under M4.

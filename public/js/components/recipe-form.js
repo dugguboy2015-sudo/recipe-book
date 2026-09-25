@@ -68,6 +68,15 @@ export function createRecipeForm({ client, onSaved }) {
   const aiDraftWarningsList = document.getElementById('aiDraftWarnings');
   const estimateNutritionButton = document.getElementById('estimateNutritionButton');
   const estimateNutritionStatus = document.getElementById('estimateNutritionStatus');
+  // 48 fields in one ~4,000px scroll is the single hardest thing in this app to fill in. The fields
+  // themselves are all needed, so the fix is pacing, not removal: four steps, free navigation
+  // between them, and a save that sends you straight to whichever step still has a problem.
+  const stepContainers = form ? Array.from(form.querySelectorAll('.form-step')) : [];
+  const stepTabs = Array.from(document.querySelectorAll('[data-go-step]'));
+  const backButton = document.getElementById('recipeFormBack');
+  const nextButton = document.getElementById('recipeFormNext');
+  const stepStatus = document.getElementById('recipeFormStepStatus');
+  let currentStep = 1;
 
   let mode = 'add'; // 'add' | 'edit' | 'ai-draft'
   let editingRecipeId = null;
@@ -149,6 +158,66 @@ export function createRecipeForm({ client, onSaved }) {
     }
   }
 
+  function goToStep(step) {
+    if (!stepContainers.length) return;
+    currentStep = Math.min(Math.max(step, 1), stepContainers.length);
+    stepContainers.forEach((node) => { node.hidden = Number(node.dataset.step) !== currentStep; });
+    stepTabs.forEach((tab) => {
+      const isCurrent = Number(tab.dataset.goStep) === currentStep;
+      tab.classList.toggle('is-current', isCurrent);
+      if (isCurrent) {
+        tab.setAttribute('aria-current', 'step');
+        // The tabs are one scrolling row on a phone, so the one you are on has to come to you.
+        tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      } else {
+        tab.removeAttribute('aria-current');
+      }
+    });
+    if (backButton) backButton.hidden = currentStep === 1;
+    if (nextButton) nextButton.hidden = currentStep === stepContainers.length;
+    if (stepStatus) stepStatus.textContent = `Step ${currentStep} of ${stepContainers.length}`;
+    modal?.scrollTo?.({ top: 0 });
+  }
+
+  /** Which step a field lives on, so an error can pull the form to it. */
+  function stepOfField(fieldName) {
+    const node = form.querySelector(`[data-error-for="${fieldName}"]`) || form.querySelector(`[name="${fieldName}"]`);
+    const step = node?.closest('.form-step');
+    return step ? Number(step.dataset.step) : currentStep;
+  }
+
+  /** Shows every error, counts them per step, and moves to the first step that has one. */
+  function showValidationErrors(errors) {
+    Object.entries(errors).forEach(([fieldName, message]) => setFieldError(form, fieldName, message));
+    const perStep = new Map();
+    for (const fieldName of Object.keys(errors)) {
+      const step = stepOfField(fieldName);
+      perStep.set(step, (perStep.get(step) || 0) + 1);
+    }
+    stepTabs.forEach((tab) => {
+      const count = perStep.get(Number(tab.dataset.goStep)) || 0;
+      tab.classList.toggle('has-errors', count > 0);
+      tab.querySelector('.form-step-errors')?.remove();
+      if (count > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'form-step-errors';
+        badge.textContent = String(count);
+        badge.title = count === 1 ? '1 field needs attention' : `${count} fields need attention`;
+        tab.append(badge);
+      }
+    });
+    const firstStep = Math.min(...perStep.keys());
+    if (Number.isFinite(firstStep)) goToStep(firstStep);
+    form.querySelector('.input-error')?.focus();
+  }
+
+  function clearStepErrorBadges() {
+    stepTabs.forEach((tab) => {
+      tab.classList.remove('has-errors');
+      tab.querySelector('.form-step-errors')?.remove();
+    });
+  }
+
   function resetForm() {
     if (!form) return;
     form.reset();
@@ -167,6 +236,8 @@ export function createRecipeForm({ client, onSaved }) {
     if (aiDraftWarningsList) aiDraftWarningsList.innerHTML = '';
     clearAiSuggestsHints();
     if (estimateNutritionStatus) estimateNutritionStatus.textContent = '';
+    clearStepErrorBadges();
+    goToStep(1);
   }
 
   function clearAiSuggestsHints() {
@@ -364,6 +435,7 @@ export function createRecipeForm({ client, onSaved }) {
   }
 
   function focusField(fieldName) {
+    goToStep(stepOfField(fieldName));
     form.querySelector(`[name="${fieldName}"]`)?.focus();
   }
 
@@ -450,9 +522,8 @@ export function createRecipeForm({ client, onSaved }) {
 
       switch (result.code) {
         case 'validation_failed':
-          Object.entries(result.errors || {}).forEach(([fieldName, message]) => setFieldError(form, fieldName, message));
+          showValidationErrors(result.errors || {});
           showSnackbar('Please fix the highlighted fields before saving.', 'error');
-          form.querySelector('.input-error')?.focus();
           break;
         case 'verification_failed':
           showSnackbar("We couldn't confirm you're not a bot. Try saving again.", 'error');
@@ -483,12 +554,13 @@ export function createRecipeForm({ client, onSaved }) {
   async function handleSubmit(event) {
     event.preventDefault();
     clearFieldErrors(form);
+    clearStepErrorBadges();
 
     const validation = validateRecipeForm();
     if (!validation.valid) {
-      Object.entries(validation.errors).forEach(([fieldName, message]) => setFieldError(form, fieldName, message));
-      showSnackbar('Please fix the highlighted fields before saving.', 'error');
-      form.querySelector('.input-error')?.focus();
+      showValidationErrors(validation.errors);
+      const count = Object.keys(validation.errors).length;
+      showSnackbar(count === 1 ? 'One field still needs an answer.' : `${count} fields still need an answer.`, 'error');
       return;
     }
 
@@ -546,6 +618,12 @@ export function createRecipeForm({ client, onSaved }) {
 
   wireDietaryTouchTracking();
   wireTimeAutoFill();
+  backButton?.addEventListener('click', () => goToStep(currentStep - 1));
+  nextButton?.addEventListener('click', () => goToStep(currentStep + 1));
+  // The step tabs are navigation, not a gate: nothing blocks you from moving around a form you are
+  // still filling in, and Save is what checks the whole thing and brings you back to what's missing.
+  stepTabs.forEach((tab) => tab.addEventListener('click', () => goToStep(Number(tab.dataset.goStep))));
+  goToStep(1);
   cancelButton?.addEventListener('click', () => dialogHandle.close());
   form?.addEventListener('submit', handleSubmit);
 

@@ -1,7 +1,7 @@
 import { escapeHtml, showSnackbar, debounce } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeBySlug, fetchPendingCount } from '../lib/queries.js';
-import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
+import { normalizeRecipe, renderRecipeCard, setBadgeDiet } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { wireDialog } from '../components/dialog.js';
 import { deleteRecipe, restoreRecipe, approveRecipe } from '../lib/api.js';
@@ -246,9 +246,16 @@ export async function initRecipesPage() {
 
   function renderSkeleton() {
     recipeGrid.innerHTML = Array.from({ length: state.pageSize }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
+    // "0 recipes" while the search is still in flight reads as "nothing found" — say what is really
+    // happening, and leave the aria-live status silent until there is a real count to announce.
+    resultCount.textContent = 'Searching…';
+    if (filterSheetCount) filterSheetCount.textContent = '…';
+    pageStatus.textContent = '';
   }
 
   function renderErrorState() {
+    resultCount.textContent = '';
+    if (resultStatus) resultStatus.textContent = "Couldn't load recipes.";
     recipeGrid.innerHTML = `
       <div class="empty-state">
         <p>Couldn't load recipes. Check your connection.</p>
@@ -324,6 +331,7 @@ export async function initRecipesPage() {
     renderResultsBanner();
     renderSkeleton();
     const household = await getHousehold().catch(() => null);
+    setBadgeDiet(dietRecipeFilter(household));
     const filters = {
       term: state.filters.search, cuisine: state.filters.cuisine, tags: state.filters.tags, mealTypes: state.filters.mealTypes,
       dietary: toDietaryFilter(state.filters), pendingOnly: state.filters.pendingOnly, householdDiet: dietRecipeFilter(household),

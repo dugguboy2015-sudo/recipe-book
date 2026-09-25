@@ -6,8 +6,9 @@ and its final report for the Appendix H findings traceability. Work since then f
 (approved 2026-09-18), and **every milestone in it is shipped**: M0 (data integrity), M1a–M1e
 (accounts, households, member-only writes, per-household settings, the planner in the database),
 M2 (the shopping list — Phase 14's `ENABLE_SHOPPING_LIST` deferral), M3 (dish illustrations, print,
-share), M4 (PWA/offline and mobile IA) and M5 (favourites, fridge search, leftovers, cooked
-history). What remains is `plan.md`'s polish backlog. Read `docs/progress.md` before making
+share), M4 (PWA/offline and mobile IA), M5 (favourites, fridge search, leftovers, cooked history)
+and M6 (the polish backlog). Nothing in `plan.md` is outstanding; the only open items are the two
+the owner has to do themselves (a custom SMTP sender and the sign-in captcha). Read `docs/progress.md` before making
 further changes — it's the actual history of what this codebase is and why, in more detail than fits here.
 The full spec is still `improvement_plan.md` if you need the original reasoning behind a
 constraint; `README.md`, `docs/architecture.md`, and `docs/operations.md` are the maintained,

@@ -1,6 +1,6 @@
 import { escapeHtml } from '../shared/html.js';
 import { fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
-import { normalizeRecipe, dietaryBadges, spiceMeter } from './recipe-card.js';
+import { normalizeRecipe, dietaryBadges, spiceMeter, setBadgeDiet } from './recipe-card.js';
 import { dishArtSvg } from './dish-art.js';
 import { wireDialog } from './dialog.js';
 import { showSnackbar } from '../lib/dom.js';
@@ -9,11 +9,12 @@ import { formatIngredientsHtml } from '../shared/cook-mode-format.js';
 import { mountTip } from './tips.js';
 import { percentRI, trafficLightClass, nearestWidthClass } from '../shared/nutrition-ri.js';
 import { getHousehold } from '../lib/household.js';
-import { enabledSlots } from '../shared/household-settings.js';
+import { enabledSlots, dietRecipeFilter } from '../shared/household-settings.js';
 import { supabase } from '../lib/supabase-client.js';
 import { getReadyAccount } from './account.js';
 import { addRemoteEntry, applyRemotePrefEvent } from '../lib/planner-remote.js';
 import { openCookMode } from './cook-mode.js';
+import { handsOffMinutes } from '../shared/recipe-rules.js';
 import {
   DAYS, loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf,
 } from '../lib/planner-store.js';
@@ -54,6 +55,7 @@ const MODAL_HTML = `
     <div id="servingsTip"></div>
 
     <div class="time-breakdown" id="modalTimeBreakdown"></div>
+    <p class="hint time-note" id="modalTimeNote" hidden></p>
 
     <div class="detail-grid">
       <div class="detail-panel">
@@ -67,8 +69,8 @@ const MODAL_HTML = `
       <div class="detail-panel">
         <h4>Nutrition <span class="hint">(per serving, estimate)</span></h4>
         <table class="nutrition-panel">
-          <caption>Per serving, % of adult reference intake</caption>
-          <thead><tr><th>Nutrient</th><th>Amount</th><th>% RI</th></tr></thead>
+          <caption>Per serving. The last column compares each amount with an average adult’s recommended daily intake — children and teenagers need different amounts, so read it as a rough guide.</caption>
+          <thead><tr><th>Nutrient</th><th>Amount</th><th>Share of an adult’s day</th></tr></thead>
           <tbody id="modalNutrition"></tbody>
         </table>
       </div>
@@ -152,8 +154,22 @@ function renderTimeBreakdown(recipe) {
   if (recipe.prep_time_minutes) parts.push(`Prep ${recipe.prep_time_minutes} min`);
   if (recipe.cook_time_minutes) parts.push(`Cook ${recipe.cook_time_minutes} min`);
   parts.push(`Total ${recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : 'TBD'}`);
-  if (recipe.time_note) parts.push(recipe.time_note);
-  document.getElementById('modalTimeBreakdown').textContent = parts.join(' · ');
+  const node = document.getElementById('modalTimeBreakdown');
+  node.textContent = parts.join(' · ');
+
+  // On 9 of these recipes the total is larger than prep + cook, which reads like an arithmetic
+  // mistake but isn't: it's hands-off time — soaking, marinating, resting, proving. Name it, rather
+  // than "fixing" the numbers into something that would under-state how long the dish really takes.
+  const waiting = handsOffMinutes(recipe);
+  const note = [
+    waiting ? `${waiting} min of that is hands-off — soaking, marinating, resting or proving.` : '',
+    recipe.time_note ? String(recipe.time_note).trim() : '',
+  ].filter(Boolean).join(' ');
+  const noteNode = document.getElementById('modalTimeNote');
+  if (noteNode) {
+    noteNode.textContent = note;
+    noteNode.hidden = !note;
+  }
 }
 
 function renderNutrition(recipe) {
@@ -283,6 +299,7 @@ export function mountRecipeModal() {
 
   getHousehold().then((data) => {
     household = data;
+    setBadgeDiet(dietRecipeFilter(data));
     renderPlannerPickers();
   }).catch(() => {});
 }
@@ -314,7 +331,7 @@ export async function openRecipeModal(client, id, { serves, onEdit, onDelete, on
   document.getElementById('modalTitle').textContent = recipe.name;
   document.getElementById('modalHeroMeta').innerHTML = `
     <span class="tag">${escapeHtml(recipe.cuisine || 'General')}</span>
-    ${spiceMeter(recipe.spice_level)}
+    ${spiceMeter(recipe.spice_level, { showUnknown: true })}
     <div class="badge-list">${dietaryBadges(normalized)}</div>
   `;
 

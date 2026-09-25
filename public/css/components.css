@@ -222,8 +222,11 @@
 .slot-card-art .monogram { width: 100%; height: 100%; display: block; border-radius: var(--radius-control); }
 
 /* ---------- SpiceMeter (1-5 chillies) ---------- */
+/* The number carries the level for anyone who can't separate the lit chillies from the unlit ones. */
 .spice-meter { display: inline-flex; align-items: center; gap: 2px; color: var(--line); font-size: var(--fs-2); }
 .spice-meter .chilli.lit { color: var(--spice); }
+.spice-meter-text { margin-left: var(--sp-1); color: var(--ink-muted); }
+.spice-meter.is-unknown { color: var(--ink-muted); font-size: var(--fs-1); }
 
 /* ---------- NutritionPanel ---------- */
 .nutrition-panel { width: 100%; border-collapse: collapse; font-size: var(--fs-2); }
@@ -696,6 +699,67 @@ header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(
 .method-step-text { width: 100%; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); padding: var(--sp-2) var(--sp-3); font: inherit; color: var(--ink); resize: vertical; }
 .method-step-actions { display: flex; gap: var(--sp-1); }
 
+/* ---------- Add-recipe steps ---------- */
+/* Four steps instead of one 4,000px scroll. The tabs are navigation, not a wizard that locks you
+   in: every step is one click away, and a failed save marks the ones that still need something. */
+/* One scrollable row rather than four stacked ones: wrapping put 200px of tabs above the first
+   field on a phone, which is exactly the "scroll before you can start" problem being fixed. */
+.form-steps ol {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: var(--sp-4) 0 0;
+  padding: 0 0 var(--sp-1);
+  overflow-x: auto;
+  min-width: 0;
+}
+.form-steps li { flex: 0 0 auto; }
+.form-step-tab {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: var(--fs-2);
+  cursor: pointer;
+}
+.form-step-tab .form-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink);
+  font-size: var(--fs-1);
+  font-weight: 700;
+}
+.form-step-tab.is-current { border-color: var(--brand-ink); color: var(--brand-ink); font-weight: 700; }
+.form-step-tab.is-current .form-step-number { background: var(--brand-ink); color: var(--surface); }
+.form-step-tab.has-errors { border-color: var(--danger); color: var(--danger); }
+.form-step-errors {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-pill);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: var(--fs-1);
+  font-weight: 700;
+}
+.form-step-actions { align-items: center; }
+.form-step-status { margin: 0 auto 0 0; color: var(--ink-muted); font-size: var(--fs-2); }
+
 /* ---------- Form sections (native <details>) ---------- */
 .form-section { border: 1px solid var(--line); border-radius: var(--radius-card); margin-top: var(--sp-4); background: var(--surface); }
 .form-section summary {
@@ -719,6 +783,7 @@ header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(
 .scaled-notice { background: var(--warn-bg); color: var(--warn); border-radius: var(--radius-control); padding: var(--sp-2) var(--sp-3); font-size: var(--fs-2); margin: var(--sp-3) 0; }
 
 .time-breakdown { display: flex; gap: var(--sp-4); flex-wrap: wrap; color: var(--ink-muted); font-size: var(--fs-2); }
+.time-note { margin: var(--sp-1) 0 0; }
 
 .detail-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-5); }
 

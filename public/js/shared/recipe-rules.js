@@ -163,6 +163,17 @@ export function textToSteps(text) {
   return groups.filter((g) => g.steps.length > 0);
 }
 
+/**
+ * The minutes a recipe's total contains beyond its prep and cook: waiting, not work — soaking,
+ * marinating, resting, proving. Real on 9 of this catalogue's recipes, where "Prep 20 · Cook 20 ·
+ * Total 55" otherwise reads as an arithmetic error. 0 when there is no gap, or nothing to compare.
+ */
+export function handsOffMinutes({ prep_time_minutes: prep, cook_time_minutes: cook, total_time_minutes: total }) {
+  if (!total || (!prep && !cook)) return 0;
+  const gap = total - ((prep || 0) + (cook || 0));
+  return gap > 0 ? gap : 0;
+}
+
 export function reconcileTimes({ prep, cook, total }) {
   const havePrepOrCook = prep != null || cook != null;
   const sum = (prep ?? 0) + (cook ?? 0);

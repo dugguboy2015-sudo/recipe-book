@@ -109,7 +109,7 @@
 
           <div class="actions-row">
             <button type="button" class="ghost-button" id="clearFilters">Clear filters</button>
-            <button type="button" class="primary-button filter-sheet-apply" id="applyFilterSheet">Show <span id="filterSheetCount">0</span> recipes</button>
+            <button type="button" class="primary-button filter-sheet-apply" id="applyFilterSheet">Show <span id="filterSheetCount">…</span> recipes</button>
           </div>
         </aside>
 
@@ -119,7 +119,7 @@
           <div class="content-head">
             <h2>Recipe collection</h2>
             <div class="toolbar">
-              <span id="resultCount" class="notice">0 recipes</span>
+              <span id="resultCount" class="notice">Searching…</span>
               <button type="button" class="ghost-button filter-open-button" id="openFilterSheet">Filters</button>
             </div>
           </div>
@@ -157,6 +157,17 @@
     <form id="addRecipeForm" novalidate>
       <p class="notice ai-draft-banner" id="aiDraftBanner" hidden></p>
       <div id="aiDraftWarnings"></div>
+
+      <nav class="form-steps" aria-label="Add recipe steps">
+        <ol>
+          <li><button type="button" class="form-step-tab" data-go-step="1" aria-current="step"><span class="form-step-number">1</span> Basics</button></li>
+          <li><button type="button" class="form-step-tab" data-go-step="2"><span class="form-step-number">2</span> Ingredients &amp; method</button></li>
+          <li><button type="button" class="form-step-tab" data-go-step="3"><span class="form-step-number">3</span> Dietary &amp; nutrition</button></li>
+          <li><button type="button" class="form-step-tab" data-go-step="4"><span class="form-step-number">4</span> Notes</button></li>
+        </ol>
+      </nav>
+
+      <div class="form-step" data-step="1">
 
       <details class="form-section" open>
         <summary>Basics</summary>
@@ -233,6 +244,9 @@
         </div>
       </details>
 
+      </div>
+
+      <div class="form-step" data-step="2" hidden>
       <details class="form-section" open>
         <summary>Ingredients</summary>
         <div id="ingredientEditorContainer"></div>
@@ -245,6 +259,9 @@
         <small class="field-error" data-error-for="steps"></small>
       </details>
 
+      </div>
+
+      <div class="form-step" data-step="3" hidden>
       <details class="form-section" open>
         <summary>Dietary</summary>
         <p class="notice" id="dietarySuggestionNotice" hidden></p>
@@ -344,6 +361,9 @@
         </div>
       </details>
 
+      </div>
+
+      <div class="form-step" data-step="4" hidden>
       <details class="form-section" id="packedLunchSection" hidden>
         <summary>Packed lunch</summary>
         <div class="form-grid">
@@ -396,8 +416,13 @@
         </div>
       </details>
 
-      <div class="form-actions">
+      </div>
+
+      <div class="form-actions form-step-actions">
         <button type="button" class="ghost-button" id="cancelAddRecipe">Cancel</button>
+        <p class="form-step-status" id="recipeFormStepStatus" aria-live="polite"></p>
+        <button type="button" class="ghost-button" id="recipeFormBack" hidden>Back</button>
+        <button type="button" class="ghost-button" id="recipeFormNext">Next</button>
         <button type="submit" class="primary-button" id="submitRecipeButton">Save recipe</button>
       </div>
     </form>
