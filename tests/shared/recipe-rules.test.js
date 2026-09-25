@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   slugify, parseAmount, formatAmount, ingredientsToText, textToIngredients,
   stepsToText, textToSteps, reconcileTimes, normalizeRecipeInput, dietaryWarnings,
-  deriveIngredientFlags,
+  deriveIngredientFlags, handsOffMinutes,
 } from '../../public/js/shared/recipe-rules.js';
 
 describe('slugify', () => {
@@ -268,5 +268,24 @@ describe('dietaryWarnings (Appendix G.2)', () => {
   ])('%s with %j warns=%s', (ingredient, claims, shouldWarn) => {
     const warnings = dietaryWarnings(recipeWith(ingredient, claims));
     expect(warnings.length > 0).toBe(shouldWarn);
+  });
+});
+
+describe('handsOffMinutes', () => {
+  it('names the gap between total and prep + cook', () => {
+    expect(handsOffMinutes({ prep_time_minutes: 20, cook_time_minutes: 20, total_time_minutes: 55 })).toBe(15);
+  });
+
+  it('is 0 when the times add up, which is the usual case', () => {
+    expect(handsOffMinutes({ prep_time_minutes: 10, cook_time_minutes: 10, total_time_minutes: 20 })).toBe(0);
+  });
+
+  it('never reports a negative gap, whatever the data says', () => {
+    expect(handsOffMinutes({ prep_time_minutes: 30, cook_time_minutes: 30, total_time_minutes: 45 })).toBe(0);
+  });
+
+  it('claims nothing when half the numbers are missing', () => {
+    expect(handsOffMinutes({ prep_time_minutes: null, cook_time_minutes: null, total_time_minutes: 40 })).toBe(0);
+    expect(handsOffMinutes({ prep_time_minutes: 10, cook_time_minutes: 10, total_time_minutes: null })).toBe(0);
   });
 });

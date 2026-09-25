@@ -12,6 +12,12 @@ body {
   line-height: 1.5;
 }
 
+/* Every button in this app sets its own display, which beats the browser's own [hidden] rule —
+   so a hidden button kept rendering. Found while building the add-recipe steps: signed-out visitors
+   were being shown Edit, Delete and "Approve for the catalogue" on every recipe (the server always
+   refused them, but the buttons should never have been there). This is the fix, once, for all of it. */
+[hidden] { display: none !important; }
+
 img { max-width: 100%; display: block; }
 
 a { color: inherit; }

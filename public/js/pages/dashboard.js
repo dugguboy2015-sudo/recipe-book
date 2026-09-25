@@ -1,7 +1,7 @@
 import { escapeHtml } from '../shared/html.js';
 import { supabase } from '../lib/supabase-client.js';
 import { fetchRecipeStats, fetchRecentRecipes, fetchCuisineCounts, fetchPlannerRecipesByIds, fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
-import { normalizeRecipe, renderRecipeCard } from '../components/recipe-card.js';
+import { normalizeRecipe, renderRecipeCard, setBadgeDiet } from '../components/recipe-card.js';
 import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
 import { mountAskDialog } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
@@ -235,6 +235,7 @@ export async function initDashboardPage() {
     // fetches, adding one more bounded read) — unchanged by "This week", which makes its own
     // bounded requests via loadPlanState/renderThisWeek.
     const household = await getHousehold().catch(() => null);
+    setBadgeDiet(dietRecipeFilter(household));
     const [statsResult, recentResult, cuisineResult] = await Promise.all([
       fetchRecipeStats(supabase),
       fetchRecentRecipes(supabase, RECENT_COUNT, dietRecipeFilter(household)),

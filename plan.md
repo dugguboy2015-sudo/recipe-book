@@ -12,10 +12,10 @@ Companion docs: `docs/ux-uplift-plan.md` (completed A–D uplift), `docs/progres
 
 | | |
 |---|---|
-| **Live** | Everything in this plan: M0, M1a–M1e, M2, M3, M4 and M5, all deployed and verified on production |
-| **Merged** | #39–#48, one PR per slice, each from and to `main` |
+| **Live** | Everything in this plan: M0, M1a–M1e, M2, M3, M4, M5 and the polish backlog, all deployed and verified on production |
+| **Merged** | #39–#50, one PR per slice, each from and to `main` |
 | **Repo** | Clean. Every PR cuts from and targets `main` — no stacking |
-| **What's left** | The polish backlog below, and the two things only the owner can do: a custom SMTP sender (Supabase's built-in one allows 2 sign-in emails an hour) and switching on the sign-in captcha |
+| **What's left** | Nothing in this plan. Only the two things the owner has to do: a custom SMTP sender (Supabase's built-in one allows 2 sign-in emails an hour) and switching on the sign-in captcha |
 
 ---
 
@@ -232,17 +232,20 @@ model was already built in Phase 3, and M1e's household plan made it worth build
 
 ---
 
-## Polish backlog
+## Polish backlog — DONE (2026-09-25, #50)
 
-- "Vegetarian" and "Egg-free" badges appear on **every** recipe — the household is 100% both, so
+- [x] "Vegetarian" and "Egg-free" badges appear on **every** recipe — the household is 100% both, so
   they carry no information. Already gone from filters; finish the job on cards and detail
-- Spice meter shows five chilli glyphs on every recipe (fill is colour-only) and none when spice is
+- [x] Spice meter shows five chilli glyphs on every recipe (fill is colour-only) and none when spice is
   null — needs a text equivalent like "Spice 3 of 5" for screen readers
-- Result count flashes **"0 recipes"** while loading, reading as "nothing found"
-- Add-recipe is **48 fields in one ~4,000px scroll** — even 3–4 steps would transform it
-- Recipe detail shows "Prep 20 · Cook 20 · Total 55" with no explanation of the gap. The gap is
+- [x] Result count flashes **"0 recipes"** while loading, reading as "nothing found"
+- [x] Add-recipe is **48 fields in one ~4,000px scroll** — even 3–4 steps would transform it (now four)
+- [x] Recipe detail shows "Prep 20 · Cook 20 · Total 55" with no explanation of the gap. The gap is
   real (resting/soaking time) on 9 recipes — label it rather than "fix" it
-- Nutrition shown as "% of adult reference intake" on a family app including a teenager
+- [x] Nutrition shown as "% of adult reference intake" on a family app including a teenager
+- Found while doing the above: **hidden buttons were rendering anyway** (every button sets its own
+  `display`, which beats `[hidden]`), so signed-out visitors saw Edit, Delete and "Approve for the
+  catalogue". Server-side writes were always refused; the buttons are now gone
 
 ---
 
@@ -255,8 +258,7 @@ features or cross-household sharing · recipe import-from-URL.
 
 ## Order
 
-**M0 → M1 → M2 → M3/M4 → M5**
+**M0 → M1 → M2 → M3/M4 → M5 → polish**
 
-M0 is done. M1 is complete (M1a–M1e shipped); M2 (the shopping list) is next, then M3 → M5.
-M1 came before M2 because building a shopping list on browser-only storage would have meant
-building it twice.
+All of it is shipped, in that order. M1 came before M2 because building a shopping list on
+browser-only storage would have meant building it twice.

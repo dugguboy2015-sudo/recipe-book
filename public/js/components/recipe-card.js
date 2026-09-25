@@ -15,11 +15,27 @@ export function normalizeRecipe(recipe) {
   };
 }
 
-export function dietaryBadges(recipe) {
+/**
+ * The diet a badge would have to be *news* against: a household that only eats vegetarian food is
+ * shown a vegetarian-only catalogue, so "Vegetarian" on every card tells them nothing. Set once per
+ * page when the household loads (the same module-level pattern recipe-modal.js uses for its own
+ * household copy); unset, every badge shows, which is right for a signed-out visitor.
+ * @type {{vegetarian: boolean, eggFree: boolean}|null}
+ */
+let badgeDiet = null;
+
+/** @param {{vegetarian?: boolean, eggFree?: boolean}|null} diet - shared/household-settings.js dietRecipeFilter() */
+export function setBadgeDiet(diet) {
+  badgeDiet = diet ? { vegetarian: Boolean(diet.vegetarian), eggFree: Boolean(diet.eggFree) } : null;
+}
+
+export function dietaryBadges(recipe, diet = badgeDiet) {
+  const showVegetarian = recipe.is_vegetarian && !diet?.vegetarian;
+  const showEggFree = recipe.is_egg_free && !diet?.eggFree;
   return `
     ${recipe.catalogue_status === 'pending' ? '<span class="badge pending" title="Only your household can see this until it is approved for the shared catalogue">Awaiting approval</span>' : ''}
-    ${recipe.is_vegetarian ? '<span class="badge veg">Vegetarian</span>' : ''}
-    ${recipe.is_egg_free ? '<span class="badge egg">Egg-free</span>' : ''}
+    ${showVegetarian ? '<span class="badge veg">Vegetarian</span>' : ''}
+    ${showEggFree ? '<span class="badge egg">Egg-free</span>' : ''}
     ${recipe.contains_dairy ? '' : '<span class="badge dairy">Dairy-free</span>'}
     ${recipe.is_protein_smart ? '<span class="badge protein-smart">Protein-smart</span>' : ''}
     ${recipe.mealTypes?.includes('Packed Lunch') ? '<span class="badge packed-lunch">Packed lunch</span>' : ''}
@@ -31,10 +47,19 @@ function tagList(recipe, limit) {
   return (recipe.tags || []).slice(0, limit).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
 }
 
-export function spiceMeter(level) {
-  if (!level) return '';
+export const SPICE_WORDS = ['', 'mild', 'mild to medium', 'medium', 'hot', 'very hot'];
+
+/**
+ * The fill was colour alone — five identical chillies, some orange — which says nothing to anyone
+ * who can't tell the two colours apart, and nothing at all to a screen reader beyond the label.
+ * The number now reads as text next to the glyphs, so the meter is legible without colour.
+ */
+export function spiceMeter(level, { showUnknown = false } = {}) {
+  // A blank where the meter should be reads as "not spicy"; on the recipe detail, where there is
+  // room to be explicit, say that nobody has recorded it instead.
+  if (!level) return showUnknown ? '<span class="spice-meter is-unknown">Spice not recorded</span>' : '';
   const chillies = Array.from({ length: 5 }, (_, i) => `<span class="chilli${i < level ? ' lit' : ''}" aria-hidden="true">🌶</span>`).join('');
-  return `<span class="spice-meter" role="img" aria-label="Spice ${level} of 5">${chillies}</span>`;
+  return `<span class="spice-meter"><span aria-hidden="true">${chillies}<span class="spice-meter-text">${level}/5</span></span><span class="sr-only">Spice ${level} of 5, ${SPICE_WORDS[level]}</span></span>`;
 }
 
 /**
