@@ -1,6 +1,6 @@
 # Recipe Book — agent notes
 
-All 13 phases of `improvement_plan.md` (v2.0) are complete — see `docs/progress.md` for the full
+All 13 phases of `docs/improvement_plan_v2.md` (v2.0) are complete — see `docs/progress.md` for the full
 build log (one entry per phase, acceptance results, and every deviation from the original spec)
 and its final report for the Appendix H findings traceability. Work since then follows `plan.md`
 (approved 2026-09-18), and **every milestone in it is shipped**: M0 (data integrity), M1a–M1e
@@ -10,7 +10,7 @@ share), M4 (PWA/offline and mobile IA), M5 (favourites, fridge search, leftovers
 and M6 (the polish backlog). Nothing in `plan.md` is outstanding; the only open items are the two
 the owner has to do themselves (a custom SMTP sender and the sign-in captcha). Read `docs/progress.md` before making
 further changes — it's the actual history of what this codebase is and why, in more detail than fits here.
-The full spec is still `improvement_plan.md` if you need the original reasoning behind a
+The full spec is still `docs/improvement_plan_v2.md` if you need the original reasoning behind a
 constraint; `README.md`, `docs/architecture.md`, and `docs/operations.md` are the maintained,
 current-state references for running, understanding, and operating the app day to day.
 
@@ -59,7 +59,7 @@ npm run smoke -- --base <url>          # read-only checks against any deployment
 npm run smoke -- --base http://localhost:8788 --write   # local only, uses Turnstile test keys
 ```
 
-## Hard constraints (see improvement_plan.md §2 for the full list)
+## Hard constraints (see docs/improvement_plan_v2.md §2 for the full list)
 
 - Free tier only across Cloudflare, Supabase, GitHub, Google AI Studio. Hit a limit → STOP.
 - Secrets never committed, logged, or echoed. `.env.local` and `.dev.vars` are gitignored.
@@ -79,4 +79,4 @@ npm run smoke -- --base http://localhost:8788 --write   # local only, uses Turns
 
 ## Git & deploy workflow
 
-One branch per phase (`phase-N-name`), small commits, `npm run check` before pushing, PR against `main` with acceptance results and the preview URL, merge (squash) once CI and preview smoke pass, then verify production smoke. Full detail in `improvement_plan.md` §4.
+One branch per phase (`phase-N-name`), small commits, `npm run check` before pushing, PR against `main` with acceptance results and the preview URL, merge (squash) once CI and preview smoke pass, then verify production smoke. Full detail in `docs/improvement_plan_v2.md` §4.

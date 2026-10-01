@@ -4,7 +4,7 @@
 production data survey run the same day.
 
 Companion docs: `docs/ux-uplift-plan.md` (completed A–D uplift), `docs/progress.md` (build log),
-`improvement_plan.md` (original spec).
+`docs/improvement_plan_v2.md` (original spec).
 
 ---
 
