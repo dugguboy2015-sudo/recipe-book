@@ -1,7 +1,7 @@
 // M2: turning a week's plan into a shopping list. Pure — no DOM, no network — so the aggregation
 // and unit maths can be tested directly (pages/shopping.js does the fetching and rendering).
 //
-// Two owner decisions shape this (plan.md): quantities that are "to taste" are never given a
+// Two owner decisions shape this (improvement_plan.md §3): quantities that are "to taste" are never given a
 // number, and pantry staples (spices, oil, salt, sweeteners, condiments) are separated into a
 // "Check you have these" section rather than padding the list you take to the shop.
 

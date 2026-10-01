@@ -1,5 +1,14 @@
 # Recipe Book — Build Progress Log
 
+> **A note on the plan documents this log cites.** On 2026-10-01 four plan files —
+> `plan.md`, `improvement_plan.md` (v2.0), `docs/ux-uplift-plan.md` and
+> `docs/parity-checklist.md` — were consolidated into the single `improvement_plan.md` at the
+> repo root, which is now the only plan. Entries below are **history and are left exactly as
+> they were written**, so they still name the documents that existed at the time. Those files
+> remain in git history (commit `39ce284` and its ancestors). Anything from them that is still
+> live — constraints, procedures, owner decisions, outstanding work — was carried into the new
+> `improvement_plan.md`; see its §8 for what went where.
+
 ## Phase 0 — Preflight, backup, emergency lockdown — DONE
 - Date: 2026-09-10
 - Branch / PR: phase-0-lockdown / [#1](https://github.com/dugguboy2015-sudo/recipe-book/pull/1) (merged 83ab4b3)
@@ -94,7 +103,7 @@
   - **Id 4, "Basundi"**: stored `ingredients` was `[]`, but the method text fully describes the dish (milk, sugar, saffron-soaked milk, cardamom, pistachios, almonds, cashews). Reconstructed a plausible ingredient list with judgment-based quantities (`scripts/data/ingredient-overrides.mjs`, `RECONSTRUCTED_GROUPS[4]`) — these are reasonable estimates, not recovered originals. Worth a quick owner glance.
   - **Id 12, "Kothimbir Vadi"**: stored `ingredients` only had the tempering group; the method describes a full batter (coriander, gram flour, rice flour, ginger-garlic, chillies, spices, sugar, lemon) that was missing entirely. Reconstructed the missing "For the batter" group the same way, prepended before the surviving tempering group.
   - **Id 27, "Shrikhand"**: same situation as Basundi (`ingredients` was `[]`, method intact — strained yoghurt, sugar, saffron milk, cardamom, nuts). Reconstructed similarly.
-- **Contains_dairy correction** (012a): recipes 3, 5, 7, 11, 12, 13, 14, 15, 18, 19, 25, 26, 28, 29 were changed from `contains_dairy: true` to `false` — this is exactly the bug described in improvement_plan.md §1.4 ("all 30 live recipes are marked contains_dairy: true, which can't all be right, e.g. Lemon Rice, Schezwan Noodles"); both of those named examples are in the corrected list. Not a silent change — logged here and in the migration's own comment.
+- **Contains_dairy correction** (012a): recipes 3, 5, 7, 11, 12, 13, 14, 15, 18, 19, 25, 26, 28, 29 were changed from `contains_dairy: true` to `false` — this is exactly the bug described in improvement_plan_v2.md §1.4 ("all 30 live recipes are marked contains_dairy: true, which can't all be right, e.g. Lemon Rice, Schezwan Noodles"); both of those named examples are in the corrected list. Not a silent change — logged here and in the migration's own comment.
 - Protein-smart share: 0/30. None of the existing recipes clear J.2's `protein_g * 4 >= 0.20 * calories_kcal` bar even where `protein_g >= 15` (Chilli Paneer, Paneer Tikka Wrap, Paneer Tikka Paratha Roll all fail this specific check — their calories are too high relative to protein). Expected: this collection predates the household health goals: Phase 9's AI generation is what drives new recipes toward the 60% target, not a retroactive rewrite of existing ones.
 - Deviations from spec:
   1. The three items above (data-loss reconstruction/skip) aren't strictly "deviations" from a spec instruction, but are deviations from a clean backfill — recorded here per §0.5's spirit of logging anything the spec's normative appendices didn't anticipate.
@@ -325,7 +334,7 @@
   3. **Found while writing the "un-deleting a recipe" section: `scripts/sql.mjs` cannot run write queries at all, by design, not by accident.** Its own guard reads "Refusing to run a non-SELECT query without `--read-only`" — worded as if `--read-only` were a bypass flag — but that same flag sets the Supabase Management API's session to an actual read-only transaction, so any non-`SELECT` statement then fails at the database level (confirmed live: `update public.schema_migrations set filename=filename where false` → `25006: cannot execute UPDATE in a read-only transaction`). Re-reading `CLAUDE.md`'s hard constraint #5 confirms this is intentional — `npm run sql -- --read-only` is meant to be read-only-only, full stop; ad-hoc writes against production are supposed to be impossible outside a real migration file. Not changed. `docs/operations.md`'s un-delete section documents the two paths that do work (the restore API endpoint, or a proper `migrations/*.sql` file) and explicitly says not to reach for `npm run sql` for a write.
   4. **`recipe_generations` and `recipe_audit_log` are both still completely empty in production** (`count(*) = 0`, confirmed live during this phase) — no real AI generation and no real create/edit/delete has ever succeeded against production across all 13 phases, for the same reason every phase from 9 onward recorded: Turnstile correctly blocks every automated-browser attempt (working as designed), and no manual human test was performed either. `recipes` itself is still exactly the Phase 0 baseline — 32 rows, 30 visible, 2 soft-deleted (ids 38/39). This means the write and generate pipelines are thoroughly unit-tested against mocked/scripted responses and verified structurally live (Turnstile genuinely invoked, correct error states, correct non-AI branches), but **no code path that depends on a real model response or a real successful write has ever actually executed in production.** Carried forward from every earlier phase's own recommendation: a manual create, a manual edit, and a manual AI generation from an ordinary (non-automated) browser would close this loop; nothing in the codebase itself is blocking it, only the tooling available to build and verify it autonomously.
   5. Two findings flagged in earlier phases remain open, unchanged by this phase: `task_a2836fde` (the `time_note` template-junk text on all 30 recipes, and recipe #3's missing first method stage — Phase 9) and `task_cf7d7dfc` (`is_protein_smart` is `false` for all 30 live recipes, so the planner's 60%-repair mechanism — verified correct in Phase 11's unit tests — always hits its shortfall path in practice; re-confirmed this phase via the quota endpoint's live `proteinSmartShare: 0`). Both are data-repair work, not code defects, and both were deliberately left for a separate session rather than fixed inline, per the standing project convention of not scope-creeping a phase to cover unrelated data quality.
-  6. **Appendix H final status** (traceability IDs from the original review; see `improvement_plan.md` for the finding text):
+  6. **Appendix H final status** (traceability IDs from the original review; see `improvement_plan_v2.md` for the finding text):
 
      | ID | Status | Evidence |
      |---|---|---|
@@ -374,7 +383,7 @@
 
 ---
 
-> **From here on, work follows `plan.md` (approved 2026-09-18), not `improvement_plan.md`.** Entries
+> **From here on, work follows `plan.md` (approved 2026-09-18), not `improvement_plan_v2.md`.** Entries
 > are named after its milestones (M0, M1a, …). The UX uplift phases A–D that preceded it are
 > recorded in `docs/ux-uplift-plan.md` and PRs #33 and #37.
 

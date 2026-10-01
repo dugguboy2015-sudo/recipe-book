@@ -1,18 +1,20 @@
 # Recipe Book — agent notes
 
-All 13 phases of `improvement_plan.md` (v2.0) are complete — see `docs/progress.md` for the full
-build log (one entry per phase, acceptance results, and every deviation from the original spec)
-and its final report for the Appendix H findings traceability. Work since then follows `plan.md`
-(approved 2026-09-18), and **every milestone in it is shipped**: M0 (data integrity), M1a–M1e
-(accounts, households, member-only writes, per-household settings, the planner in the database),
-M2 (the shopping list — Phase 14's `ENABLE_SHOPPING_LIST` deferral), M3 (dish illustrations, print,
-share), M4 (PWA/offline and mobile IA), M5 (favourites, fridge search, leftovers, cooked history)
-and M6 (the polish backlog). Nothing in `plan.md` is outstanding; the only open items are the two
-the owner has to do themselves (a custom SMTP sender and the sign-in captcha). Read `docs/progress.md` before making
-further changes — it's the actual history of what this codebase is and why, in more detail than fits here.
-The full spec is still `improvement_plan.md` if you need the original reasoning behind a
-constraint; `README.md`, `docs/architecture.md`, and `docs/operations.md` are the maintained,
-current-state references for running, understanding, and operating the app day to day.
+**`improvement_plan.md` is the one and only plan.** It holds the current state, the target state,
+the owner's standing decisions, the hard constraints, the operating procedures and the roadmap.
+There is exactly one such file and it lives at the repo root — never create a second plan,
+roadmap, spec or backlog document beside it (`plan.md`, `ux-uplift-plan.md`,
+`improvement_plan_v2.md` and `parity-checklist.md` were consolidated into it on 2026-10-01).
+Amend that file instead, and append the outcome of each slice to `docs/progress.md`.
+
+Everything specified so far is shipped and live: the 13 phases of the original build spec, the
+A–D responsive uplift, and milestones M0–M6 (accounts and households, the shopping list, dish
+illustrations and sharing, PWA/offline and mobile IA, favourites/fridge search/leftovers/cooked
+history, and the polish backlog). What remains is the six-slice UX uplift in `improvement_plan.md`
+§6, plus two things only the owner can do. Read `docs/progress.md` before making further changes —
+it is the actual history of what this codebase is and why, in more detail than fits here.
+`README.md`, `docs/architecture.md` and `docs/operations.md` are the maintained, current-state
+references for running, understanding and operating the app day to day.
 
 ## Project map
 
@@ -26,10 +28,13 @@ public/            static site served by Cloudflare Pages (no build step; native
 functions/api/      Cloudflare Pages Functions (server-side; holds the secret Supabase key)
 migrations/         SQL applied only via scripts/migrate.mjs, in filename order, never edited once applied
 scripts/            tooling: preflight, backup, restore, migrate, sql, check-secrets, smoke, dev:vars, secrets:push
-config/household.json   the household profile driving AI prompts, validation, planner and UI
-docs/architecture.md    data model, trust boundaries, the write/generate pipelines, adding auth later
+config/household.json   the founding household's profile and the template for new ones (per-household
+                        settings live in the database since M1d)
+improvement_plan.md     THE plan — current state, target state, decisions, constraints, procedures,
+                        roadmap. The only one; never add a second plan file
+docs/architecture.md    data model, trust boundaries, the write/generate pipelines
 docs/operations.md      changing limits, rotating secrets, restoring data, reading the audit log
-docs/progress.md    one entry per phase — append, don't rewrite
+docs/progress.md        one entry per slice — append, don't rewrite
 ```
 
 Two things worth knowing before touching `public/js/`, since they're easy to get wrong by copying
@@ -59,7 +64,7 @@ npm run smoke -- --base <url>          # read-only checks against any deployment
 npm run smoke -- --base http://localhost:8788 --write   # local only, uses Turnstile test keys
 ```
 
-## Hard constraints (see improvement_plan.md §2 for the full list)
+## Hard constraints (see `improvement_plan.md` §4 for the full list and the reasoning)
 
 - Free tier only across Cloudflare, Supabase, GitHub, Google AI Studio. Hit a limit → STOP.
 - Secrets never committed, logged, or echoed. `.env.local` and `.dev.vars` are gitignored.
@@ -71,12 +76,11 @@ npm run smoke -- --base http://localhost:8788 --write   # local only, uses Turns
 - No build step, no framework/bundler in `public/`. No `ajv`/`eval`/`new Function` in Functions.
 - The AI never writes a recipe directly — it returns a draft; only `POST /api/recipes` inserts.
 - Dietary booleans (`is_vegetarian`, `is_egg_free`, `contains_dairy`, …) are never defaulted anywhere.
-- No user accounts/sign-in (out of scope by owner decision, for now).
-- All UI comes from the Phase 5 design system — no one-off colours, sizes or components.
-- Household rules (`config/household.json`) are product requirements, not suggestions.
+- All UI comes from the design system — no one-off colours, sizes or components; both themes checked.
+- Household rules are product requirements, not suggestions — per household in the database since M1d, not a static config file.
 - Recipe quantities are stored per the recipe's `serves`; changing servings is display-only scaling.
 - Nutrition values are estimates — label them as such.
 
 ## Git & deploy workflow
 
-One branch per phase (`phase-N-name`), small commits, `npm run check` before pushing, PR against `main` with acceptance results and the preview URL, merge (squash) once CI and preview smoke pass, then verify production smoke. Full detail in `improvement_plan.md` §4.
+One branch per slice, cut from and targeting `main` — never stacked. Small commits, `npm run check` before pushing, PR against `main` with acceptance results and the preview URL, merge (squash) once CI and preview smoke pass, then verify production smoke. Full detail in `improvement_plan.md` §5.
