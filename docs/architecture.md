@@ -41,7 +41,7 @@ either way, as the signed-out store and a fallback if a save fails.
 
 | Table | Purpose |
 |---|---|
-| `recipes` | The recipe itself: name, cuisine, times, steps (jsonb), spice level, nutrition (per serving), three dietary booleans, soft-delete (`is_deleted`/`deleted_at`), plus a legacy `ingredients` jsonb mirror *intended* to stay in sync for backups/rollback but read by nothing new — **it is not reliably in sync** (M0 found it empty on rows whose structured ingredients are intact; tracked as tech debt in `plan.md`). `created_by_household` (M1a) records which household contributed a recipe (edit rights), and `catalogue_status` (M1c: `public`/`pending`) whether it is in the shared catalogue yet or still private to that household. |
+| `recipes` | The recipe itself: name, cuisine, times, steps (jsonb), spice level, nutrition (per serving), three dietary booleans, soft-delete (`is_deleted`/`deleted_at`), plus a legacy `ingredients` jsonb mirror *intended* to stay in sync for backups/rollback but read by nothing new — **it is not reliably in sync** (M0 found it empty on rows whose structured ingredients are intact; tracked as tech debt in `improvement_plan.md` §6.3). `created_by_household` (M1a) records which household contributed a recipe (edit rights), and `catalogue_status` (M1c: `public`/`pending`) whether it is in the shared catalogue yet or still private to that household. |
 | `ingredients` | The canonical ingredient catalogue: `name` (lowercase, unique), `display_name`, `category`, four allergen/diet flags (`contains_meat`/`egg`/`dairy`/`nuts`/`gluten` — never defaulted), and a `status` (`unreviewed`/`reviewed`) used to gate the dietary auto-suggestion feature. |
 | `ingredient_aliases` | Alternate spellings mapped to a canonical `ingredients.id`, so "cilantro" and "coriander leaves" resolve to the same row. |
 | `recipe_ingredients` | One row per ingredient line on a recipe: `group_name`/`group_position` (e.g. "For the dough"), `position` within the group, `quantity`/`unit`/`preparation`/`is_optional`/`scales`, and `original_text` (what the user typed, kept for reference). This is what makes "scale to N servings" and a future shopping list possible — quantities are structured, not flat text. |
@@ -213,7 +213,7 @@ of each write — see §5.
 
 The original sketch here keyed everything on a per-user `owner_id`. Owner decisions on 2026-09-18
 (shared household login with members; recipes as one shared catalogue; commercialising later)
-replaced that with **households as the tenant**. M1 is built in slices — see `plan.md`:
+replaced that with **households as the tenant**. M1 was built in slices — see `docs/progress.md`:
 
 1. **Tenancy schema (M1a — shipped).** `households`, `household_members` (one household per user),
    `household_invites`, `household_settings` — §2.1. Every household table is readable only by its
@@ -295,7 +295,7 @@ counts and weights never get added together, and grouped into aisles by `ingredi
 - Volumes are summed in millilitres and shown back in cups and spoons (`shared/units.js`'s
   `bestCupSpoon`), weights in g/kg, counts per unit ("4 cloves"). One ingredient appearing in two
   unit kinds keeps two lines rather than a wrong total.
-- Two product rules (plan.md): a row that is `to_taste` or has no quantity never gets a number,
+- Two product rules (`improvement_plan.md` §3): a row that is `to_taste` or has no quantity never gets a number,
   and pantry staples (`spice`, `oil_fat`, `sweetener`, `condiment`) go to a separate **"Check you
   have these"** section instead of padding the list you shop from.
 - `shopping_lists` (migration 020) stores only what a person *did*: which keys are ticked and any

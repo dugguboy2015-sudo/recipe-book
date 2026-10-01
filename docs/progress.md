@@ -1,5 +1,14 @@
 # Recipe Book — Build Progress Log
 
+> **A note on the plan documents this log cites.** On 2026-10-01 four plan files —
+> `plan.md`, `improvement_plan.md` (v2.0), `docs/ux-uplift-plan.md` and
+> `docs/parity-checklist.md` — were consolidated into the single `improvement_plan.md` at the
+> repo root, which is now the only plan. Entries below are **history and are left exactly as
+> they were written**, so they still name the documents that existed at the time. Those files
+> remain in git history (commit `39ce284` and its ancestors). Anything from them that is still
+> live — constraints, procedures, owner decisions, outstanding work — was carried into the new
+> `improvement_plan.md`; see its §8 for what went where.
+
 ## Phase 0 — Preflight, backup, emergency lockdown — DONE
 - Date: 2026-09-10
 - Branch / PR: phase-0-lockdown / [#1](https://github.com/dugguboy2015-sudo/recipe-book/pull/1) (merged 83ab4b3)

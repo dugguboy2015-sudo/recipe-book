@@ -128,7 +128,8 @@ functions/api/      Cloudflare Pages Functions — the only code that ever sees 
 migrations/         SQL, applied only via scripts/migrate.mjs, in filename order, never edited once applied
 scripts/            tooling — preflight, backup, restore, migrate, sql, check-secrets, smoke, dev:vars
 config/household.json   the household profile (see Configuration, above)
-docs/               architecture.md, operations.md, progress.md (one entry per build phase), parity-checklist.md
+improvement_plan.md the single plan — what to build and why, the constraints, and how to ship
+docs/               architecture.md, operations.md, progress.md (one entry per build phase)
 ```
 
 ## Testing
