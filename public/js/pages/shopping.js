@@ -1,7 +1,8 @@
 import { escapeHtml, showSnackbar } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
 import { fetchRecipesForShopping, fetchIngredientsForRecipes } from '../lib/queries.js';
-import { getReadyAccount } from '../components/account.js';
+import { getReadyAccount, subscribeAccount } from '../components/account.js';
+import { deviceOnlyNote } from '../shared/account-copy.js';
 import { mountAskDialog } from '../components/ask-dialog.js';
 import { getHousehold } from '../lib/household.js';
 import { DAYS, loadPlanState, getWeekDays, mondayOf } from '../lib/planner-store.js';
@@ -193,10 +194,22 @@ function setWeek(weekOf) {
   loadWeek();
 }
 
+/** P1: tell a signed-out visitor their data is device-only, before they find out the hard way. */
+function wireAccountNote() {
+  const note = document.getElementById('shoppingAccountNote');
+  if (!note) return;
+  subscribeAccount((account) => {
+    const text = deviceOnlyNote(account);
+    note.textContent = text;
+    note.hidden = !text;
+  });
+}
+
 export async function initShoppingPage() {
   const container = document.getElementById('shoppingList');
   if (!container) return;
-  mountAskDialog(); // the bottom bar's Ask button exists on this page too
+  mountAskDialog(); // the nav's Ask button exists on this page too
+  wireAccountNote();
 
   const params = new URLSearchParams(window.location.search);
   const requested = params.get('week');

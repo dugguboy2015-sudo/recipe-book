@@ -258,20 +258,20 @@
     </section>
 
     <section class="sg-section">
-      <h2>App shell — sidebar navigation</h2>
-      <p class="sg-note">Shown at &ge;1100px in the app (<code>.sidebar-nav</code> in components.css); at narrower widths the same links live in the header pills or the bottom tab bar. Shrunk here to fit the style guide column.</p>
+      <h2>App shell — navigation</h2>
+      <p class="sg-note">One <code>.app-nav</code> serves every width: fixed to the left at &ge;1100px, shown here, and fixed to the bottom as a tab bar below that. Shrunk here to fit the style guide column.</p>
       <div class="sg-sidebar-demo">
-        <aside class="sidebar-nav" aria-label="Main navigation demo">
-          <span class="sidebar-wordmark">Recipe Book</span>
-          <nav class="sidebar-nav-links">
-            <a href="#" aria-current="page"><span class="icon" aria-hidden="true">🏠</span> Dashboard</a>
-            <a href="#"><span class="icon" aria-hidden="true">🍲</span> Recipes</a>
-            <a href="#"><span class="icon" aria-hidden="true">🗓️</span> Weekly Planner</a>
-          </nav>
-          <div class="sidebar-footer">
-            <a href="#" class="primary-button sidebar-add-recipe">Add a recipe</a>
+        <nav class="app-nav" aria-label="Main navigation demo">
+          <span class="app-nav-wordmark">Recipe Book</span>
+          <ul class="app-nav-links">
+            <li><a href="#" aria-current="page"><span class="app-nav-icon" aria-hidden="true">🏠</span><span class="app-nav-label">Dashboard</span></a></li>
+            <li><a href="#"><span class="app-nav-icon" aria-hidden="true">🍲</span><span class="app-nav-label">Recipes</span></a></li>
+            <li><a href="#"><span class="app-nav-icon" aria-hidden="true">🗓️</span><span class="app-nav-label">Planner</span></a></li>
+          </ul>
+          <div class="app-nav-footer">
+            <a href="#" class="primary-button app-nav-add">Add a recipe</a>
           </div>
-        </aside>
+        </nav>
       </div>
     </section>
 

@@ -89,6 +89,11 @@
 }
 [data-tooltip]:hover::after, [data-tooltip]:focus-visible::after { opacity: 1; }
 
+/* A tooltip is centred on its control, so one on a right-edge control hangs past the window and
+   drags a horizontal scrollbar onto the whole page — 39px of it at 1440px, which production has
+   had since the theme toggle shipped. At the right edge, hang the label leftwards instead. */
+.header-actions [data-tooltip]::after { left: auto; right: 0; transform: none; }
+
 /* ---------- Chip (filter / toggle / removable) ---------- */
 .chip {
   background: var(--surface-raised);
@@ -450,17 +455,12 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 .status-region { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- App shell ---------- */
-.site-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-4);
-  margin-bottom: var(--sp-6);
-  position: relative;
-  min-height: 44px; /* keeps the theme toggle vertically placed even when .site-nav is hidden (mobile) */
-}
-
-.header-actions { position: absolute; top: 50%; right: 0; transform: translateY(-50%); display: flex; align-items: center; gap: var(--sp-2); }
+/* The account and theme controls live in the page header and share the title's line. They used
+   to sit in a <header class="site-header"> of their own, a 44px row above the title holding two
+   icons. */
+/* order keeps the controls on the title's line: the note is full-width, so in source order it
+   would push them onto a third row. */
+.header-actions { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; order: 1; }
 
 /* ---------- Account (M1b) ---------- */
 .account-slot { display: flex; align-items: center; min-height: 44px; }
@@ -489,158 +489,124 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 .member-list li { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
 .member-list li:last-child { border-bottom: 0; }
 
-.site-nav { display: flex; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
+/* ---------- Navigation (one definition, two edges) ----------
+   This used to be three separate blocks of markup on every page — a desktop sidebar, a row of
+   pills in the header, and a bottom tab bar — twelve copies to keep in step across four pages,
+   each with its own labels. It is now one <nav class="app-nav">: fixed to the bottom below
+   1100px, fixed to the left above it. Same links, same order, same labels, whichever edge. */
+.app-nav {
+  position: fixed;
+  z-index: 40;
+  background: var(--surface);
+  display: flex;
+}
 
-.site-nav a, .site-nav button {
-  background: transparent;
-  color: var(--brand-ink);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: var(--sp-2) var(--sp-3);
-  min-height: 44px;
-  display: inline-flex;
+.app-nav-links { list-style: none; margin: 0; padding: 0; display: flex; }
+
+.app-nav-links a, .app-nav-ask {
+  display: flex;
   align-items: center;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
   text-decoration: none;
-}
-
-.site-nav a:hover, .site-nav a[aria-current="page"], .site-nav button:hover { border-color: var(--brand); background: var(--protein-bg); }
-
-header.page-header { text-align: center; margin-bottom: var(--sp-6); }
-
-.eyebrow {
-  display: inline-block;
-  font-size: var(--fs-1);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--brand-ink);
+  font: inherit;
   font-weight: 600;
-  padding: var(--sp-1) var(--sp-4);
-  border: 1px solid var(--brand);
-  border-radius: var(--radius-pill);
-  margin-bottom: var(--sp-4);
+  color: var(--ink-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  min-width: 0;
 }
 
-h1 em { font-style: italic; color: var(--spice); }
+.app-nav-links a[aria-current="page"] { color: var(--brand-ink); }
+.app-nav-wordmark { font-family: 'Fraunces', serif; font-weight: 700; font-size: var(--fs-5); color: var(--brand-ink); }
 
-header.page-header p { max-width: 640px; margin: var(--sp-3) auto 0; color: var(--ink-muted); font-size: var(--fs-4); }
-
-.site-footer { text-align: center; color: var(--ink-muted); font-size: var(--fs-1); padding: var(--sp-6) 0 var(--sp-3); }
-
-.bottom-tab-bar { display: none; }
-
-.ask-on-mobile { display: none; }
-
-@media (max-width: 760px) {
-  .site-nav { display: none; }
-
-  /* The AI panel is a whole screen of controls; on a phone it sat between the page title and the
-     recipes, so it becomes one button that opens the same dialog. */
-  .ask-on-mobile { display: flex; width: 100%; margin-bottom: var(--sp-4); }
-  #generatePanelContainer { display: none; }
-
-  .bottom-tab-bar .tab-ask {
+/* --- Phones and tablets: a bottom tab bar.
+   Tablets get it too now. They used to fall in a gap where the bottom bar was hidden and the
+   header pills were the only navigation. --- */
+@media (max-width: 1099px) {
+  .app-nav {
+    left: 0; right: 0; bottom: 0;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 16px var(--shadow-color);
+  }
+  .app-nav-wordmark, .app-nav-footer { display: none; }
+  .app-nav-links { flex: 1; }
+  /* min-width: 0 matters: flex items won't shrink below their text by default, so five tabs
+     once forced the whole page 449px wide on a 375px phone. */
+  .app-nav-links li { flex: 1; min-width: 0; display: flex; }
+  .app-nav-links a, .app-nav-ask {
     flex: 1;
-    display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
     gap: 2px;
     padding: var(--sp-2) var(--sp-1);
     min-height: 56px;
-    background: transparent;
-    border: 0;
-    color: var(--brand-ink);
-    font: inherit;
     font-size: var(--fs-1);
-    font-weight: 600;
-  }
-  .bottom-tab-bar {
-    display: flex;
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--line);
-    box-shadow: 0 -4px 16px var(--shadow-color);
-    z-index: 40;
-  }
-  /* min-width: 0 matters: flex items won't shrink below their text by default, so five tabs
-     forced the whole page 449px wide on a 375px phone. */
-  .bottom-tab-bar a, .bottom-tab-bar .tab-ask {
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .bottom-tab-bar a {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: var(--sp-2) var(--sp-1);
-    min-height: 56px;
-    color: var(--ink-muted);
-    text-decoration: none;
-    font-size: var(--fs-1);
-    font-weight: 600;
-  }
-  .bottom-tab-bar a[aria-current="page"] { color: var(--brand-ink); }
+  .app-nav-icon { font-size: var(--fs-4); line-height: 1; }
   body { padding-bottom: 72px; }
 }
 
-/* ---------- Desktop sidebar nav (>=1100px) ----------
-   Tablet (760-1099px) keeps .site-nav's centred pills; mobile (<760px) keeps .bottom-tab-bar above.
-   Both already exist — 1100px is the only new breakpoint this adds. */
-.sidebar-nav { display: none; }
-
+/* --- Desktop: the same nav, down the left --- */
 @media (min-width: 1100px) {
   body { padding-left: 240px; }
-
-  .site-nav a { display: none; } /* page links now live in the sidebar; Ask for a recipe stays */
-
-  .sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-6);
-    position: fixed;
+  .app-nav {
     inset-block: 0;
     left: 0;
     width: 240px;
+    flex-direction: column;
+    gap: var(--sp-6);
     padding: var(--sp-6) var(--sp-5);
-    background: var(--surface);
     border-right: 1px solid var(--line);
     overflow-y: auto;
-    z-index: 10;
   }
+  .app-nav-links { flex-direction: column; gap: var(--sp-1); }
+  .app-nav-links a, .app-nav-ask {
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--radius-control);
+    color: var(--ink);
+    min-height: 44px;
+    width: 100%;
+  }
+  .app-nav-links a:hover, .app-nav-ask:hover { background: var(--surface-raised); }
+  .app-nav-links a[aria-current="page"] { background: var(--protein-bg); color: var(--brand-ink); }
+  .app-nav-icon { font-size: var(--fs-4); }
+  .app-nav-footer { margin-top: auto; }
+  .app-nav-add { width: 100%; }
 }
 
-.sidebar-wordmark { font-family: 'Fraunces', serif; font-weight: 700; font-size: var(--fs-5); color: var(--brand-ink); }
-
-.sidebar-nav-links { display: flex; flex-direction: column; gap: var(--sp-1); }
-
-.sidebar-nav-links a {
+/* ---------- Page header ----------
+   The page's name and its primary action. The display-type hero that used to sit here cost
+   202-295px at the top of every page, at every width, on an app the family opens daily — so the
+   first useful thing was half a screen down. See improvement_plan.md P1. */
+header.page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-control);
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 600;
+  gap: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-5);
   min-height: 44px;
 }
 
-.sidebar-nav-links a:hover { background: var(--surface-raised); }
-.sidebar-nav-links a[aria-current="page"] { background: var(--protein-bg); color: var(--brand-ink); }
-.sidebar-nav-links .icon { font-size: var(--fs-4); }
+header.page-header h1 { font-size: var(--fs-6); }
+.page-header-note { flex-basis: 100%; margin: 0; color: var(--ink-muted); font-size: var(--fs-2); order: 2; }
+.empty-week-cta { margin: var(--sp-3) 0 0; }
 
-.sidebar-footer { margin-top: auto; }
-.sidebar-add-recipe { width: 100%; }
+h1 em { font-style: italic; color: var(--spice); }
+
+.site-footer { text-align: center; color: var(--ink-muted); font-size: var(--fs-1); padding: var(--sp-6) 0 var(--sp-3); }
+
+.ask-on-mobile { display: none; }
+
+@media (max-width: 760px) {
+  /* The AI panel is a whole screen of controls; on a phone it sat between the page title and the
+     recipes, so it becomes one button that opens the same dialog. */
+  .ask-on-mobile { display: flex; width: 100%; margin-bottom: var(--sp-4); }
+  #generatePanelContainer { display: none; }
+}
 
 /* ---------- Structured ingredient editor (task 7.1) ---------- */
 .ingredient-groups, .method-groups { display: grid; gap: var(--sp-4); margin-top: var(--sp-4); }
