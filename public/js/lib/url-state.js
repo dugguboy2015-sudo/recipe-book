@@ -3,7 +3,7 @@
 // browser) — only history.replaceState itself needs a real document.
 
 /** @returns {URLSearchParams} */
-export function filtersToSearchParams(filters, page) {
+export function filtersToSearchParams(filters) {
   const params = new URLSearchParams();
   if (filters.search) params.set('q', filters.search);
   if (filters.cuisine) params.set('cuisine', filters.cuisine);
@@ -14,7 +14,6 @@ export function filtersToSearchParams(filters, page) {
   if (filters.nutFree) params.set('nutfree', '1');
   if (filters.spiceMax) params.set('spice', String(filters.spiceMax));
   if (filters.pendingOnly) params.set('status', 'pending');
-  if (page && page > 1) params.set('page', String(page));
   return params;
 }
 
@@ -33,11 +32,6 @@ export function searchParamsToFilters(params) {
   };
 }
 
-/** @param {URLSearchParams} params */
-export function searchParamsToPage(params) {
-  const page = Number(params.get('page'));
-  return Number.isFinite(page) && page > 0 ? page : 1;
-}
 
 /* ---------- P2: the open recipe is part of the URL too ----------
    The filters above belong to the recipes page; these belong to the recipe detail, which can be

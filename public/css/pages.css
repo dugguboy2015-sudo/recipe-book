@@ -74,6 +74,15 @@
 .actions-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: flex-end; align-items: center; }
 
 /* ---------- Recipe browse: filter sidebar (desktop/tablet) + bottom sheet (mobile) ---------- */
+/* P4: search is the first thing on the page at every width. It used to live inside the filter
+   sheet, so on a phone it was not rendered at all and finding "paneer" cost five steps. */
+.recipes-finder { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.recipes-finder .search-box { flex: 1 1 240px; min-width: 0; }
+.active-filters { margin-bottom: var(--sp-4); }
+.recipes-ai { margin-top: var(--sp-7); }
+.recipes-ai h2 { margin-bottom: var(--sp-3); }
+.active-filters[hidden] { display: none; }
+
 .recipes-row { display: flex; gap: var(--sp-5); align-items: flex-start; }
 
 .filter-panel {
@@ -102,7 +111,7 @@
 
 .filter-open-button, .filter-panel-backdrop, .filter-sheet-apply { display: none; }
 
-@media (max-width: 760px) {
+@media (max-width: 1099px) {
   .recipes-row { display: block; } /* .filter-panel floats via fixed positioning, independent of flow */
 
   .filter-open-button { display: inline-flex; }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  filtersToSearchParams, searchParamsToFilters, searchParamsToPage,
+  filtersToSearchParams, searchParamsToFilters,
   recipeSearchParams, parseRecipeParams, preserveRecipeParams,
   plannerSearchParams, parsePlannerParams,
 } from '../../public/js/lib/url-state.js';
@@ -24,7 +24,6 @@ describe('filtersToSearchParams', () => {
     };
     const params = filtersToSearchParams(filters, 2);
     expect(searchParamsToFilters(params)).toEqual(filters);
-    expect(searchParamsToPage(params)).toBe(2);
   });
 
   it('omits page when it is 1', () => {
@@ -32,17 +31,22 @@ describe('filtersToSearchParams', () => {
   });
 });
 
-describe('searchParamsToFilters / searchParamsToPage', () => {
+describe('searchParamsToFilters', () => {
   it('defaults to page 1 and empty filters with no params', () => {
     const params = new URLSearchParams('');
     expect(searchParamsToFilters(params)).toEqual(defaultFilters());
-    expect(searchParamsToPage(params)).toBe(1);
   });
 
-  it('ignores a non-numeric or zero/negative page', () => {
-    expect(searchParamsToPage(new URLSearchParams('page=abc'))).toBe(1);
-    expect(searchParamsToPage(new URLSearchParams('page=0'))).toBe(1);
-    expect(searchParamsToPage(new URLSearchParams('page=-3'))).toBe(1);
+  // P4 replaced paging with "Show more", so a page number in the URL describes nothing a reload
+  // could restore: ?page=3 would have shown recipes 25-31 alone, with no way back to the first 24.
+  it('no longer writes a page number', () => {
+    const params = filtersToSearchParams({ search: 'dal', tags: [], mealTypes: [] });
+    expect(params.has('page')).toBe(false);
+  });
+
+  it('ignores a page number left over in an old link', () => {
+    expect(searchParamsToFilters(new URLSearchParams('q=dal&page=3')))
+      .toEqual({ ...defaultFilters(), search: 'dal' });
   });
 });
 

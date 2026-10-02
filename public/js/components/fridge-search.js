@@ -13,8 +13,7 @@ export function createFridgeSearch({ container, client, onSearch, onClear }) {
 
   function render() {
     container.innerHTML = `
-      <details class="fridge-search panel" ${chosen.size ? 'open' : ''}>
-        <summary>What's in the fridge?</summary>
+      <div class="fridge-search panel">
         <p class="hint">Pick what you already have and we'll show what you can nearly cook. Store-cupboard spices and oil are assumed.</p>
         <div class="fridge-picker">
           <label class="sr-only" for="fridgeInput">Add an ingredient you have</label>
@@ -27,7 +26,7 @@ export function createFridgeSearch({ container, client, onSearch, onClear }) {
           <button type="button" class="primary-button" id="fridgeSearchButton"${chosen.size ? '' : ' disabled'}>Show what I can cook</button>
           ${chosen.size ? '<button type="button" class="ghost-button" id="fridgeClear">Clear</button>' : ''}
         </div>
-      </details>`;
+      </div>`;
     wire();
   }
 

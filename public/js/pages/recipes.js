@@ -8,7 +8,7 @@ import { deleteRecipe, restoreRecipe, approveRecipe } from '../lib/api.js';
 import { getAccountState, subscribeAccount, ensureMember } from '../components/account.js';
 import { canEditRecipe, canApproveRecipe } from '../shared/permissions.js';
 import { MEAL_TYPES } from '../shared/html.js';
-import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage, preserveRecipeParams } from '../lib/url-state.js';
+import { filtersToSearchParams, searchParamsToFilters, preserveRecipeParams } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { mountAskDialog, takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
 import {
@@ -47,7 +47,7 @@ function toDietaryFilter(filters) {
 const initialParams = new URLSearchParams(window.location.search);
 const state = {
   recipes: [],
-  page: searchParamsToPage(initialParams),
+  page: 1,
   pageSize: 12,
   totalFilteredCount: 0,
   filters: { ...defaultFilters(), ...searchParamsToFilters(initialParams) },
@@ -68,7 +68,7 @@ function syncUrl() {
   // while a filter changes. Rebuilding the query from filters alone used to wipe it — which is why
   // a shared recipe link worked exactly once and vanished from the address bar on arrival.
   const params = preserveRecipeParams(
-    filtersToSearchParams(state.filters, state.page),
+    filtersToSearchParams(state.filters),
     new URLSearchParams(window.location.search),
   );
   const query = params.toString();
@@ -82,9 +82,10 @@ export async function initRecipesPage() {
   const resultStatus = document.getElementById('resultStatus');
   const cuisineFilter = document.getElementById('cuisineFilter');
   const tagFilters = document.getElementById('tagFilters');
-  const prevPage = document.getElementById('prevPage');
-  const nextPage = document.getElementById('nextPage');
+  const loadMore = document.getElementById('loadMore');
   const pageStatus = document.getElementById('pageStatus');
+  const activeFilters = document.getElementById('activeFilters');
+  const openFridgeSearch = document.getElementById('openFridgeSearch');
   const searchInput = document.getElementById('searchInput');
   const recipeSuggestions = document.getElementById('recipeSuggestions');
   const clearFilters = document.getElementById('clearFilters');
@@ -97,7 +98,7 @@ export async function initRecipesPage() {
   const applyFilterSheet = document.getElementById('applyFilterSheet');
   const filterSheetCount = document.getElementById('filterSheetCount');
 
-  if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
+  if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !loadMore || !pageStatus) return;
 
   // modalActions is a hoisted declaration, so the history wiring gets the real callbacks.
   mountRecipeModal(supabase, modalActions());
@@ -155,6 +156,14 @@ export async function initRecipesPage() {
 
   if (fridgeContainer) {
     createFridgeSearch({ container: fridgeContainer, client: supabase, onSearch: runFridgeSearch, onClear: clearFridgeSearch });
+    // P4: it used to be a collapsed <details> labelled "What's in the fridge?" — a 33px triangle
+    // for one of the three things this app does best. The finder row opens it now.
+    openFridgeSearch?.addEventListener('click', () => {
+      const open = fridgeContainer.hidden;
+      fridgeContainer.hidden = !open;
+      openFridgeSearch.setAttribute('aria-expanded', String(open));
+      if (open) fridgeContainer.querySelector('input')?.focus();
+    });
   }
 
   // Wires every [data-open-ask-dialog] — the bottom bar's Ask, and the mobile-only button that
@@ -242,17 +251,23 @@ export async function initRecipesPage() {
   // "Page X of Y" already communicates paging, so "N recipes" here and the filter sheet's
   // "Show N recipes" agree on what N means (found in passing while wiring the sheet's live count).
   function updateStatus() {
-    const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
+    const shown = state.recipes.length;
     resultCount.textContent = `${state.totalFilteredCount} recipes`;
     if (resultStatus) resultStatus.textContent = `${state.totalFilteredCount} recipes found`;
     if (filterSheetCount) filterSheetCount.textContent = String(state.totalFilteredCount);
-    pageStatus.textContent = `Page ${state.page} of ${totalPages}`;
-    prevPage.disabled = state.page <= 1;
-    nextPage.disabled = state.page >= totalPages;
+    // "Page 2 of 3" tells you where the paging is; "Showing 24 of 31" tells you where you are.
+    const more = state.totalFilteredCount - shown;
+    pageStatus.textContent = more > 0 ? `Showing ${shown} of ${state.totalFilteredCount}` : '';
+    loadMore.hidden = more <= 0;
+    loadMore.textContent = more > 0 ? `Show ${Math.min(more, state.pageSize)} more` : 'Show more recipes';
+    renderActiveFilters();
   }
 
-  function renderSkeleton() {
-    recipeGrid.innerHTML = Array.from({ length: state.pageSize }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
+  function renderSkeleton({ append = false } = {}) {
+    const skeletons = Array.from({ length: append ? 3 : state.pageSize })
+      .map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
+    if (append) recipeGrid.insertAdjacentHTML('beforeend', skeletons);
+    else recipeGrid.innerHTML = skeletons;
     // "0 recipes" while the search is still in flight reads as "nothing found" — say what is really
     // happening, and leave the aria-live status silent until there is a real count to announce.
     resultCount.textContent = 'Searching…';
@@ -335,10 +350,70 @@ export async function initRecipesPage() {
     banner.querySelector('#fridgeBackToAll').addEventListener('click', clearFridgeSearch);
   }
 
-  async function refreshRecipes() {
+  /** @param {{append?: boolean}} [options] - append keeps what is on screen and adds the next page */
+  /**
+ * P4: the filters were only visible inside a sheet you had to open, so on a phone there was no way
+ * to see what was narrowing the list — or to undo one — without opening it. These say so, and each
+ * one removes itself.
+ */
+  function renderActiveFilters() {
+    if (!activeFilters) return;
+    const chips = [];
+    const f = state.filters;
+    if (f.search) chips.push(['search', `"${f.search}"`]);
+    if (f.cuisine) chips.push(['cuisine', f.cuisine]);
+    for (const tag of f.tags || []) chips.push(['tag:' + tag, tag]);
+    for (const meal of f.mealTypes || []) chips.push(['meal:' + meal, meal]);
+    if (f.dairyFree) chips.push(['dairyFree', 'Dairy-free']);
+    if (f.proteinSmart) chips.push(['proteinSmart', 'Protein-smart']);
+    if (f.nutFree) chips.push(['nutFree', 'Nut-free']);
+    if (f.favouritesOnly) chips.push(['favouritesOnly', '♥ Favourites']);
+    if (f.spiceMax) chips.push(['spiceMax', `Spice up to ${f.spiceMax}`]);
+    if (f.pendingOnly) chips.push(['pendingOnly', 'Awaiting approval']);
+    if (m5.fridge) chips.push(['fridge', "What's in the fridge"]);
+
+    activeFilters.innerHTML = chips.map(([key, label]) => `
+      <span class="chip removable">${escapeHtml(label)}<button type="button" class="chip-remove" data-drop-filter="${escapeHtml(key)}" aria-label="Remove filter ${escapeHtml(label)}">×</button></span>`).join('');
+    activeFilters.hidden = chips.length === 0;
+
+    activeFilters.querySelectorAll('[data-drop-filter]').forEach((button) => {
+      button.addEventListener('click', () => dropFilter(button.dataset.dropFilter));
+    });
+  }
+
+  function dropFilter(key) {
+    const f = state.filters;
+    if (key === 'search') { f.search = ''; if (searchInput) searchInput.value = ''; }
+    else if (key === 'cuisine') { f.cuisine = ''; if (cuisineFilter) cuisineFilter.value = ''; }
+    else if (key.startsWith('tag:')) f.tags = f.tags.filter((t) => t !== key.slice(4));
+    else if (key.startsWith('meal:')) f.mealTypes = f.mealTypes.filter((t) => t !== key.slice(5));
+    else if (key === 'spiceMax') { f.spiceMax = null; if (spiceMaxFilter) spiceMaxFilter.value = ''; }
+    else if (key === 'fridge') { clearFridgeSearch(); return; }
+    else f[key] = false;
+    syncFilterControls();
+    refreshRecipes();
+  }
+
+  /** Repaints the sheet's own chips from state, so it agrees with the chips above the results. */
+  function syncFilterControls() {
+    document.querySelectorAll('#tagFilters .chip').forEach((chip) => {
+      chip.classList.toggle('active', state.filters.tags.includes(chip.dataset.tag));
+    });
+    document.querySelectorAll('#mealTypeFilters .chip').forEach((chip) => {
+      chip.classList.toggle('active', state.filters.mealTypes.includes(chip.dataset.mealType));
+    });
+    document.querySelectorAll('#dietaryFilters .chip').forEach((chip) => {
+      const map = { 'dairy-free': 'dairyFree', 'protein-smart': 'proteinSmart', 'nut-free': 'nutFree', favourites: 'favouritesOnly' };
+      const key = map[chip.dataset.dietary];
+      if (key) chip.classList.toggle('active', Boolean(state.filters[key]));
+    });
+  }
+
+  async function refreshRecipes({ append = false } = {}) {
+    if (!append) state.page = 1;
     syncUrl();
     renderResultsBanner();
-    renderSkeleton();
+    renderSkeleton({ append });
     const household = await getHousehold().catch(() => null);
     setBadgeDiet(dietRecipeFilter(household));
     const filters = {
@@ -355,7 +430,8 @@ export async function initRecipesPage() {
     }
     state.totalFilteredCount = result.totalCount;
     state.page = result.page;
-    state.recipes = result.data.map(normalizeRecipe);
+    const incoming = result.data.map(normalizeRecipe);
+    state.recipes = append ? [...state.recipes, ...incoming] : incoming;
     renderCards(state.recipes);
   }
 
@@ -601,20 +677,12 @@ export async function initRecipesPage() {
     filterSheetBackdrop.addEventListener('click', closeSheet);
   }
 
-  prevPage.addEventListener('click', () => {
-    if (state.page > 1) {
-      state.page -= 1;
-      refreshRecipes();
-    }
-  });
-
-  // 8.8: guard before incrementing, rather than incrementing and clamping afterwards.
-  nextPage.addEventListener('click', () => {
-    const totalPages = Math.max(1, Math.ceil(state.totalFilteredCount / state.pageSize));
-    if (state.page < totalPages) {
-      state.page += 1;
-      refreshRecipes();
-    }
+  // 31 recipes across three pages, with the pager at the foot of a 3,700px page, was friction
+  // rather than paging. The server-side query and page size are unchanged; the results accumulate.
+  loadMore.addEventListener('click', () => {
+    if (state.recipes.length >= state.totalFilteredCount) return;
+    state.page += 1;
+    refreshRecipes({ append: true });
   });
 
   await refreshRecipes();

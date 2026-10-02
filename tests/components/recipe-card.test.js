@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { dietaryBadges, spiceMeter, setBadgeDiet } from '../../public/js/components/recipe-card.js';
+import { dietaryBadges, spiceMeter, setBadgeDiet, displayName } from '../../public/js/components/recipe-card.js';
 
 const VEG_EGG_FREE = { is_vegetarian: true, is_egg_free: true, contains_dairy: true, mealTypes: [] };
 
@@ -56,5 +56,24 @@ describe('spiceMeter', () => {
 
   it('says so explicitly where there is room to, rather than looking like "not spicy"', () => {
     expect(spiceMeter(null, { showUnknown: true })).toContain('Spice not recorded');
+  });
+});
+
+describe('displayName', () => {
+  it('drops a cuisine suffix the card already shows in its chip', () => {
+    expect(displayName({ name: 'Aloo Paratha with Curd (North Indian)', cuisine: 'North Indian' }))
+      .toBe('Aloo Paratha with Curd');
+  });
+
+  it('keeps a parenthetical that says something else', () => {
+    expect(displayName({ name: 'Kanda Poha (Maharashtrian Style)', cuisine: 'Maharashtrian' }))
+      .toBe('Kanda Poha (Maharashtrian Style)');
+    expect(displayName({ name: 'Lemon Rice (Chitranna)', cuisine: 'South Indian' }))
+      .toBe('Lemon Rice (Chitranna)');
+  });
+
+  it('leaves a name alone when there is no cuisine to compare', () => {
+    expect(displayName({ name: 'Basundi', cuisine: null })).toBe('Basundi');
+    expect(displayName({ name: 'Basundi' })).toBe('Basundi');
   });
 });
