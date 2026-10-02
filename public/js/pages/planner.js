@@ -1,7 +1,7 @@
 import { escapeHtml, showSnackbar } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
 import { searchRecipes, fetchPlannerCandidates, fetchPlannerRecipesByIds } from '../lib/queries.js';
-import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
+import { mountRecipeModal, openRecipeModal, openRecipeFromUrl } from '../components/recipe-modal.js';
 import { dishArtSvg } from '../components/dish-art.js';
 import { wireDialog } from '../components/dialog.js';
 import { getHousehold } from '../lib/household.js';
@@ -16,6 +16,7 @@ import {
 } from '../lib/planner-store.js';
 import { fetchRemotePlan, uploadPlan, createPlanSync } from '../lib/planner-remote.js';
 import { getReadyAccount, subscribeAccount } from '../components/account.js';
+import { plannerSearchParams, parsePlannerParams, preserveRecipeParams } from '../lib/url-state.js';
 import { deviceOnlyNote } from '../shared/account-copy.js';
 import { fetchHouseholdMembers } from '../lib/auth.js';
 import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay, countCooked } from '../shared/plan-summary.js';
@@ -232,7 +233,9 @@ export async function initPlannerPage() {
 
   if (!plannerGrid || !dayViewSlots || !monthCalendar) return;
 
-  mountRecipeModal();
+  mountRecipeModal(supabase);
+  // P2: a shared recipe link works from here too, not only from the recipes page.
+  openRecipeFromUrl(supabase);
   const askDialog = mountAskDialog();
   const pickerDialog = wireDialog(document.getElementById('plannerPickerDialog'));
   const resetDialog = wireDialog(document.getElementById('resetWeekConfirm'));
@@ -240,7 +243,11 @@ export async function initPlannerPage() {
   const autoFillSettingsDialog = wireDialog(document.getElementById('autoFillSettingsDialog'));
   let pendingImport = null;
 
-  state.viewMode = loadViewMode();
+  // P2: a planner link carries the view and the date. Without this, every shared or bookmarked
+  // planner URL landed on today, in whatever view that particular browser last used.
+  const urlPlanner = parsePlannerParams(new URLSearchParams(window.location.search));
+  state.viewMode = urlPlanner.viewMode || loadViewMode();
+  if (urlPlanner.selectedDate) state.selectedDate = urlPlanner.selectedDate;
   state.household = await getHousehold().catch(() => null);
   const loaded = loadPlanState({ defaultServings: state.household?.default_servings || 4 });
   state.store = loaded.store;
@@ -583,7 +590,20 @@ export async function initPlannerPage() {
     else renderMonthView();
   }
 
+  /* Written with replaceState on purpose: stepping through a month of days should not bury the
+     page you arrived from under thirty history entries. The recipe detail owns pushState (P2);
+     this only keeps the address bar describing what is on screen. */
+  function syncPlannerUrl() {
+    const params = preserveRecipeParams(
+      plannerSearchParams(state.viewMode, state.selectedDate),
+      new URLSearchParams(window.location.search),
+    );
+    const query = params.toString();
+    window.history.replaceState(window.history.state, '', window.location.pathname + (query ? '?' + query : ''));
+  }
+
   async function renderAll() {
+    syncPlannerUrl();
     updateTabsUI();
     toggleViewContainers();
     plannerHeading.textContent = formatHeading();

@@ -1,14 +1,14 @@
 import { escapeHtml, showSnackbar, debounce } from '../lib/dom.js';
 import { supabase } from '../lib/supabase-client.js';
-import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchRecipeBySlug, fetchPendingCount } from '../lib/queries.js';
-import { normalizeRecipe, renderRecipeCard, setBadgeDiet } from '../components/recipe-card.js';
-import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
+import { searchRecipes, fetchCuisineCounts, fetchTagCounts, fetchSearchSuggestions, fetchPendingCount } from '../lib/queries.js';
+import { normalizeRecipe, renderRecipeCard, setBadgeDiet, shouldOpenInApp } from '../components/recipe-card.js';
+import { mountRecipeModal, openRecipeModal, openRecipeFromUrl } from '../components/recipe-modal.js';
 import { wireDialog } from '../components/dialog.js';
 import { deleteRecipe, restoreRecipe, approveRecipe } from '../lib/api.js';
 import { getAccountState, subscribeAccount, ensureMember } from '../components/account.js';
 import { canEditRecipe, canApproveRecipe } from '../shared/permissions.js';
 import { MEAL_TYPES } from '../shared/html.js';
-import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage } from '../lib/url-state.js';
+import { filtersToSearchParams, searchParamsToFilters, searchParamsToPage, preserveRecipeParams } from '../lib/url-state.js';
 import { createGenerateFlow } from '../components/generate-flow.js';
 import { mountAskDialog, takePendingDraft, takePendingPlannerSlot } from '../components/ask-dialog.js';
 import {
@@ -64,10 +64,16 @@ function favouriteSet() {
 }
 
 function syncUrl() {
-  const params = filtersToSearchParams(state.filters, state.page);
+  // The filters are this page's to write; ?recipe= belongs to the detail view, which can be open
+  // while a filter changes. Rebuilding the query from filters alone used to wipe it — which is why
+  // a shared recipe link worked exactly once and vanished from the address bar on arrival.
+  const params = preserveRecipeParams(
+    filtersToSearchParams(state.filters, state.page),
+    new URLSearchParams(window.location.search),
+  );
   const query = params.toString();
   const url = `${window.location.pathname}${query ? `?${query}` : ''}`;
-  window.history.replaceState(null, '', url);
+  window.history.replaceState(window.history.state, '', url);
 }
 
 export async function initRecipesPage() {
@@ -93,7 +99,8 @@ export async function initRecipesPage() {
 
   if (!recipeGrid || !resultCount || !cuisineFilter || !tagFilters || !prevPage || !nextPage || !pageStatus) return;
 
-  mountRecipeModal();
+  // modalActions is a hoisted declaration, so the history wiring gets the real callbacks.
+  mountRecipeModal(supabase, modalActions());
 
   // Favourites are the household's when signed in, this browser's otherwise — the same rule the
   // planner follows, and the same prefs record.
@@ -289,6 +296,8 @@ export async function initRecipesPage() {
     recipeGrid.querySelectorAll('.recipe-card').forEach((card) => {
       card.addEventListener('click', (event) => {
         if (event.target.closest('[data-action]')) return;
+        if (!shouldOpenInApp(event)) return; // let the browser open it in a new tab
+        event.preventDefault();
         openRecipeModal(supabase, Number(card.dataset.id), modalActions());
       });
     });
@@ -610,19 +619,9 @@ export async function initRecipesPage() {
 
   await refreshRecipes();
 
-  // Deep link (task 7.4): recipes.html?recipe=<slug>&serves=6 opens the detail view directly.
-  const deepLinkSlug = initialParams.get('recipe');
-  if (deepLinkSlug) {
-    const deepLinkRecipe = await fetchRecipeBySlug(supabase, deepLinkSlug);
-    if (deepLinkRecipe) {
-      const requestedServes = Number(initialParams.get('serves'));
-      openRecipeModal(supabase, deepLinkRecipe.id, modalActions({
-        serves: Number.isFinite(requestedServes) && requestedServes > 0 ? requestedServes : undefined,
-      }));
-    } else {
-      showSnackbar('This recipe was removed.', 'error');
-    }
-  }
+  // Deep link: recipes.html?recipe=<slug>&serves=6 opens the detail directly. The modal owns this
+  // now (P2), so the same link also works from the dashboard and the planner.
+  await openRecipeFromUrl(supabase, modalActions());
 
   // Task 10.5: a draft generated from another page (via the header's Ask dialog) arrives here.
   if (initialParams.get('review') === '1') {

@@ -29,6 +29,18 @@ export function setBadgeDiet(diet) {
   badgeDiet = diet ? { vegetarian: Boolean(diet.vegetarian), eggFree: Boolean(diet.eggFree) } : null;
 }
 
+/**
+ * P2: a card title is a real link, stretched over the whole card, so the usual browser gestures
+ * work on it — middle-click, ctrl/cmd-click, "open in new tab", "copy link address". A plain left
+ * click is still handled in-page, which is what this guards.
+ * @returns {boolean} true when the app should take over and open the detail itself
+ */
+export function shouldOpenInApp(event) {
+  return !event.defaultPrevented
+    && event.button === 0
+    && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+}
+
 export function dietaryBadges(recipe, diet = badgeDiet) {
   const showVegetarian = recipe.is_vegetarian && !diet?.vegetarian;
   const showEggFree = recipe.is_egg_free && !diet?.eggFree;
@@ -88,7 +100,7 @@ export function renderRecipeCard(recipe, { actions = false, showTime = false, ta
         <div class="recipe-card-art" aria-hidden="true">${dishArtSvg(recipe)}</div>
         <div class="recipe-card-title-wrap">
           <span class="cuisine-band" data-cuisine="${escapeHtml(recipe.cuisine)}">${escapeHtml(recipe.cuisine)}</span>
-          <h3><button type="button" class="recipe-card-title-button">${escapeHtml(recipe.name)}</button></h3>
+          <h3><a class="recipe-card-title-link" href="recipes.html?recipe=${encodeURIComponent(recipe.slug || '')}">${escapeHtml(recipe.name)}</a></h3>
         </div>
         ${actionButtons}
       </div>
