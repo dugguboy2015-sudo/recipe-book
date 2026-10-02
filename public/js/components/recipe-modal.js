@@ -36,7 +36,7 @@ const MODAL_HTML = `
   <dialog id="recipeModal" class="recipe-detail">
     <header class="detail-header">
       <div class="detail-header-bar">
-        <h3 id="modalTitle">Recipe</h3>
+        <h3 id="modalTitle" tabindex="-1" autofocus>Recipe</h3>
         <div class="detail-header-controls">
           <div class="overflow-menu">
             <button type="button" class="icon-button" id="modalMoreActions" aria-haspopup="true" aria-expanded="false" aria-label="More actions" data-tooltip="More actions">⋯</button>

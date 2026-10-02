@@ -52,6 +52,9 @@ h4 { font-size: var(--fs-4); }
 
 .skip-link {
   position: absolute;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   left: var(--sp-3);
   top: -100px;
   background: var(--surface);
