@@ -610,3 +610,30 @@
   3. **The `<header class="site-header">` element is gone entirely**, not just restyled. It existed to hold two icons in a 44px row above the title. Its rules in the print stylesheet and the recipes page's focus-trap `inert` list both referenced it and were repointed — the print stylesheet has broken this way once before (M3), so it was checked deliberately.
   4. **One label set, not two.** The sidebar said "Weekly Planner"/"Shopping List" and the bottom bar said "Planner"/"Shopping". One nav forced a choice; the short ones won, since they have to fit a five-tab bar on a 375px screen.
 - Notes for next slice: P2 (URLs and the Back button). Opening a recipe still doesn't change the URL, so Back leaves the page instead of closing the recipe, and `?recipe=<slug>` is still stripped from the address bar on arrival.
+
+## P2 — URLs and the Back button — DONE
+- Date: 2026-10-02
+- Branch / PR: p2-urls / [#53](https://github.com/dugguboy2015-sudo/recipe-book/pull/53)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (verified in a browser against the preview deployment, 375px):
+  - [x] Open a recipe → the URL carries its slug
+  - [x] **Back closes the recipe and stays on the page.** Before this it left the page entirely — the most-used gesture on a phone, losing your place every time
+  - [x] Forward reopens the same recipe
+  - [x] Three servings taps → `serves=7` in the URL, **zero** history entries added
+  - [x] Close drops the recipe params and keeps the filters
+  - [x] Refresh with a recipe open → same recipe, same servings
+  - [x] `?recipe=…&serves=6&q=paneer` opens at 6 servings, keeps the filter, and **survives in the address bar**
+  - [x] A filter change with the detail open keeps both (`?q=dal&recipe=…`)
+  - [x] `/?recipe=ghevar` opens Ghevar on the **dashboard** — a page that never handled deep links before
+  - [x] `/planner?view=month&date=2026-12-25` lands on December 2026 in month view; stepping forward doesn't grow history
+  - [x] Card titles are real links: middle-click, ctrl/cmd-click and "copy link address" work
+  - [x] `npm run check` green (446 tests, 10 new); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **The deep-link handler moved out of the recipes page into the modal component.** The plan only asked for push/pop, but the handler was page-local while the modal is shared, so a recipe link was silently dead on the dashboard and planner. Moving it fixed three pages instead of one, and is less code than it replaced.
+  2. **Two directions had to be stopped from fighting.** Closing the detail unwinds the entry we pushed, which itself fires `popstate` — indistinguishable from the visitor pressing Back unless flagged. Hence `unwindingHistory` and `closingFromPopstate`. Arriving by deep link pushes nothing, so closing there edits the entry instead; Back then goes where the visitor came from rather than reopening what they just closed.
+  3. **`replaceState` for the planner, `pushState` for recipes.** A recipe is a place you went; a date step is not. Thirty days of stepping would otherwise bury the page you arrived from under thirty entries.
+  4. **Date validation had to be real, not shape-based.** `2026-13-45` matches `\d{4}-\d{2}-\d{2}` and would have reached `parseLocalDate` as an Invalid Date. Checked against a round-trip through `Date.UTC` instead, with tests.
+  5. **The card title's tap target fixed itself.** Making it a real link took it from 24px to 76px — an item listed under P6 that came free here.
+  6. **A local-only artefact worth knowing:** `npx serve` 301-redirects `/recipes.html` to `/recipes` and **drops the query string**, so deep links appear broken on the local static preview. Cloudflare Pages keeps the query. Verified on the real preview deployment before merging.
+- Notes for next slice: P3 (the recipe detail rebuilt for a phone). It is a 343px dialog in a 449px viewport holding 9.4 screens of scroll whose only Close button is at the bottom, with Cook mode and Add to planner down there with it. P2 makes that cheaper — Back now closes it, so the sticky header has a working peer.
