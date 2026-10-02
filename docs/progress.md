@@ -637,3 +637,25 @@
   5. **The card title's tap target fixed itself.** Making it a real link took it from 24px to 76px — an item listed under P6 that came free here.
   6. **A local-only artefact worth knowing:** `npx serve` 301-redirects `/recipes.html` to `/recipes` and **drops the query string**, so deep links appear broken on the local static preview. Cloudflare Pages keeps the query. Verified on the real preview deployment before merging.
 - Notes for next slice: P3 (the recipe detail rebuilt for a phone). It is a 343px dialog in a 449px viewport holding 9.4 screens of scroll whose only Close button is at the bottom, with Cook mode and Add to planner down there with it. P2 makes that cheaper — Back now closes it, so the sticky header has a working peer.
+
+## P3 — The recipe detail, rebuilt for a phone — DONE
+- Date: 2026-10-02
+- Branch / PR: p3-recipe-detail / [#54](https://github.com/dugguboy2015-sudo/recipe-book/pull/54)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (375px phone, before → after):
+  - [x] **Dialog width 343 of 449px → full width.** A backdrop margin on a phone was 106px of nothing
+  - [x] **Scroll inside the detail 9.4 → 4.6 screens**, by collapsing Nutrition and Notes
+  - [x] **Close y=6,641 → y=16, and sticky** — reachable from any scroll position. Verified at the bottom of the scroll (3,013 of 3,843) with Close, Add to plan and Cook mode all still on screen
+  - [x] **Cook mode visible without scrolling**, from ~9 screens down
+  - [x] Overflow menu holds Share, Print, Approve, Edit, Delete; Escape closes the *menu*, not the recipe
+  - [x] Desktop keeps its 760px dialog, open panels, 3-column grid and a one-row action bar
+  - [x] Print keeps the whole recipe (see deviation 1)
+  - [x] `npm run check` green (446 tests); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **Collapsing the panels nearly broke printing, silently.** A collapsed `<details>` prints as a heading with nothing under it, so a recipe printed from a phone would have lost its nutrition and notes with no sign anything was missing. `beforeprint` opens them and `afterprint` restores them; verified by dispatching both events (8 nutrition rows and the notes present during print, collapsed again after). The print stylesheet also had to flatten the new sticky header, which would otherwise reprint on every page.
+  2. **Deleting the old action CSS was too broad.** `.detail-actions` and `.modal-footer` went together, but `.modal-footer` is still used by the ask dialog and the planner's confirmation dialogs. Restored with a comment naming its remaining owners, and checked live on the planner rather than by grep alone.
+  3. **Three controls abreast truncated the meal to "Breakfa"** at 375px. The action bar became two rows on phones — day and meal, then Add to plan and Cook mode — which also gives both buttons a real target size.
+  4. **Ingredients and Method were not made into tabs**, though the plan's prose suggested it. Side by side they read as a recipe does, and glancing between them while cooking is exactly what Cook mode already does better. Collapsing the two panels that carry no cooking information achieved the acceptance target on its own.
+  5. **The menu handle is declared above its assignment** on purpose: the dialog's close handler closes over it. Same reason as `ingredientEditorRef` in recipe-form.js, and noted in a comment so the next person doesn't "tidy" it.
+- Notes for next slice: P4 (finding a recipe). The search field is still not rendered at all on a phone, fridge search is still behind a `<details>`, and the grid still jumps 1 → 3 columns with nothing in between — which is also what keeps the recipes page's first card at 384px after P1.
