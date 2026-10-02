@@ -50,7 +50,7 @@
           <button type="button" class="icon-button" id="nextWeek" aria-label="Next week">›</button>
           <button type="button" class="ghost-button" id="thisWeek">This week</button>
         </div>
-        <div class="actions-row shopping-actions">
+        <div class="actions-row shopping-actions" id="shoppingActions" hidden>
           <button type="button" class="ghost-button" id="copyList">Copy</button>
           <button type="button" class="ghost-button" id="shareList" hidden>Share</button>
           <button type="button" class="ghost-button" id="printList">Print</button>
@@ -63,7 +63,7 @@
 
       <form class="panel add-item-form" id="addItemForm">
         <label class="sr-only" for="addItemInput">Add an item</label>
-        <input type="text" id="addItemInput" class="search-box" maxlength="80" placeholder="Add something else — kitchen roll, bin bags…" autocomplete="off" />
+        <input type="text" id="addItemInput" class="search-box" maxlength="80" placeholder="Add an item — kitchen roll…" autocomplete="off" />
         <button type="submit" class="primary-button">Add</button>
       </form>
 

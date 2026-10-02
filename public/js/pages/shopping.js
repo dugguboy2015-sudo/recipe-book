@@ -103,6 +103,8 @@ function render() {
   const manual = state.shopping.manual;
   const buyable = [...aisles.flatMap((aisle) => aisle.items), ...manual];
 
+  const actions = document.getElementById('shoppingActions');
+  if (actions) actions.hidden = buyable.length === 0 && pantry.length === 0;
   if (buyable.length === 0 && pantry.length === 0) {
     summary.textContent = '';
     container.innerHTML = `
