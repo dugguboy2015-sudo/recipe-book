@@ -681,3 +681,30 @@
   4. **Ingredients and Method were left side by side** (see P3 deviation 4) — this slice changed nothing there.
   5. **Dropping a chip has to repaint the sheet's own controls**, or the two disagree about what is filtering. `syncFilterControls()` does that; it was missed in the first pass and caught by lint flagging a function that did not exist.
 - Notes for next slice: P5 (planner and shopping in one hand). Week view is still 1,146px wide inside a 317px column, month cells are 45×45px, and Export/Import/Reset still outrank the week they act on.
+
+## Fix — closed dialogs rendered inline on every page — DONE
+- Date: 2026-10-02
+- Branch / PR: fix-closed-dialogs / [#56](https://github.com/dugguboy2015-sudo/recipe-book/pull/56)
+- A live regression from P3, shipped on its own rather than inside P5 because it made pages look broken.
+- **What happened:** P3 gave the recipe detail `dialog.recipe-detail { display: flex }` so its header and action bar could stick. An unqualified `display` on a `<dialog>` beats the browser's own rule hiding it while closed — and **nine** dialogs share that class: `askRecipeDialog` (injected by JS on every page), `addRecipeModal`, `householdConfirmModal`, `deleteConfirmModal`, `autoFillSettingsDialog`, `plannerPickerDialog`, `resetWeekConfirm`, `importPlanConfirm`, and the style guide's demo. Production was rendering an 812px block of the closed ask dialog below the shopping list.
+- **The fix:** scope the rule to `[open]`. Verified on production before and after: one closed dialog rendering → zero; shopping page height 1,508 → 812.
+- **Why P3's verification missed it:** the recipe detail was checked thoroughly — open, scrolled, printed — but the page *behind* it was only ever the recipes page, where the stray dialogs sit below the fold. The shopping page, where the ask dialog is the last element, is where it is obvious. One other page with the modal **closed** would have caught it; that is now part of how a shared-component change gets verified here.
+
+## P5 — Planner and shopping in one hand — DONE
+- Date: 2026-10-02
+- Branch / PR: p5-one-hand-2 / [#57](https://github.com/dugguboy2015-sudo/recipe-book/pull/57)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (375px phone, before → after):
+  - [x] **Week view: 1,146px wide inside a 317px column → no horizontal scroll**, one column. Tablets keep the scrollable seven-day row; desktop unchanged
+  - [x] **Planner action row: 156px over three lines → 44px, one line.** Export, Import, Reset this week and "Shopping list for this week" are behind an overflow menu
+  - [~] **First meal slot: 997 → 513px** (417 once the one-off tip is dismissed). The 300px target is missed; what remains is the page header, the view tabs, the date navigation and the action row, none of which should go
+  - [~] **Month cells 45×45px** — above the 44px minimum, and the geometric maximum for seven columns at this width. The dots stay hidden on phones, as an earlier slice decided; having measured it, there is no room for up to six of them in 45px and that decision stands
+  - [x] Shopping: Copy, Share, Print and Clear ticks appear only when there is a list; the add-item placeholder no longer cuts mid-word
+  - [x] `npm run check` green (450 tests); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **The empty week's stats block had to go before any of this showed.** Three rows saying "no meals planned yet", "not planned yet" and "nothing planned yet", under an empty progress bar — ~150px reporting nothing. Hidden when the week is empty, the same call as the dashboard's protein meter in P1.
+  2. **"Shopping list" was kept rather than deleted.** The Shopping tab is in the nav on every page, so the button looked redundant — but it carries `?week=`, opening the week being viewed rather than the current one. It moved into the menu instead of going away.
+  3. **The overflow menu became a real component.** P3 built one for the recipe detail; rather than write a second, `components/overflow-menu.js` and `.overflow-menu` now serve both. Escape closes the menu before the dialog it may sit inside, which is why the key handler captures.
+  4. **A stash pop staged `design_handoff_recipe_book_redesign/` as deleted**, which was never intended — restored from HEAD before committing. Worth knowing that `git stash` leaves untracked files behind, which is also how a P5 file briefly rode along in the fix commit above and had to be removed before merging.
+- Notes for next slice: P6 (speed and accessibility) is the last one — modulepreload and flattening the import graph (depth 7, up to 34 modules per page), 44px tap targets, and a keyboard pass over the new sheet, menus and sticky bars.
