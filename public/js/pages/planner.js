@@ -4,6 +4,7 @@ import { searchRecipes, fetchPlannerCandidates, fetchPlannerRecipesByIds } from 
 import { mountRecipeModal, openRecipeModal, openRecipeFromUrl } from '../components/recipe-modal.js';
 import { dishArtSvg } from '../components/dish-art.js';
 import { wireDialog } from '../components/dialog.js';
+import { wireOverflowMenu } from '../components/overflow-menu.js';
 import { getHousehold } from '../lib/household.js';
 import { dietAdjective, dietRecipeFilter, enabledSlots } from '../shared/household-settings.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
@@ -196,6 +197,12 @@ function wireAccountNote() {
 
 export async function initPlannerPage() {
   wireAccountNote();
+  // P5: Export, Import and Reset this week are maintenance. They used to sit above the week they
+  // act on, with Reset a full-width warm button — more prominent than the plan itself.
+  wireOverflowMenu({
+    button: document.getElementById('plannerMoreActions'),
+    menu: document.getElementById('plannerMoreMenu'),
+  });
   const plannerHeading = document.getElementById('plannerHeading');
   const navPrev = document.getElementById('navPrev');
   const navNext = document.getElementById('navNext');
@@ -338,6 +345,11 @@ export async function initPlannerPage() {
   function renderHeaderStats() {
     const weekOf = selectedWeekOf();
     const days = getWeekDays(state.store, weekOf);
+    const planned = DAYS.reduce((sum, day) => sum + (days[day] || []).length, 0);
+    const headerRow = document.getElementById('weekHeaderRow');
+    if (headerRow) headerRow.hidden = planned === 0;
+    if (planned === 0) return;
+
     const share = computeProteinSmartShare(days, state.resolvedById);
     if (share === null) {
       proteinShareText.textContent = 'Protein-smart: no meals planned yet';

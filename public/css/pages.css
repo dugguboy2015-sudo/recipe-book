@@ -206,12 +206,18 @@
 
 .planner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--sp-4); }
 
-/* Below desktop, a week reads as a week (one scrollable row) rather than reflowing into whatever
-   auto-fit can fit per row (desktop keeps that auto-fit behaviour above — usually 4-5 columns,
-   wrapping the rest, with no horizontal scroll). */
-@media (max-width: 1099px) {
+/* Between phone and desktop a week reads as a week — one scrollable row of seven days, which a
+   tablet can show three or four of at once. */
+@media (min-width: 768px) and (max-width: 1099px) {
   #weekView { overflow-x: auto; }
   #weekView .planner-grid { grid-template-columns: repeat(7, minmax(150px, 1fr)); }
+}
+
+/* On a phone it stacks. Seven 150px columns came to 1,146px inside a 317px viewport: two days at a
+   time, swiping sideways, inside a page that also scrolls down. */
+@media (max-width: 767px) {
+  #weekView { overflow-x: visible; }
+  #weekView .planner-grid { grid-template-columns: 1fr; }
 }
 
 .planner-day { border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--sp-3); background: var(--surface-raised); }
@@ -250,8 +256,9 @@
 /* ---------- Shopping list (M2) ---------- */
 .shopping-controls { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
 .shopping-actions { margin: 0; }
-.add-item-form { display: flex; gap: var(--sp-2); align-items: center; }
-.add-item-form input { flex: 1; min-width: 0; }
+.add-item-form { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+.add-item-form input { flex: 1 1 200px; min-width: 0; }
+.shopping-actions[hidden] { display: none; }
 .shopping-aisle { margin-top: var(--sp-4); }
 .shopping-aisle h2 { font-size: var(--fs-4); margin-bottom: var(--sp-2); }
 .shopping-items { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
@@ -288,6 +295,7 @@
   }
   dialog.recipe-detail[open]::backdrop { background: transparent; }
   dialog.recipe-detail[open] .detail-action-bar,
+  dialog.recipe-detail[open] .overflow-menu,
   dialog.recipe-detail[open] .detail-header-controls,
   dialog.recipe-detail[open] .servings-stepper,
   dialog.recipe-detail[open] .icon-button { display: none; }

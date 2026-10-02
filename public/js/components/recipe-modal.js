@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase-client.js';
 import { getReadyAccount } from './account.js';
 import { addRemoteEntry, applyRemotePrefEvent } from '../lib/planner-remote.js';
 import { openCookMode } from './cook-mode.js';
+import { wireOverflowMenu } from './overflow-menu.js';
 import { handsOffMinutes } from '../shared/recipe-rules.js';
 import {
   DAYS, loadPlanState, persistStore, addEntryToWeek, applyPrefEvent, persistPrefs, mondayOf,
@@ -37,9 +38,9 @@ const MODAL_HTML = `
       <div class="detail-header-bar">
         <h3 id="modalTitle">Recipe</h3>
         <div class="detail-header-controls">
-          <div class="detail-more">
+          <div class="overflow-menu">
             <button type="button" class="icon-button" id="modalMoreActions" aria-haspopup="true" aria-expanded="false" aria-label="More actions" data-tooltip="More actions">⋯</button>
-            <div class="detail-more-menu" id="modalMoreMenu" role="menu" hidden>
+            <div class="overflow-menu-list" id="modalMoreMenu" role="menu" hidden>
               <button type="button" role="menuitem" id="modalShareRecipe">Share</button>
               <button type="button" role="menuitem" id="modalPrintRecipe">Print</button>
               <button type="button" role="menuitem" id="modalApproveRecipe" hidden>Approve for the catalogue</button>
@@ -233,35 +234,6 @@ function applyPanelDefaults() {
   }
 }
 
-/** Everything that isn't "cook it" or "plan it" lives behind the header's ⋯ button. */
-function wireMoreMenu() {
-  const button = document.getElementById('modalMoreActions');
-  const menu = document.getElementById('modalMoreMenu');
-  if (!button || !menu) return;
-
-  const setOpen = (open) => {
-    menu.hidden = !open;
-    button.setAttribute('aria-expanded', String(open));
-  };
-
-  button.addEventListener('click', (event) => {
-    event.stopPropagation();
-    setOpen(menu.hidden);
-  });
-  // Choosing anything closes it; so does clicking away or pressing Escape.
-  menu.addEventListener('click', () => setOpen(false));
-  document.getElementById('recipeModal')?.addEventListener('click', () => setOpen(false));
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !menu.hidden) {
-      event.stopPropagation(); // close the menu first, not the whole recipe
-      setOpen(false);
-      button.focus();
-    }
-  }, true);
-
-  return setOpen;
-}
-
 /**
  * A collapsed <details> prints as a heading with nothing under it, so a recipe printed from a
  * phone would lose its nutrition and notes entirely. Open everything for the print, then put it
@@ -407,7 +379,11 @@ export function mountRecipeModal(client = null, options = {}) {
     },
   });
   if (client) wireHistory(client, options);
-  setMoreMenuOpen = wireMoreMenu();
+  setMoreMenuOpen = wireOverflowMenu({
+    button: document.getElementById('modalMoreActions'),
+    menu: document.getElementById('modalMoreMenu'),
+    within: dialog,
+  });
   keepPrintWhole();
   document.getElementById('closeModal')?.addEventListener('click', () => dialogHandle.close());
   renderPlannerPickers();

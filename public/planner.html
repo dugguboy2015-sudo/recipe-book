@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <div class="week-header-row">
+        <div class="week-header-row" id="weekHeaderRow">
           <div class="protein-share">
             <div class="progress-bar" aria-hidden="true">
               <span class="progress-bar-fill w-pct-0" id="proteinShareBar"></span>
@@ -75,13 +75,18 @@
           <div class="actions-cluster actions-primary">
             <button type="button" class="primary-button" id="autoFillWeek">Auto-fill this week</button>
             <button type="button" class="icon-button" id="autoFillSettingsButton" aria-label="Auto-fill settings">⚙</button>
-            <a class="ghost-button" id="shoppingListLink" href="shopping.html">Shopping list</a>
           </div>
           <div class="actions-cluster actions-secondary">
-            <button type="button" class="ghost-button" id="exportPlan">Export</button>
-            <button type="button" class="ghost-button" id="importPlanButton">Import</button>
+            <div class="overflow-menu">
+              <button type="button" class="icon-button" id="plannerMoreActions" aria-haspopup="true" aria-expanded="false" aria-label="More planner actions" data-tooltip="More actions">⋯</button>
+              <div class="overflow-menu-list" id="plannerMoreMenu" role="menu" hidden>
+                <a role="menuitem" id="shoppingListLink" href="shopping.html">Shopping list for this week</a>
+                <button type="button" role="menuitem" id="exportPlan">Export</button>
+                <button type="button" role="menuitem" id="importPlanButton">Import</button>
+                <button type="button" role="menuitem" class="is-danger" id="resetWeek">Reset this week</button>
+              </div>
+            </div>
             <input type="file" id="importPlanInput" accept="application/json" hidden />
-            <button type="button" class="secondary-button" id="resetWeek">Reset this week</button>
           </div>
         </div>
         <div id="autoFillTip"></div>

@@ -393,11 +393,13 @@ dialog.recipe-detail { padding: 0; }
 .detail-header-bar h3 { color: var(--brand-ink); flex: 1; min-width: 0; }
 .detail-header-controls { display: flex; align-items: center; gap: var(--sp-1); flex-shrink: 0; }
 
-/* The overflow menu holds everything that isn't "cook it" or "plan it": share, print, and the
-   editing actions this viewer is allowed (shared/permissions.js decides which are shown). */
-.detail-more { position: relative; }
+/* ---------- Overflow menu ----------
+   Holds the actions that are real but rare, so the ones people use every day can be the ones you
+   see. Used by the recipe detail (share, print, edit, delete) and the planner (export, import,
+   reset) — the same component, not two. */
+.overflow-menu { position: relative; }
 
-.detail-more-menu {
+.overflow-menu-list {
   position: absolute;
   top: calc(100% + var(--sp-1));
   right: 0;
@@ -412,7 +414,7 @@ dialog.recipe-detail { padding: 0; }
   padding: var(--sp-1);
 }
 
-.detail-more-menu button {
+.overflow-menu-list button, .overflow-menu-list a {
   text-align: left;
   background: none;
   border: 0;
@@ -424,8 +426,9 @@ dialog.recipe-detail { padding: 0; }
   cursor: pointer;
 }
 
-.detail-more-menu button:hover { background: var(--surface-raised); }
-.detail-more-menu button.is-danger { color: var(--danger); }
+.overflow-menu-list button:hover, .overflow-menu-list a:hover { background: var(--surface-raised); }
+.overflow-menu-list a { display: flex; align-items: center; text-decoration: none; }
+.overflow-menu-list button.is-danger { color: var(--danger); }
 
 .detail-body { flex: 1; padding: var(--sp-5); }
 
