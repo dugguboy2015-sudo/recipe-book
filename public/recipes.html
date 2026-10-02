@@ -42,9 +42,16 @@
         </div>
       </header>
 
-      <button type="button" class="primary-button ask-on-mobile" data-open-ask-dialog>Ask AI for a recipe</button>
-      <div id="generatePanelContainer"></div>
-      <div id="fridgeSearchContainer"></div>
+      <div class="recipes-finder">
+        <label class="sr-only" for="searchInput">Search recipes</label>
+        <input class="search-box" id="searchInput" type="search" list="recipeSuggestions" placeholder="Search recipes by name or description" autocomplete="off" />
+        <datalist id="recipeSuggestions"></datalist>
+        <button type="button" class="ghost-button" id="openFridgeSearch" aria-expanded="false" aria-controls="fridgeSearchContainer">What's in the fridge?</button>
+        <button type="button" class="ghost-button filter-open-button" id="openFilterSheet">Filters</button>
+      </div>
+      <div class="chip-group active-filters" id="activeFilters"></div>
+
+      <div id="fridgeSearchContainer" hidden></div>
       <div id="fridgeResultsBanner"></div>
 
       <div class="recipes-row">
@@ -53,12 +60,6 @@
             <h2>Filters</h2>
             <button type="button" class="ghost-button filter-panel-close" id="closeFilterSheet">Close</button>
           </div>
-
-          <label class="search-field">
-            <span>Recipe name or description</span>
-            <input class="search-box" id="searchInput" type="search" list="recipeSuggestions" placeholder="Start typing to search" autocomplete="off" />
-            <datalist id="recipeSuggestions"></datalist>
-          </label>
 
           <label class="filter-group">
             <span>Cuisine</span>
@@ -109,10 +110,9 @@
 
         <section class="recipes-results">
           <div class="content-head">
-            <h2>Recipe collection</h2>
+            <h2 class="sr-only">Recipe collection</h2>
             <div class="toolbar">
               <span id="resultCount" class="notice">Searching…</span>
-              <button type="button" class="ghost-button filter-open-button" id="openFilterSheet">Filters</button>
             </div>
           </div>
 
@@ -120,12 +120,17 @@
           <div id="pendingNotice"></div>
           <div id="recipeGrid" class="recipe-grid"></div>
           <div class="pagination">
-            <button type="button" class="ghost-button" id="prevPage">Previous</button>
-            <span id="pageStatus">Page 1</span>
-            <button type="button" class="ghost-button" id="nextPage">Next</button>
+            <button type="button" class="ghost-button" id="loadMore" hidden>Show more recipes</button>
+            <span id="pageStatus" class="notice"></span>
           </div>
         </section>
       </div>
+
+      <section class="recipes-ai">
+        <h2>Nothing here fits?</h2>
+        <button type="button" class="primary-button ask-on-mobile" data-open-ask-dialog>Ask AI for a recipe</button>
+        <div id="generatePanelContainer"></div>
+      </section>
     </main>
 
     <footer class="site-footer">

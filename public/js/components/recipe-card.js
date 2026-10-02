@@ -1,6 +1,19 @@
 import { escapeHtml } from '../shared/html.js';
 import { dishArtSvg } from './dish-art.js';
 
+/**
+ * "Aloo Paratha with Curd (North Indian)" sits under a chip that already says North Indian, so the
+ * suffix is read twice and costs a line of wrapping on a phone. Only dropped when it matches the
+ * recipe's own cuisine — a parenthetical that says anything else is part of the name.
+ */
+export function displayName(recipe) {
+  const name = recipe?.name || '';
+  const cuisine = recipe?.cuisine;
+  if (!cuisine) return name;
+  const suffix = ` (${cuisine})`;
+  return name.endsWith(suffix) ? name.slice(0, -suffix.length) : name;
+}
+
 export function normalizeRecipe(recipe) {
   return {
     ...recipe,
@@ -100,7 +113,7 @@ export function renderRecipeCard(recipe, { actions = false, showTime = false, ta
         <div class="recipe-card-art" aria-hidden="true">${dishArtSvg(recipe)}</div>
         <div class="recipe-card-title-wrap">
           <span class="cuisine-band" data-cuisine="${escapeHtml(recipe.cuisine)}">${escapeHtml(recipe.cuisine)}</span>
-          <h3><a class="recipe-card-title-link" href="recipes.html?recipe=${encodeURIComponent(recipe.slug || '')}">${escapeHtml(recipe.name)}</a></h3>
+          <h3><a class="recipe-card-title-link" href="recipes.html?recipe=${encodeURIComponent(recipe.slug || '')}">${escapeHtml(displayName(recipe))}</a></h3>
         </div>
         ${actionButtons}
       </div>
