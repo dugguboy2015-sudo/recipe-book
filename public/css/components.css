@@ -197,6 +197,9 @@
   font-size: var(--fs-5);
   padding: 0;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 /* Stretches the title link over the whole card (UX-1) so the card opens on click or Enter
