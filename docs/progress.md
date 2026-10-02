@@ -589,3 +589,24 @@
   3. **The step tabs are navigation, not a wizard.** Nothing blocks moving between steps: an edit that changes one field should not have to walk through four screens, and Save is what checks the whole form
   4. **`handsOffMinutes` lives in `shared/recipe-rules.js`**, next to `reconcileTimes`, rather than in the modal — the rest of the prep/cook/total arithmetic is there, and this project's tests only reach DOM-free modules
 - Notes for next: nothing is left in `plan.md`. The two owner-only items remain (a custom SMTP sender, and switching on the sign-in captcha), plus the manual checks noted under M4.
+
+## P1 — The app shell — DONE
+- Date: 2026-10-02
+- Branch / PR: p1-app-shell / [#52](https://github.com/dugguboy2015-sudo/recipe-book/pull/52)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (375px phone unless stated; before → after):
+  - [x] **Compact page headers.** The four display-type heroes become the page's name with the account and theme controls on the same line. First content: dashboard **451 → 153px**, planner **997 → 159px**, shopping **579 → 129px**
+  - [~] **Recipes: 679 → 384px** — short of the ≤200px bar I set. Its AI panel and the fridge-search disclosure still sit above the list, which is P4's job. Said plainly rather than moved
+  - [~] **1440×900: first recipe card 992 → 761px** — starts above the fold but isn't fully visible. Same cause, same slice to fix it
+  - [x] **One navigation.** Three markup blocks per page (desktop sidebar, header pills, bottom tab bar — twelve copies across four pages, with two different label sets) become one `<nav class="app-nav">`: fixed bottom below 1100px, fixed left above. One "Main navigation" landmark at every width
+  - [x] **Signed-out honesty.** A permanent quiet line on the dashboard, planner and shopping list. Before this the app said it in exactly one place: inside an *error* snackbar
+  - [x] Empty week's call to action is a button, not an inline text link; the protein meter stops drawing an empty bar when nothing is planned
+  - [x] No horizontal overflow at 375, 834 or 1440 (see deviation 2)
+  - [x] `npm run check` green (436 tests, 3 new); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **Tablets had no navigation worth the name.** At 834px the bottom bar was hidden and only the header pills showed — a gap nobody had measured. Folding everything into one nav closed it: tablets now get the bottom tab bar.
+  2. **A pre-existing horizontal scrollbar at desktop widths, found by a false alarm.** My first attempt put the account controls in an absolutely-positioned header, and 1440px then showed 39px of horizontal scroll. Checking production **before** blaming the change was the right call: production already overflowed by 47px. The cause is the tooltip — centred on its control with `left: 50%`, so on the right-most control its box hangs past the window and drags scroll onto the whole page. Right-edge tooltips now hang leftwards. The absolute positioning was dropped anyway in favour of simply putting the controls inside the page header, which is less markup and no positioning tricks.
+  3. **The `<header class="site-header">` element is gone entirely**, not just restyled. It existed to hold two icons in a 44px row above the title. Its rules in the print stylesheet and the recipes page's focus-trap `inert` list both referenced it and were repointed — the print stylesheet has broken this way once before (M3), so it was checked deliberately.
+  4. **One label set, not two.** The sidebar said "Weekly Planner"/"Shopping List" and the bottom bar said "Planner"/"Shopping". One nav forced a choice; the short ones won, since they have to fit a five-tab bar on a 375px screen.
+- Notes for next slice: P2 (URLs and the Back button). Opening a recipe still doesn't change the URL, so Back leaves the page instead of closing the recipe, and `?recipe=<slug>` is still stripped from the address bar on arrival.
