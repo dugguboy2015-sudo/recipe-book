@@ -659,3 +659,25 @@
   4. **Ingredients and Method were not made into tabs**, though the plan's prose suggested it. Side by side they read as a recipe does, and glancing between them while cooking is exactly what Cook mode already does better. Collapsing the two panels that carry no cooking information achieved the acceptance target on its own.
   5. **The menu handle is declared above its assignment** on purpose: the dialog's close handler closes over it. Same reason as `ingredientEditorRef` in recipe-form.js, and noted in a comment so the next person doesn't "tidy" it.
 - Notes for next slice: P4 (finding a recipe). The search field is still not rendered at all on a phone, fridge search is still behind a `<details>`, and the grid still jumps 1 → 3 columns with nothing in between — which is also what keeps the recipes page's first card at 384px after P1.
+
+## P4 — Finding a recipe — DONE
+- Date: 2026-10-02
+- Branch / PR: p4-finding / [#55](https://github.com/dugguboy2015-sudo/recipe-book/pull/55)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (before → after):
+  - [x] **Search on a phone: not rendered at all (0×0) → visible at y=116.** It lived inside the filter sheet, so finding "paneer" cost scroll → Filters → tap → type → Show N. Now **2 actions**: tap, type
+  - [x] Active filters show as removable chips above the results, so what is narrowing the list is visible — and undoable — without opening the sheet
+  - [x] Fridge search is a panel the finder row opens, not a 33px `<details>` triangle. Verified end to end: paneer → 6 recipes, shown as a removable chip
+  - [x] **Grid at 834px: 1 column (487px card, 347px of blank) → 2 columns of 378px.** The filter rail becomes a sheet below 1100px, matching the nav's breakpoint
+  - [x] **First card at 375px: 679 → 309px**; at 1440×900: **992 → 281px and fully above the fold** — the P1 criterion that P1 could not reach on its own
+  - [x] "Show more" replaces Previous/Next: 12 → 24 → 31, button hides at the end, "Showing 24 of 31" throughout
+  - [x] Card titles stop repeating the cuisine their chip already shows, on exact match only
+  - [x] `npm run check` green (450 tests, 4 new); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **`?page=` had to be removed, which the plan did not anticipate.** With results accumulating behind "Show more", a page number describes nothing a reload can restore: a bookmarked `?page=3` would have shown recipes 25–31 alone with no way back to the first 24. Old links now ignore it, with a test.
+  2. **The AI panel moved below the results.** Not in the plan, but the measurement forced the question: with search at the top and the AI panel still above the grid, the first card sat at 403px — *worse* than before this slice. The catalogue is what the page is for; asking for a recipe that doesn't exist yet is what you do when nothing in it fits. Moving it took the first card to 309px.
+  3. **"Recipe collection" became a screen-reader-only heading.** It repeated the page's own `<h1>Recipes</h1>` two lines above it. The structure stays for assistive tech; the pixels do not.
+  4. **Ingredients and Method were left side by side** (see P3 deviation 4) — this slice changed nothing there.
+  5. **Dropping a chip has to repaint the sheet's own controls**, or the two disagree about what is filtering. `syncFilterControls()` does that; it was missed in the first pass and caught by lint flagging a function that did not exist.
+- Notes for next slice: P5 (planner and shopping in one hand). Week view is still 1,146px wide inside a 317px column, month cells are 45×45px, and Export/Import/Reset still outrank the week they act on.
