@@ -33,74 +33,80 @@ const NUTRITION_ROWS = [
 
 const MODAL_HTML = `
   <dialog id="recipeModal" class="recipe-detail">
-    <div class="detail-header">
-      <div class="recipe-hero">
-        <div class="recipe-hero-art" id="modalArt" aria-hidden="true"></div>
-        <div>
-          <h3 id="modalTitle">Recipe</h3>
-          <div class="recipe-hero-meta" id="modalHeroMeta"></div>
+    <header class="detail-header">
+      <div class="detail-header-bar">
+        <h3 id="modalTitle">Recipe</h3>
+        <div class="detail-header-controls">
+          <div class="detail-more">
+            <button type="button" class="icon-button" id="modalMoreActions" aria-haspopup="true" aria-expanded="false" aria-label="More actions" data-tooltip="More actions">⋯</button>
+            <div class="detail-more-menu" id="modalMoreMenu" role="menu" hidden>
+              <button type="button" role="menuitem" id="modalShareRecipe">Share</button>
+              <button type="button" role="menuitem" id="modalPrintRecipe">Print</button>
+              <button type="button" role="menuitem" id="modalApproveRecipe" hidden>Approve for the catalogue</button>
+              <button type="button" role="menuitem" id="modalEditRecipe" hidden>Edit</button>
+              <button type="button" role="menuitem" class="is-danger" id="modalDeleteRecipe" hidden>Delete</button>
+            </div>
+          </div>
+          <button type="button" class="icon-button" id="closeModal" aria-label="Close recipe" data-tooltip="Close">✕</button>
         </div>
       </div>
+      <div class="recipe-hero">
+        <div class="recipe-hero-art" id="modalArt" aria-hidden="true"></div>
+        <div class="recipe-hero-meta" id="modalHeroMeta"></div>
+      </div>
+    </header>
+
+    <div class="detail-body">
+      <p class="scaled-notice" id="modalScaledNotice" hidden></p>
+
+      <div class="detail-meta">
+        <div class="servings-stepper">
+          <button type="button" id="modalServingsMinus" aria-label="Fewer servings">−</button>
+          <output id="modalServingsValue">4</output>
+          <button type="button" id="modalServingsPlus" aria-label="More servings">+</button>
+        </div>
+        <button type="button" class="chip" id="modalFamilyServingsChip"></button>
+      </div>
+      <div id="servingsTip"></div>
+
+      <div class="time-breakdown" id="modalTimeBreakdown"></div>
+      <p class="hint time-note" id="modalTimeNote" hidden></p>
+
+      <div class="detail-grid">
+        <div class="detail-panel">
+          <h4>Ingredients</h4>
+          <ul id="modalIngredients"></ul>
+        </div>
+        <div class="detail-panel">
+          <h4>Method</h4>
+          <ol id="modalSteps"></ol>
+        </div>
+        <details class="detail-panel detail-collapsible" id="modalNutritionPanel" open>
+          <summary><span class="detail-panel-title">Nutrition</span> <span class="hint">(per serving, estimate)</span></summary>
+          <table class="nutrition-panel">
+            <caption>Per serving. The last column compares each amount with an average adult’s recommended daily intake — children and teenagers need different amounts, so read it as a rough guide.</caption>
+            <thead><tr><th>Nutrient</th><th>Amount</th><th>Share of an adult’s day</th></tr></thead>
+            <tbody id="modalNutrition"></tbody>
+          </table>
+        </details>
+        <details class="detail-panel detail-collapsible" id="modalNotesPanel" open>
+          <summary><span class="detail-panel-title">Notes</span></summary>
+          <div id="modalNotes"></div>
+        </details>
+      </div>
     </div>
 
-    <p class="scaled-notice" id="modalScaledNotice" hidden></p>
-
-    <div class="detail-meta">
-      <div class="servings-stepper">
-        <button type="button" id="modalServingsMinus" aria-label="Fewer servings">−</button>
-        <output id="modalServingsValue">4</output>
-        <button type="button" id="modalServingsPlus" aria-label="More servings">+</button>
-      </div>
-      <button type="button" class="chip" id="modalFamilyServingsChip"></button>
-    </div>
-    <div id="servingsTip"></div>
-
-    <div class="time-breakdown" id="modalTimeBreakdown"></div>
-    <p class="hint time-note" id="modalTimeNote" hidden></p>
-
-    <div class="detail-grid">
-      <div class="detail-panel">
-        <h4>Ingredients</h4>
-        <ul id="modalIngredients"></ul>
-      </div>
-      <div class="detail-panel">
-        <h4>Method</h4>
-        <ol id="modalSteps"></ol>
-      </div>
-      <div class="detail-panel">
-        <h4>Nutrition <span class="hint">(per serving, estimate)</span></h4>
-        <table class="nutrition-panel">
-          <caption>Per serving. The last column compares each amount with an average adult’s recommended daily intake — children and teenagers need different amounts, so read it as a rough guide.</caption>
-          <thead><tr><th>Nutrient</th><th>Amount</th><th>Share of an adult’s day</th></tr></thead>
-          <tbody id="modalNutrition"></tbody>
-        </table>
-      </div>
-      <div class="detail-panel">
-        <h4>Notes</h4>
-        <div id="modalNotes"></div>
-      </div>
-    </div>
-
-    <div class="detail-actions">
-      <label>
-        Day
+    <div class="detail-action-bar">
+      <div class="detail-plan-row">
+        <label class="sr-only" for="modalPlannerDay">Day</label>
         <select id="modalPlannerDay"></select>
-      </label>
-      <label>
-        Slot
+        <label class="sr-only" for="modalPlannerSlot">Meal</label>
         <select id="modalPlannerSlot"></select>
-      </label>
-      <button type="button" class="ghost-button" id="modalAddToPlanner">Add to planner</button>
-      <button type="button" class="ghost-button" id="modalCookMode">Cook mode</button>
-      <button type="button" class="ghost-button" id="modalShareRecipe">Share</button>
-      <button type="button" class="ghost-button" id="modalPrintRecipe">Print</button>
-      <button type="button" class="primary-button" id="modalApproveRecipe" hidden>Approve for the catalogue</button>
-      <button type="button" class="ghost-button" id="modalEditRecipe" hidden>Edit</button>
-      <button type="button" class="danger-button" id="modalDeleteRecipe" hidden>Delete</button>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="primary-button" id="closeModal">Close</button>
+      </div>
+      <div class="detail-do-row">
+        <button type="button" class="ghost-button" id="modalAddToPlanner">Add to plan</button>
+        <button type="button" class="primary-button" id="modalCookMode">Cook mode</button>
+      </div>
     </div>
   </dialog>
 `;
@@ -211,6 +217,70 @@ function renderPlannerPickers() {
   document.getElementById('modalPlannerSlot').innerHTML = enabledSlots(household).map((slot) => `<option value="${slot}">${slot}</option>`).join('');
 }
 
+/** Below this width the detail fills the screen and its secondary panels start collapsed. */
+const PHONE = '(max-width: 767px)';
+
+/**
+ * P3: Nutrition and Notes are collapsed on a phone, where they sat between the reader and nothing.
+ * This is behaviour rather than layout, so it branches on matchMedia rather than in CSS — a
+ * <details> element's open state cannot be set from a stylesheet.
+ */
+function applyPanelDefaults() {
+  const collapsed = window.matchMedia(PHONE).matches;
+  for (const id of ['modalNutritionPanel', 'modalNotesPanel']) {
+    const panel = document.getElementById(id);
+    if (panel) panel.open = !collapsed;
+  }
+}
+
+/** Everything that isn't "cook it" or "plan it" lives behind the header's ⋯ button. */
+function wireMoreMenu() {
+  const button = document.getElementById('modalMoreActions');
+  const menu = document.getElementById('modalMoreMenu');
+  if (!button || !menu) return;
+
+  const setOpen = (open) => {
+    menu.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+  };
+
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    setOpen(menu.hidden);
+  });
+  // Choosing anything closes it; so does clicking away or pressing Escape.
+  menu.addEventListener('click', () => setOpen(false));
+  document.getElementById('recipeModal')?.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !menu.hidden) {
+      event.stopPropagation(); // close the menu first, not the whole recipe
+      setOpen(false);
+      button.focus();
+    }
+  }, true);
+
+  return setOpen;
+}
+
+/**
+ * A collapsed <details> prints as a heading with nothing under it, so a recipe printed from a
+ * phone would lose its nutrition and notes entirely. Open everything for the print, then put it
+ * back. (The print stylesheet has broken once before — M3 — so this is deliberate, not incidental.)
+ */
+function keepPrintWhole() {
+  let reopened = [];
+  window.addEventListener('beforeprint', () => {
+    reopened = ['modalNutritionPanel', 'modalNotesPanel']
+      .map((id) => document.getElementById(id))
+      .filter((panel) => panel && !panel.open);
+    for (const panel of reopened) panel.open = true;
+  });
+  window.addEventListener('afterprint', () => {
+    for (const panel of reopened) panel.open = false;
+    reopened = [];
+  });
+}
+
 /* ---------- P2: the open recipe is a place you can go back from ----------
    Opening a recipe used to change nothing about the URL, so on a phone the Back gesture — the
    most-used control there is — left the page entirely instead of closing the recipe. A recipe now
@@ -219,6 +289,9 @@ function renderPlannerPickers() {
 
    The flags keep the two directions from fighting: closing the detail ourselves unwinds the entry
    we pushed, and that unwind must not be mistaken for the visitor pressing Back. */
+// Assigned when the modal mounts; the close handler above closes over it, so it is declared
+// here rather than beside its assignment (same reason as ingredientEditorRef in recipe-form.js).
+let setMoreMenuOpen = null;
 let pushedHistoryEntry = false;
 let closingFromPopstate = false;
 let unwindingHistory = false;
@@ -328,11 +401,14 @@ export function mountRecipeModal(client = null, options = {}) {
   dialogHandle = wireDialog(dialog, {
     onClose: () => {
       // Fires for every route out: the Close button, Escape, a backdrop click, or Back.
+      setMoreMenuOpen?.(false);
       if (closingFromPopstate) closingFromPopstate = false;
       else dropRecipeFromUrl();
     },
   });
   if (client) wireHistory(client, options);
+  setMoreMenuOpen = wireMoreMenu();
+  keepPrintWhole();
   document.getElementById('closeModal')?.addEventListener('click', () => dialogHandle.close());
   renderPlannerPickers();
   mountTip(document.getElementById('servingsTip'), 'servings');
@@ -478,6 +554,7 @@ export async function openRecipeModal(client, id, { serves, onEdit, onDelete, on
   approveButton.hidden = !onApprove || !canApprove(recipe);
   approveButton.onclick = onApprove ? () => { dialogHandle.close(); onApprove(recipe.id); } : null;
 
+  applyPanelDefaults();
   pushRecipeUrl(recipe.slug, serves && serves > 0 ? serves : null);
   dialogHandle.open();
 }
