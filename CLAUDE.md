@@ -10,8 +10,10 @@ Amend that file instead, and append the outcome of each slice to `docs/progress.
 Everything specified so far is shipped and live: the 13 phases of the original build spec, the
 A–D responsive uplift, and milestones M0–M6 (accounts and households, the shopping list, dish
 illustrations and sharing, PWA/offline and mobile IA, favourites/fridge search/leftovers/cooked
-history, and the polish backlog). What remains is the six-slice UX uplift in `improvement_plan.md`
-§6, plus two things only the owner can do. Read `docs/progress.md` before making further changes —
+history, and the polish backlog), and the six-slice UX uplift P1–P6 (the app shell, URL routing,
+the recipe detail on a phone, finding a recipe, planner and shopping in one hand, speed and
+accessibility). What remains is `improvement_plan.md` §6.1–§6.3: a stray household row, two things
+only the owner can do, and two items deferred by decision. Read `docs/progress.md` before making further changes —
 it is the actual history of what this codebase is and why, in more detail than fits here.
 `README.md`, `docs/architecture.md` and `docs/operations.md` are the maintained, current-state
 references for running, understanding and operating the app day to day.

@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 4.0 — 2026-10-01 |
-| **Status** | Current. Sections 1–5 describe what is true today; section 6 is the work that remains |
+| **Version** | 4.1 — 2026-10-02 |
+| **Status** | Current. Sections 1–5 describe what is true today; section 6 is the work that remains — the six UX slices are **all shipped**, leaving only §6.1–§6.3 |
 | **Live** | https://recipe-book-9eo.pages.dev · Cloudflare Pages, git-connected (push to `main` = production deploy) |
 | **Repo** | `github.com/dugguboy2015-sudo/recipe-book` |
 | **Database** | Supabase project `xtxufygmwqicrgzjwdxc` |
@@ -265,133 +265,35 @@ embarrassing.
 
 ## 6. The roadmap
 
-Six UI slices, then a short backlog. One branch and one PR each, in this order — the shell first
-because every later screen sits inside it, routing second because the detail rebuild depends on it.
-Sizes are relative, not calendar promises. Each slice is independently shippable: stopping after
-any one of them leaves the app better, not half-rebuilt.
+**The six UX slices are shipped** — P1 to P6, one PR each, all merged and verified on production
+on 2026-10-02. `docs/progress.md` carries an entry per slice with the measurements and every
+deviation. What they changed, against the baseline in §1:
 
-```
-P1 shell ─▶ P2 routing ─▶ P3 recipe detail ─▶ P4 finding ─▶ P5 planner + shopping ─▶ P6 speed + a11y
-```
+| Slice | What it did | Measured |
+|---|---|---|
+| **P1** shell ([#52](https://github.com/dugguboy2015-sudo/recipe-book/pull/52)) | Compact page headers, one navigation instead of three, signed-out honesty | First content on a phone: dashboard 451→153px, planner 997→159px, shopping 579→129px |
+| **P2** routing ([#53](https://github.com/dugguboy2015-sudo/recipe-book/pull/53)) | A recipe is a place you can go back from; planner view and date in the URL; card titles are real links | Back closes the recipe instead of leaving the page; deep links survive in the address bar |
+| **P3** detail ([#54](https://github.com/dugguboy2015-sudo/recipe-book/pull/54)) | Full-screen sheet on phones, sticky header and action bar, secondary panels collapsed | 343→full width; 9.4→4.6 screens; Close y=6,641→16 and sticky |
+| **P4** finding ([#55](https://github.com/dugguboy2015-sudo/recipe-book/pull/55)) | Persistent search, filter chips, fridge search promoted, responsive grid, Show more | Search not rendered→visible; "paneer" 5 steps→2; 834px grid 1→2 columns |
+| **P5** one hand ([#57](https://github.com/dugguboy2015-sudo/recipe-book/pull/57)) | Week stacks on phones, maintenance actions behind a menu, shopping actions only when there is a list | Week 1,146px of sideways scroll→none; action row 156→44px |
+| **P6** speed and a11y ([#58](https://github.com/dugguboy2015-sudo/recipe-book/pull/58)) | Generated modulepreload lists, 44px targets, keyboard pass | Module fetch waves **7→2** on production, 468ms→193ms spread; zero controls under 44px |
 
-### P1 — The app shell · *small*
+One regression was shipped and fixed in the course of this: P3's `dialog.recipe-detail
+{ display: flex }` beat the browser's rule hiding a closed `<dialog>`, so nine dialogs rendered
+inline on every page. Caught while verifying P5, confirmed against production, and fixed on its own
+branch ahead of P5 ([#56](https://github.com/dugguboy2015-sudo/recipe-book/pull/56)).
 
-Headers, navigation, and telling signed-out visitors the truth.
+**Three acceptance targets were missed and are recorded as missed**, not reinterpreted:
 
-- Replace the four hero blocks with a compact page header (≤96px): page name, primary action,
-  greeting on the dashboard. Keep the display type for the signed-out first visit and genuine
-  empty states, where it is doing a real job.
-- One navigation definition rendered per breakpoint, instead of three copies in every page
-  (12 across the app). At ≥1200 the header nav currently survives as a single stray "Ask for a
-  recipe" button while the sidebar carries navigation — fold that into one decision.
-- Add a permanent, quiet line to the planner, shopping and favourites empty states when signed
-  out: *saved on this device; sign in to share with your household*. Today this is said only
-  inside error snackbars.
-- Give the sign-in control a visible label at phone width — it is a 44px 👤 emoji today.
-- Make the empty-week call to action a button, not an inline text link. Hide the protein meter
-  when it has nothing to measure.
+- The recipes page's first *card* is 309px down a phone, not ≤200px — the search field, which is
+  the control people actually reach for, is at 116px.
+- The planner's first meal slot is 513px down, not ≤300px. What remains above it is the page
+  header, the view tabs, the date navigation and a 44px action row.
+- Import depth is still 7, not ≤3. Flattening it would undo the small shared modules the project
+  keeps separate on purpose (no bundler means no tree-shaking). Preloading achieves what the depth
+  target was a proxy for — two round trips instead of seven on production, one on localhost.
 
-**Files:** `public/*.html`, `css/pages.css`, `css/components.css`, `js/components/account.js`,
-`js/pages/dashboard.js`
-
-**Acceptance** — first content ≤200px on all four pages at 375 and 1440 (today 451/679/997/579);
-at 1440×900 at least one full recipe card above 900px (today 992); exactly one navigation visible
-at any width, one "Main navigation" landmark; `npm run check` green.
-
-### P2 — URLs and the Back button · *small*
-
-- Opening a recipe pushes `?recipe=<slug>` (plus `serves` when scaled); closing pops it;
-  `popstate` closes the dialog instead of leaving the page.
-- Stop stripping `?recipe=` on load, so refresh, bookmark and re-share survive.
-- Put the planner's view mode and selected date in the URL too — they are already state, just not
-  addressable.
-- Recipe card titles become real links, progressively enhanced by the existing click handler, with
-  the hit area covering the card.
-
-**Files:** `js/components/recipe-modal.js`, `js/components/recipe-card.js`, `js/lib/url-state.js`,
-`js/pages/recipes.js`, `js/pages/planner.js`
-
-**Acceptance** — open a recipe and the URL carries the slug; Back closes the recipe and stays on
-Recipes (today it leaves the page); Forward reopens it; reload restores the same recipe and
-servings; middle-click opens it in a new tab; unit tests for the URL ↔ state mapping.
-
-### P3 — The recipe detail, rebuilt for a phone · *medium*
-
-The core screen of the product, and the worst one.
-
-- Below 768px: full-screen sheet, no backdrop margin, **sticky header** with title and Close, and a
-  **sticky bottom bar** holding Cook mode and Add to planner.
-- Secondary actions (Share, Print, Edit, Delete, Approve) into an overflow menu in that header.
-- Nutrition and Notes collapsed by default on phones; Ingredients and Method open, as tabs so
-  neither requires scrolling past the other.
-- Desktop keeps its dialog and gains the same sticky header and action bar.
-
-Cook mode is already right — full screen, one step at a time, screen kept awake. It is the model to
-copy, not something to rebuild.
-
-**Files:** `js/components/recipe-modal.js`, `css/components.css`, `recipes.html`
-
-**Acceptance** (375) — Close reachable from any scroll position (today y=6,641); Cook mode one tap
-from the top (today ~9 screens); sheet full viewport width (today 343 of 449); first screen to
-method under 2 screens; **print output verified unchanged** — the print stylesheet keys off this
-markup and has broken this way before.
-
-### P4 — Finding a recipe · *medium*
-
-- A persistent search field at the top of the list at every width, result count beside it, staying
-  visible while scrolling on phones. It is not rendered at all on a phone today.
-- Active filters as removable chips under it; the sheet keeps the long tail.
-- Fridge search promoted to a peer of search, out of its collapsed `<details>`.
-- Grid steps 1 column <600, 2 at ≥600, 3 at ≥1000, 4 at ≥1400 — today it jumps 1 → 3 with nothing
-  in between, so an iPad gets one 487px card and 347px of blank.
-- Replace pagination with load-more at this catalogue size. (This reverses the 2026-09-15 decision
-  to keep paging, which was taken when the grid and filters were the problem; 31 recipes across 3
-  pages is now pure friction. Keep paging in the code path for growth beyond ~100.)
-- Drop the cuisine suffix from card titles where the chip beside them already says it.
-
-**Files:** `recipes.html`, `js/pages/recipes.js`, `js/components/fridge-search.js`,
-`js/components/recipe-card.js`, `css/pages.css`
-
-**Acceptance** — search visible without interaction at 375/834/1440; "paneer" to results in two
-actions from landing (today five); at 834px two columns, no card wider than ~420px; fridge search
-visible without opening a disclosure.
-
-### P5 — Planner and shopping in one hand · *medium*
-
-- Phone planner defaults to Day. Week becomes a vertical list of day sections; the 7-column grid
-  stays for ≥768px. Today Week is 1,146px wide inside a 317px column.
-- Month cells ≥44px with legible per-slot dots (45×45 including gap today).
-- Auto-fill and the plan itself at the top; **Export, Import and Reset this week into an overflow
-  menu** — maintenance actions currently outrank the week they act on, with Reset a full-width
-  warm button above the plan. Reset keeps its confirm and keeps naming the week.
-- Shopping: list first; Copy, Share and Print appear only when there is a list (they are shown on
-  an empty one today); bigger tick rows; the add-item field gets full width instead of truncating
-  mid-placeholder.
-
-**Files:** `planner.html`, `shopping.html`, `js/pages/planner.js`, `js/pages/shopping.js`,
-`css/pages.css`
-
-**Acceptance** (375) — first meal slot ≤300px down (today 997); no horizontal scroll in any planner
-view; month cells ≥44×44 of real tap area; empty shopping list shows no Copy/Share/Print; a real
-week planned and shopped end-to-end on the preview before merge.
-
-### P6 — Speed and accessibility · *small*
-
-- `<link rel="modulepreload">` for each page's static graph, flatten the deepest import chains, and
-  dynamic-import anything only needed after an interaction. Depth 7 means seven sequential network
-  waves before a cold phone renders anything.
-- Tap targets to 44px — recipe card titles are 24px.
-- Keyboard pass over every new sheet, menu and sticky bar: focus trap, focus return, visible focus,
-  Esc.
-- Re-run `scripts/contrast.mjs` over anything recoloured.
-
-**Acceptance** — import depth ≤3 per page entry (today 7), modules fetched in ≤2 waves; first card
-painted measurably sooner on a cold, service-worker-disabled 4G profile, recorded as before → after
-in `docs/progress.md`; nothing interactive below 44px; every new surface operable by keyboard alone.
-
-> Within the no-build-step constraint, modulepreload is the right answer. If that constraint were
-> ever relaxed, a ~20-line esbuild step would beat it comfortably. Noting the trade-off only so it
-> is on the record — the constraint stands.
+---
 
 ### 6.1 Backlog — small, unscheduled
 

@@ -708,3 +708,20 @@
   3. **The overflow menu became a real component.** P3 built one for the recipe detail; rather than write a second, `components/overflow-menu.js` and `.overflow-menu` now serve both. Escape closes the menu before the dialog it may sit inside, which is why the key handler captures.
   4. **A stash pop staged `design_handoff_recipe_book_redesign/` as deleted**, which was never intended — restored from HEAD before committing. Worth knowing that `git stash` leaves untracked files behind, which is also how a P5 file briefly rode along in the fix commit above and had to be removed before merging.
 - Notes for next slice: P6 (speed and accessibility) is the last one — modulepreload and flattening the import graph (depth 7, up to 34 modules per page), 44px tap targets, and a keyboard pass over the new sheet, menus and sticky bars.
+
+## P6 — Speed and accessibility — DONE
+- Date: 2026-10-02
+- Branch / PR: p6-speed-a11y / [#58](https://github.com/dugguboy2015-sudo/recipe-book/pull/58)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance:
+  - [x] **Fetch waves 7 → 2 on production** (1 on a local server). Before: 39 modules in **7 waves spread over 468ms**. After, measured on production once live: 39 modules in **2 waves over 193ms**; on localhost it is a single 4ms wave, so the remaining split is the network rather than module discovery. The depth-7 import graph is unchanged — the browser simply no longer has to unroll it one level at a time
+  - [~] **Import depth is still 7**, not the ≤3 the plan asked for. Flattening it would mean collapsing the small shared modules the project deliberately keeps separate (no bundler means no tree-shaking, so `shared/html.js` exists precisely so importing `escapeHtml` doesn't drag in a large file). Preloading achieves what the depth target was a proxy for — one round trip instead of seven — without undoing that
+  - [x] **Zero controls below 44px**, across 127 on the recipes page. A card title with a short name ("Basundi") was a 28px box; the skip link 42px
+  - [x] Opening a recipe puts focus on its **name**, not the "More actions" button that happened to be first in the DOM. Focus returns to the card link on close — verified by keyboard, not assumed
+  - [x] `npm run check` green (450 tests), now including a preload-freshness gate
+- Deviations from spec / findings while building this:
+  1. **The preload list is generated and enforced, not written.** `scripts/build-preloads.mjs` walks the real import graph; `npm run check` fails if any page's block has drifted. A hand-written list would go stale the first time someone added an import — the same reasoning that rejected a hand-maintained service-worker precache list in M4.
+  2. **The dynamic import in `main.js` was costing an extra wave on top of the seven.** The page module can't be discovered until main.js has run, so the preload list includes it and `components/account.js` explicitly.
+  3. **The depth target was the wrong measure** and is recorded as missed rather than quietly reinterpreted. Waves, not depth, is what a cold phone pays.
+- Notes for next: all six slices of the UX uplift are shipped. What remains in `improvement_plan.md` is §6.1–§6.3 — the duplicate household row, the two owner-only items (custom SMTP sender, sign-in captcha), and the two things deferred by decision (photo upload, the legacy `recipes.ingredients` column).
