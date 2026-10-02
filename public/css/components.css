@@ -185,7 +185,7 @@
 
 .recipe-card h3 { color: var(--brand-ink); font-size: var(--fs-5); }
 
-.recipe-card-title-button {
+.recipe-card-title-link {
   position: relative;
   z-index: 1;
   background: none;
@@ -196,11 +196,13 @@
   font-family: 'Fraunces', serif;
   font-size: var(--fs-5);
   padding: 0;
+  text-decoration: none;
 }
 
-/* Stretches the title button over the whole card (UX-1) so the card opens on click or Enter
-   anywhere in it, while the edit/delete icon buttons (z-index 2 below) stay independently clickable. */
-.recipe-card-title-button::after { content: ''; position: absolute; inset: 0; }
+/* Stretches the title link over the whole card (UX-1) so the card opens on click or Enter
+   anywhere in it, while the edit/delete icon buttons (z-index 2 below) stay independently clickable.
+   Being a real link (P2) this also makes the whole card the tap target rather than 24px of text. */
+.recipe-card-title-link::after { content: ''; position: absolute; inset: 0; }
 
 .recipe-card-actions { position: relative; z-index: 2; display: flex; align-items: center; gap: var(--sp-2); }
 

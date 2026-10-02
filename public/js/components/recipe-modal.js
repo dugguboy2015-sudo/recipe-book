@@ -1,5 +1,6 @@
 import { escapeHtml } from '../shared/html.js';
-import { fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
+import { fetchRecipeById, fetchRecipeIngredients, fetchRecipeBySlug } from '../lib/queries.js';
+import { RECIPE_PARAMS, recipeSearchParams, parseRecipeParams } from '../lib/url-state.js';
 import { normalizeRecipe, dietaryBadges, spiceMeter, setBadgeDiet } from './recipe-card.js';
 import { dishArtSvg } from './dish-art.js';
 import { wireDialog } from './dialog.js';
@@ -210,7 +211,112 @@ function renderPlannerPickers() {
   document.getElementById('modalPlannerSlot').innerHTML = enabledSlots(household).map((slot) => `<option value="${slot}">${slot}</option>`).join('');
 }
 
-export function mountRecipeModal() {
+/* ---------- P2: the open recipe is a place you can go back from ----------
+   Opening a recipe used to change nothing about the URL, so on a phone the Back gesture — the
+   most-used control there is — left the page entirely instead of closing the recipe. A recipe now
+   pushes a history entry; Back pops it and closes the detail; Forward reopens it; a reload or a
+   shared link lands on the same recipe at the same servings.
+
+   The flags keep the two directions from fighting: closing the detail ourselves unwinds the entry
+   we pushed, and that unwind must not be mistaken for the visitor pressing Back. */
+let pushedHistoryEntry = false;
+let closingFromPopstate = false;
+let unwindingHistory = false;
+
+function urlWith(params) {
+  const query = params.toString();
+  return window.location.pathname + (query ? '?' + query : '');
+}
+
+/** Keeps whatever the page itself owns (the recipes page's filters) out of harm's way. */
+function preserveNonRecipeParams(params) {
+  const current = new URLSearchParams(window.location.search);
+  for (const [key, value] of current) {
+    if (!RECIPE_PARAMS.includes(key) && !params.has(key)) params.set(key, value);
+  }
+  return params;
+}
+
+/** Puts this recipe in the address bar. Called as the detail opens. */
+function pushRecipeUrl(slug, serves) {
+  if (!slug) return;
+  const params = preserveNonRecipeParams(recipeSearchParams(slug, serves));
+  const alreadyThere = parseRecipeParams(new URLSearchParams(window.location.search)).slug === slug;
+  if (alreadyThere) {
+    // Arrived by deep link, refresh or Forward — that entry exists already, don't stack another.
+    window.history.replaceState({ recipeSlug: slug }, '', urlWith(params));
+    pushedHistoryEntry = false;
+    return;
+  }
+  window.history.pushState({ recipeSlug: slug }, '', urlWith(params));
+  pushedHistoryEntry = true;
+}
+
+/** Scaling the servings edits the current entry rather than adding one per tap. */
+function replaceServingsInUrl(serves) {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get('recipe')) return;
+  if (serves) params.set('serves', String(serves));
+  else params.delete('serves');
+  window.history.replaceState(window.history.state, '', urlWith(params));
+}
+
+/** Takes the recipe out of the address bar when the detail closes. */
+function dropRecipeFromUrl() {
+  if (pushedHistoryEntry) {
+    pushedHistoryEntry = false;
+    unwindingHistory = true;
+    window.history.back();
+    return;
+  }
+  // Nothing of ours to unwind (a deep link, or a refresh landed here) — edit the entry instead, so
+  // Back still goes where the visitor came from rather than reopening what they just closed.
+  const params = new URLSearchParams(window.location.search);
+  for (const key of RECIPE_PARAMS) params.delete(key);
+  window.history.replaceState(null, '', urlWith(params));
+}
+
+/**
+ * Opens whatever recipe the URL names, if any. Every page that mounts the modal calls this, so a
+ * shared link works from the dashboard and the planner too, not only from the recipes page.
+ * @returns {Promise<boolean>} whether a recipe was opened
+ */
+export async function openRecipeFromUrl(client, options = {}) {
+  const { slug, serves } = parseRecipeParams(new URLSearchParams(window.location.search));
+  if (!slug) return false;
+  const recipe = await fetchRecipeBySlug(client, slug);
+  if (!recipe) {
+    showSnackbar('This recipe was removed.', 'error');
+    dropRecipeFromUrl();
+    return false;
+  }
+  await openRecipeModal(client, recipe.id, { ...options, serves: serves || undefined });
+  return true;
+}
+
+/** Wires Back and Forward once per page. */
+function wireHistory(client, options) {
+  window.addEventListener('popstate', async () => {
+    if (unwindingHistory) {
+      // This popstate is the one dropRecipeFromUrl() asked for, not the visitor going back.
+      unwindingHistory = false;
+      return;
+    }
+    const { slug } = parseRecipeParams(new URLSearchParams(window.location.search));
+    const dialog = document.getElementById('recipeModal');
+    if (!slug) {
+      if (dialog?.open) {
+        closingFromPopstate = true;
+        dialogHandle?.close();
+      }
+      return;
+    }
+    if (current?.recipe?.slug === slug && dialog?.open) return;
+    await openRecipeFromUrl(client, options);
+  });
+}
+
+export function mountRecipeModal(client = null, options = {}) {
   if (mounted || document.getElementById('recipeModal')) {
     mounted = true;
     return;
@@ -219,7 +325,14 @@ export function mountRecipeModal() {
   mounted = true;
 
   const dialog = document.getElementById('recipeModal');
-  dialogHandle = wireDialog(dialog);
+  dialogHandle = wireDialog(dialog, {
+    onClose: () => {
+      // Fires for every route out: the Close button, Escape, a backdrop click, or Back.
+      if (closingFromPopstate) closingFromPopstate = false;
+      else dropRecipeFromUrl();
+    },
+  });
+  if (client) wireHistory(client, options);
   document.getElementById('closeModal')?.addEventListener('click', () => dialogHandle.close());
   renderPlannerPickers();
   mountTip(document.getElementById('servingsTip'), 'servings');
@@ -228,16 +341,19 @@ export function mountRecipeModal() {
     if (!current || current.targetServings <= 1) return;
     current.targetServings -= 1;
     renderServings(current.targetServings);
+    replaceServingsInUrl(current.targetServings);
   });
   document.getElementById('modalServingsPlus')?.addEventListener('click', () => {
     if (!current) return;
     current.targetServings += 1;
     renderServings(current.targetServings);
+    replaceServingsInUrl(current.targetServings);
   });
   document.getElementById('modalFamilyServingsChip')?.addEventListener('click', () => {
     if (!current || !household) return;
     current.targetServings = household.default_servings || current.recipe.serves || 4;
     renderServings(current.targetServings);
+    replaceServingsInUrl(current.targetServings);
   });
 
   document.getElementById('modalAddToPlanner')?.addEventListener('click', async () => {
@@ -362,6 +478,7 @@ export async function openRecipeModal(client, id, { serves, onEdit, onDelete, on
   approveButton.hidden = !onApprove || !canApprove(recipe);
   approveButton.onclick = onApprove ? () => { dialogHandle.close(); onApprove(recipe.id); } : null;
 
+  pushRecipeUrl(recipe.slug, serves && serves > 0 ? serves : null);
   dialogHandle.open();
 }
 

@@ -1,8 +1,8 @@
 import { escapeHtml } from '../shared/html.js';
 import { supabase } from '../lib/supabase-client.js';
 import { fetchRecipeStats, fetchRecentRecipes, fetchCuisineCounts, fetchPlannerRecipesByIds, fetchRecipeById, fetchRecipeIngredients } from '../lib/queries.js';
-import { normalizeRecipe, renderRecipeCard, setBadgeDiet } from '../components/recipe-card.js';
-import { mountRecipeModal, openRecipeModal } from '../components/recipe-modal.js';
+import { normalizeRecipe, renderRecipeCard, setBadgeDiet, shouldOpenInApp } from '../components/recipe-card.js';
+import { mountRecipeModal, openRecipeModal, openRecipeFromUrl } from '../components/recipe-modal.js';
 import { mountAskDialog } from '../components/ask-dialog.js';
 import { mountTip } from '../components/tips.js';
 import { dishArtSvg } from '../components/dish-art.js';
@@ -59,7 +59,11 @@ function renderRecentGrid(recipes, onAskFirst) {
 
   box.innerHTML = recipes.map((recipe) => renderRecipeCard(recipe, { actions: false, showTime: false, tagLimit: 3 })).join('');
   box.querySelectorAll('.recipe-card').forEach((card) => {
-    card.addEventListener('click', () => openRecipeModal(supabase, Number(card.dataset.id)));
+    card.addEventListener('click', (event) => {
+      if (!shouldOpenInApp(event)) return; // let the browser open it in a new tab
+      event.preventDefault();
+      openRecipeModal(supabase, Number(card.dataset.id));
+    });
   });
 }
 
@@ -143,7 +147,9 @@ function wireAccountNote() {
 }
 
 export async function initDashboardPage() {
-  mountRecipeModal();
+  mountRecipeModal(supabase);
+  // P2: a shared recipe link works from here too, not only from the recipes page.
+  openRecipeFromUrl(supabase);
   const askDialog = mountAskDialog();
 
   const dashboardGreeting = document.getElementById('dashboardGreeting');
