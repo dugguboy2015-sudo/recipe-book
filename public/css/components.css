@@ -370,11 +370,15 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
    Now: the dialog itself is the scroll container, with a header that sticks to the top (title,
    overflow menu, Close) and an action bar that sticks to the bottom (plan it, cook it). Below
    768px it fills the screen, because a backdrop margin on a phone is 106px of nothing. */
-dialog.recipe-detail {
+/* [open] matters. An unqualified display on a <dialog> beats the browser rule that hides it
+   while closed, and nine dialogs across the app share this class — so every one of them rendered
+   inline on page load. */
+dialog.recipe-detail[open] {
   display: flex;
   flex-direction: column;
-  padding: 0;
 }
+
+dialog.recipe-detail { padding: 0; }
 
 .detail-header {
   position: sticky;
