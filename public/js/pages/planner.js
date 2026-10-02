@@ -15,7 +15,8 @@ import {
   applyWeekCompletion,
 } from '../lib/planner-store.js';
 import { fetchRemotePlan, uploadPlan, createPlanSync } from '../lib/planner-remote.js';
-import { getReadyAccount } from '../components/account.js';
+import { getReadyAccount, subscribeAccount } from '../components/account.js';
+import { deviceOnlyNote } from '../shared/account-copy.js';
 import { fetchHouseholdMembers } from '../lib/auth.js';
 import { todayIso, addDaysIso, dayNameForIso, entriesOnDate, parseLocalDate, computeProteinSmartShare, slotsForDay, countCooked } from '../shared/plan-summary.js';
 import { mountAskDialog, storePendingPlannerSlot } from '../components/ask-dialog.js';
@@ -181,7 +182,19 @@ async function ensureResolvedForView() {
   await ensureResolvedIds(ids);
 }
 
+/** P1: tell a signed-out visitor their data is device-only, before they find out the hard way. */
+function wireAccountNote() {
+  const note = document.getElementById('plannerAccountNote');
+  if (!note) return;
+  subscribeAccount((account) => {
+    const text = deviceOnlyNote(account);
+    note.textContent = text;
+    note.hidden = !text;
+  });
+}
+
 export async function initPlannerPage() {
+  wireAccountNote();
   const plannerHeading = document.getElementById('plannerHeading');
   const navPrev = document.getElementById('navPrev');
   const navNext = document.getElementById('navNext');

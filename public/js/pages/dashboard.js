@@ -12,7 +12,8 @@ import { getHousehold } from '../lib/household.js';
 import { dietRecipeFilter } from '../shared/household-settings.js';
 import { loadPlanState, DAYS, getWeekDays, mondayOf } from '../lib/planner-store.js';
 import { fetchRemotePlan } from '../lib/planner-remote.js';
-import { getReadyAccount } from '../components/account.js';
+import { getReadyAccount, subscribeAccount } from '../components/account.js';
+import { deviceOnlyNote } from '../shared/account-copy.js';
 import { computeProteinSmartShare, todayIso, addDaysIso, entriesOnDate, dayNameForIso, slotsForDay } from '../shared/plan-summary.js';
 import { nearestWidthClass } from '../shared/nutrition-ri.js';
 
@@ -130,6 +131,17 @@ function loadPlanStore(household) {
   return planStorePromise;
 }
 
+/** P1: tell a signed-out visitor their data is device-only, before they find out the hard way. */
+function wireAccountNote() {
+  const note = document.getElementById('dashboardAccountNote');
+  if (!note) return;
+  subscribeAccount((account) => {
+    const text = deviceOnlyNote(account);
+    note.textContent = text;
+    note.hidden = !text;
+  });
+}
+
 export async function initDashboardPage() {
   mountRecipeModal();
   const askDialog = mountAskDialog();
@@ -139,7 +151,8 @@ export async function initDashboardPage() {
   const askForm = document.getElementById('dashAskForm');
   const askInput = document.getElementById('dashAskInput');
 
-  if (dashboardGreeting) dashboardGreeting.textContent = `${greeting()}! This week`;
+  if (dashboardGreeting) dashboardGreeting.textContent = greeting();
+  wireAccountNote();
   mountTip(document.getElementById('askRecipeTip'), 'askRecipe');
 
   askForm?.addEventListener('submit', (event) => {
@@ -190,15 +203,17 @@ export async function initDashboardPage() {
       .join('');
     // A whole-week auto-fill shortcut sits alongside the per-slot view below, not instead of it —
     // the per-slot list already shows today is empty, but this is the one-click fix for the week.
-    const weekEmptyHint = weekEmpty ? '<p class="hint">Your whole week is empty. <a href="planner.html">Auto-fill it?</a></p>' : '';
+    const weekEmptyHint = weekEmpty
+      ? '<p class="empty-week-cta"><a class="primary-button" href="planner.html">Plan this week</a></p>'
+      : '';
 
     thisWeekBody.innerHTML = `
       <div class="week-header-row">
         <div class="protein-share">
-          <div class="progress-bar" aria-hidden="true">
+          ${share === null ? '' : `<div class="progress-bar" aria-hidden="true">
             <span class="progress-bar-fill ${shareClass}"></span>
             <span class="progress-bar-target target-marker-60" title="60% target"></span>
-          </div>
+          </div>`}
           <p>${shareText}</p>
         </div>
         <div class="tomorrow-packed-lunch">${tomorrowHtml}</div>

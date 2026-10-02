@@ -557,13 +557,11 @@ export async function initRecipesPage() {
   // for a real focus trap (this isn't a native <dialog>, so there's no free one from showModal()).
   if (filterPanel && filterSheetBackdrop && openFilterSheet) {
     const inertTargets = [
-      document.querySelector('.sidebar-nav'),
-      document.querySelector('.site-header'),
+      document.querySelector('.app-nav'),
       document.querySelector('.page-header'),
       generatePanelContainer,
       document.querySelector('.recipes-results'),
       document.querySelector('.site-footer'),
-      document.querySelector('.bottom-tab-bar'),
     ].filter(Boolean);
     let lastFocusedBeforeSheet = null;
 

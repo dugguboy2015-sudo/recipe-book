@@ -16,38 +16,30 @@
 <body data-page="recipes">
   <a class="skip-link" href="#content">Skip to content</a>
 
-  <aside class="sidebar-nav" aria-label="Main navigation">
-    <span class="sidebar-wordmark">Recipe Book</span>
-    <nav class="sidebar-nav-links">
-      <a href="index.html"><span class="icon" aria-hidden="true">🏠</span> Dashboard</a>
-      <a href="recipes.html" aria-current="page"><span class="icon" aria-hidden="true">🍲</span> Recipes</a>
-      <a href="planner.html"><span class="icon" aria-hidden="true">🗓️</span> Weekly Planner</a>
-      <a href="shopping.html"><span class="icon" aria-hidden="true">🛒</span> Shopping List</a>
-    </nav>
-    <div class="sidebar-footer">
-      <button type="button" class="primary-button sidebar-add-recipe" data-open-add-recipe>Add a recipe</button>
+  <nav class="app-nav" aria-label="Main navigation">
+    <span class="app-nav-wordmark">Recipe Book</span>
+    <ul class="app-nav-links">
+      <li><a href="index.html"><span class="app-nav-icon" aria-hidden="true">🏠</span><span class="app-nav-label">Dashboard</span></a></li>
+      <li><a href="recipes.html" aria-current="page"><span class="app-nav-icon" aria-hidden="true">🍲</span><span class="app-nav-label">Recipes</span></a></li>
+      <li><a href="planner.html"><span class="app-nav-icon" aria-hidden="true">🗓️</span><span class="app-nav-label">Planner</span></a></li>
+      <li><a href="shopping.html"><span class="app-nav-icon" aria-hidden="true">🛒</span><span class="app-nav-label">Shopping</span></a></li>
+      <li><button type="button" class="app-nav-ask" data-open-ask-dialog><span class="app-nav-icon" aria-hidden="true">✨</span><span class="app-nav-label">Ask</span></button></li>
+    </ul>
+    <div class="app-nav-footer">
+      <button type="button" class="primary-button app-nav-add" data-open-add-recipe>Add a recipe</button>
     </div>
-  </aside>
+  </nav>
 
   <div class="wrap">
-    <header class="site-header">
-      <nav class="site-nav" aria-label="Main navigation">
-        <a href="index.html">Dashboard</a>
-        <a href="recipes.html" aria-current="page">Recipes</a>
-        <a href="planner.html">Weekly Planner</a>
-        <a href="shopping.html">Shopping List</a>
-        <button type="button" id="scrollToGeneratePanel">Ask for a recipe</button>
-      </nav>
-      <div class="header-actions">
-        <div class="account-slot" id="accountSlot"></div>
-        <button type="button" class="icon-button theme-toggle-button" id="themeToggleButton"></button>
-      </div>
-    </header>
+
 
     <main id="content" class="page-shell">
       <header class="page-header">
-        <span class="eyebrow">Recipe library</span>
-        <h1>Find the right dish<br><em>for the moment</em></h1>
+        <h1>Recipes</h1>
+        <div class="header-actions">
+          <div class="account-slot" id="accountSlot"></div>
+          <button type="button" class="icon-button theme-toggle-button" id="themeToggleButton"></button>
+        </div>
       </header>
 
       <button type="button" class="primary-button ask-on-mobile" data-open-ask-dialog>Ask AI for a recipe</button>
@@ -140,14 +132,6 @@
       <p>Recipe Book — a family kitchen companion.</p>
     </footer>
   </div>
-
-  <nav class="bottom-tab-bar" aria-label="Main navigation">
-    <a href="index.html">Dashboard</a>
-    <a href="recipes.html" aria-current="page">Recipes</a>
-    <a href="planner.html">Planner</a>
-    <a href="shopping.html">Shopping</a>
-    <button type="button" class="tab-ask" data-open-ask-dialog>Ask</button>
-  </nav>
 
   <dialog id="addRecipeModal" class="recipe-detail add-recipe-panel" aria-labelledby="addRecipeTitle">
     <div class="detail-header">

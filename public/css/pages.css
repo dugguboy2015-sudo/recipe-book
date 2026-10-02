@@ -261,8 +261,10 @@
    recipe lives in a <dialog>, which the browser renders in the top layer — so when one is open it
    is all that prints, and the page behind it is hidden. */
 @media print {
-  .site-header, .sidebar-nav, .bottom-tab-bar, .site-footer, .shopping-controls, .add-item-form,
-  .page-header .eyebrow, .shopping-item-for, .shopping-item .delete-button { display: none; }
+  .header-actions, .app-nav, .site-footer, .shopping-controls, .add-item-form,
+  .shopping-item-for, .shopping-item .delete-button { display: none; }
+  /* The nav is fixed, so its padding reservation has to go too or the sheet prints offset. */
+  body { padding: 0; }
   .shopping-aisle { break-inside: avoid; border: 0; box-shadow: none; }
 
   /* The recipe itself: ink on white, no chrome, nothing clipped, and no actions you can't click. */
