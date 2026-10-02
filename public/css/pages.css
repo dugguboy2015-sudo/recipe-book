@@ -278,10 +278,17 @@
     padding: 0;
   }
   dialog.recipe-detail[open]::backdrop { background: transparent; }
-  dialog.recipe-detail[open] .detail-actions,
-  dialog.recipe-detail[open] .modal-footer,
+  dialog.recipe-detail[open] .detail-action-bar,
+  dialog.recipe-detail[open] .detail-header-controls,
   dialog.recipe-detail[open] .servings-stepper,
   dialog.recipe-detail[open] .icon-button { display: none; }
+  /* The header sticks to the top of a scrolling dialog on screen; on paper that would reprint it
+     on every page. */
+  dialog.recipe-detail[open] .detail-header,
+  dialog.recipe-detail[open] .detail-action-bar { position: static; border: 0; }
+  dialog.recipe-detail[open] .detail-header,
+  dialog.recipe-detail[open] .detail-body { padding: 0; }
+  dialog.recipe-detail[open] .detail-collapsible > summary { list-style: none; }
   dialog.recipe-detail[open] .recipe-hero-art { max-width: 90px; }
   dialog.recipe-detail[open] .detail-grid { display: block; }
   dialog.recipe-detail[open] .detail-panel { break-inside: avoid; margin-bottom: var(--sp-4); }

@@ -362,8 +362,117 @@ dialog::backdrop { background: var(--overlay); }
 
 dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 
-.detail-header { margin-bottom: var(--sp-3); }
-.detail-header h3 { color: var(--brand-ink); margin-bottom: var(--sp-2); }
+/* ---------- Recipe detail (P3) ----------
+   This was a desktop dialog shown on a phone: a 343px box floating in a 449px viewport, holding
+   9.4 screens of scroll, whose only Close button was at the very bottom — along with Cook mode,
+   Add to planner, Share and Print. To close a recipe you scrolled to the end of it.
+
+   Now: the dialog itself is the scroll container, with a header that sticks to the top (title,
+   overflow menu, Close) and an action bar that sticks to the bottom (plan it, cook it). Below
+   768px it fills the screen, because a backdrop margin on a phone is 106px of nothing. */
+dialog.recipe-detail {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.detail-header-bar { display: flex; align-items: flex-start; gap: var(--sp-3); }
+.detail-header-bar h3 { color: var(--brand-ink); flex: 1; min-width: 0; }
+.detail-header-controls { display: flex; align-items: center; gap: var(--sp-1); flex-shrink: 0; }
+
+/* The overflow menu holds everything that isn't "cook it" or "plan it": share, print, and the
+   editing actions this viewer is allowed (shared/permissions.js decides which are shown). */
+.detail-more { position: relative; }
+
+.detail-more-menu {
+  position: absolute;
+  top: calc(100% + var(--sp-1));
+  right: 0;
+  z-index: 4;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-2);
+  padding: var(--sp-1);
+}
+
+.detail-more-menu button {
+  text-align: left;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.detail-more-menu button:hover { background: var(--surface-raised); }
+.detail-more-menu button.is-danger { color: var(--danger); }
+
+.detail-body { flex: 1; padding: var(--sp-5); }
+
+.detail-action-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.detail-plan-row { display: flex; align-items: center; gap: var(--sp-2); flex: 1; min-width: 0; }
+.detail-plan-row select { min-width: 0; flex: 1; }
+.detail-do-row { display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0; }
+
+/* Nutrition and Notes collapse on a phone, where they sit between you and nothing. The open
+   attribute is set per breakpoint in JS (behaviour, not layout — see improvement_plan.md §3). */
+.detail-collapsible > summary {
+  cursor: pointer;
+  color: var(--brand-ink);
+  font-size: var(--fs-4);
+  font-weight: 600;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.detail-collapsible[open] > summary { margin-bottom: var(--sp-2); }
+
+@media (max-width: 767px) {
+  dialog.recipe-detail {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border: 0;
+    border-radius: 0;
+  }
+  .detail-header, .detail-body, .detail-action-bar { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+  /* Two rows on a phone: the day and the meal, then the two things you came here to do. Three
+     controls abreast at 375px truncated the meal to "Breakfa". */
+  .detail-plan-row, .detail-do-row { flex-basis: 100%; }
+  .detail-do-row > * { flex: 1; }
+}
+
 .detail-meta { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-5); }
 .detail-meta .tag { background: var(--ok-bg); }
 
@@ -374,6 +483,9 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
 .detail-panel ul, .detail-panel ol { padding-left: var(--sp-4); display: grid; gap: var(--sp-2); line-height: 1.5; }
 .detail-panel p { line-height: 1.6; color: var(--ink); }
 
+
+/* Still used by the ask dialog and the planner confirmations, which keep a plain footer;
+   only the recipe detail moved to a sticky action bar. */
 .modal-footer { margin-top: var(--sp-5); text-align: right; }
 
 .delete-confirm-copy { color: var(--ink-muted); line-height: 1.6; margin: var(--sp-3) 0 0; }
@@ -753,7 +865,6 @@ h1 em { font-style: italic; color: var(--spice); }
 .time-breakdown { display: flex; gap: var(--sp-4); flex-wrap: wrap; color: var(--ink-muted); font-size: var(--fs-2); }
 .time-note { margin: var(--sp-1) 0 0; }
 
-.detail-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-5); }
 
 /* ---------- Cook mode ---------- */
 .cook-mode {
