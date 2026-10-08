@@ -235,10 +235,13 @@
 .slot-card-art { width: 36px; height: 36px; flex-shrink: 0; }
 .slot-card-art .monogram { width: 100%; height: 100%; display: block; border-radius: var(--radius-control); }
 
-/* ---------- SpiceMeter (1-5 chillies) ---------- */
-/* The number carries the level for anyone who can't separate the lit chillies from the unlit ones. */
-.spice-meter { display: inline-flex; align-items: center; gap: 2px; color: var(--line); font-size: var(--fs-2); }
-.spice-meter .chilli.lit { color: var(--spice); }
+/* ---------- Icons ----------
+   One sprite, generated from @phosphor-icons/core and injected once per page (js/lib/icons.js).
+   Everything inherits currentColor, so an icon is always the colour of the text beside it. */
+.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; display: inline-block; vertical-align: -0.17em; }
+
+/* ---------- SpiceMeter ---------- */
+.spice-meter { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--spice); font-size: var(--fs-2); }
 .spice-meter-text { margin-left: var(--sp-1); color: var(--ink-muted); }
 .spice-meter.is-unknown { color: var(--ink-muted); font-size: var(--fs-1); }
 

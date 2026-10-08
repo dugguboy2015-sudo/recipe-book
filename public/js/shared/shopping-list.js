@@ -132,7 +132,7 @@ export function buildShoppingList({ entries = [], recipesById = {}, ingredientRo
 
 /** The list as plain text, for Copy and Share. */
 export function shoppingListText({ aisles, pantry }, { weekLabel, manualItems = [], checked = {} } = {}) {
-  const lines = [`Shopping list — ${weekLabel}`];
+  const lines = [`Shopping list: ${weekLabel}`];
   const line = (item) => `- ${item.name}${item.amount ? `: ${item.amount}` : ''}${checked[item.key] ? ' ✓' : ''}`;
   for (const aisle of aisles) {
     lines.push('', aisle.label);

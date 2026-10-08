@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap');
+/* Self-hosted by scripts/build-fonts.mjs. These were loaded with an @import from Google Fonts,
+   which makes the browser fetch and parse a stylesheet before it learns the fonts exist: two
+   serialised round trips in front of first paint, and a third-party request on every visit. */
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/fraunces-400.woff2') format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 400; font-display: swap; src: url('../fonts/fraunces-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/fraunces-600.woff2') format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/fraunces-700.woff2') format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/work-sans-400.woff2') format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/work-sans-500.woff2') format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/work-sans-600.woff2') format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/work-sans-700.woff2') format('woff2'); }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

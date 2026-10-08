@@ -365,7 +365,7 @@ export async function initPlannerPage() {
     if (cookedText) {
       cookedText.textContent = cooked.planned === 0
         ? ''
-        : `Cooked ${cooked.cooked} of ${cooked.planned} planned${cooked.cooked === cooked.planned ? ' — the whole week' : ''}`;
+        : `Cooked ${cooked.cooked} of ${cooked.planned} planned${cooked.cooked === cooked.planned ? ', the whole week' : ''}`;
     }
 
     // Always real tomorrow (not "the day after whatever's selected") — correctly resolves across
@@ -506,7 +506,7 @@ export async function initPlannerPage() {
           <output>${entry.servings}</output>
           <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="More servings">+</button>
         </div>
-        ${entry.leftover ? '<p class="slot-card-leftover">Leftovers — already bought for</p>' : ''}
+        ${entry.leftover ? '<p class="slot-card-leftover">Leftovers, already bought for</p>' : ''}
         ${addedByLine(entry)}
         <div class="slot-card-actions">
           ${cookedButton}
@@ -730,7 +730,7 @@ export async function initPlannerPage() {
         const weekOf = button.dataset.weekOf;
         mutateWeek(weekOf, keepEntry(getWeekDays(state.store, weekOf), day, slot, recipeId));
         renderView();
-        showSnackbar('Kept — auto-fill will leave this alone.', 'success');
+        showSnackbar('Kept. Auto-fill will leave this alone.', 'success');
       });
     });
 
@@ -878,11 +878,11 @@ export async function initPlannerPage() {
       const pct = Math.round(result.proteinSmartShare * 100);
       // L.4's celebration toast: a gentle nod when the week clears the 60% protein-smart target.
       showSnackbar(
-        result.proteinSmartShare >= 0.6 ? `🎉 Week auto-filled — ${pct}% protein-smart!` : `Week auto-filled — ${pct}% protein-smart.`,
+        result.proteinSmartShare >= 0.6 ? `Week auto-filled. ${pct}% protein-smart.` : `Week auto-filled. ${pct}% protein-smart.`,
         'success',
       );
     } else {
-      showSnackbar('Nothing to fill — every enabled slot already has a plan.', 'success');
+      showSnackbar('Nothing to fill. Every enabled slot already has a plan.', 'success');
     }
   }
 
@@ -904,7 +904,7 @@ export async function initPlannerPage() {
     // that could reference a slot on a different day, which would be a confusing thing to surface
     // from a single-day action.
     const added = dayPlan.some((entry) => !beforeKeys.has(`${entry.slot}|${entry.recipeId}`));
-    showSnackbar(added ? `${dayName} auto-filled.` : 'Nothing to fill — every enabled slot already has a plan.', 'success');
+    showSnackbar(added ? `${dayName} auto-filled.` : 'Nothing to fill. Every enabled slot already has a plan.', 'success');
   }
 
   // Fills every week that *starts* in the displayed month (see weeksStartingInMonth) — one
@@ -923,7 +923,7 @@ export async function initPlannerPage() {
     renderView();
 
     showSnackbar(
-      addedTotal ? `This month auto-filled — ${addedTotal} meal${addedTotal === 1 ? '' : 's'} added.` : 'Nothing to fill — every enabled slot already has a plan.',
+      addedTotal ? `This month auto-filled. ${addedTotal} meal${addedTotal === 1 ? '' : 's'} added.` : 'Nothing to fill. Every enabled slot already has a plan.',
       'success',
     );
   }

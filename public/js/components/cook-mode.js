@@ -46,7 +46,7 @@ export function openCookMode({ recipeName, stepGroups, ingredientsHtml }) {
       </div>
       <div class="cook-mode-body">
         <div class="cook-mode-step">
-          <div class="cook-mode-step-number">Step ${index + 1} of ${flatSteps.length} — ${escapeHtml(step.group)}</div>
+          <div class="cook-mode-step-number">Step ${index + 1} of ${flatSteps.length}: ${escapeHtml(step.group)}</div>
           <div class="cook-mode-step-text">${escapeHtml(step.text)}</div>
         </div>
         <div class="cook-mode-ingredients">

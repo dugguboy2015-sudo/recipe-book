@@ -19,8 +19,8 @@ export function wireThemeToggle(button) {
 
   function render() {
     const explicit = window.RecipeBookTheme.get();
-    button.textContent = isEffectivelyDark(explicit) ? '🌙' : '☀️';
-    const label = `${labelFor(explicit)} — click to change`;
+    button.innerHTML = isEffectivelyDark(explicit) ? `<svg class="icon" aria-hidden="true"><use href="#i-theme-dark"></use></svg>` : `<svg class="icon" aria-hidden="true"><use href="#i-theme-light"></use></svg>`;
+    const label = `${labelFor(explicit)}. Click to change`;
     button.setAttribute('data-tooltip', label);
     button.setAttribute('aria-label', label);
   }

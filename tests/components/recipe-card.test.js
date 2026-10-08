@@ -42,11 +42,14 @@ describe('spiceMeter', () => {
     expect(html).toContain('Spice 3 of 5, medium');
   });
 
-  it('hides the chilli glyphs from assistive tech so the level is announced once', () => {
+  // P10: one flame and the number, not five repeated glyphs. The icon is decorative; the level is
+  // announced once, from the screen-reader-only text.
+  it('hides the flame from assistive tech so the level is announced once', () => {
     const html = spiceMeter(5);
-    expect(html.match(/🌶/g)).toHaveLength(5);
+    expect(html.match(/<use href="#i-chili">/g)).toHaveLength(1);
     expect(html).toContain('aria-hidden="true"');
     expect(html).toContain('Spice 5 of 5, very hot');
+    expect(html).not.toContain('🌶');
   });
 
   it('renders nothing on a card when the level is unknown', () => {

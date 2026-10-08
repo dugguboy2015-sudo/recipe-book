@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "check": "npm run lint && npm test && npm run check:secrets && node scripts/sync-config.mjs --check && node scripts/build-preloads.mjs --check && node scripts/lint-css.mjs && node scripts/contrast.mjs",
+    "check": "npm run lint && npm test && npm run check:secrets && node scripts/sync-config.mjs --check && node scripts/build-preloads.mjs --check && node scripts/build-icon-sprite.mjs --check && node scripts/build-fonts.mjs --check && node scripts/lint-css.mjs && node scripts/contrast.mjs",
     "smoke": "node scripts/smoke.mjs",
     "preflight": "node scripts/preflight.mjs",
     "backup": "node scripts/backup.mjs",
@@ -23,10 +23,15 @@
     "auth:configure": "node scripts/configure-auth.mjs",
     "extract-example": "node scripts/extract-example.mjs",
     "eval-generate": "node scripts/eval-generate.mjs",
-    "build:preloads": "node scripts/build-preloads.mjs"
+    "build:preloads": "node scripts/build-preloads.mjs",
+    "build:icons-sprite": "node scripts/build-icon-sprite.mjs",
+    "build:fonts": "node scripts/build-fonts.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/work-sans": "^5.3.0",
+    "@phosphor-icons/core": "^2.1.1",
     "eslint": "^9.0.0",
     "globals": "^15.0.0",
     "vitest": "^3.0.0",
