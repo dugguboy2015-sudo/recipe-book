@@ -197,6 +197,7 @@
 
 /* ---------- Planner ---------- */
 .planner-board {
+  margin-top: var(--sp-2);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);

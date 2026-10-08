@@ -110,7 +110,7 @@
         <div class="actions-row">
           <div class="actions-cluster actions-primary">
             <button type="button" class="primary-button" id="autoFillWeek">Auto-fill this week</button>
-            <button type="button" class="icon-button" id="autoFillSettingsButton" aria-label="Auto-fill settings">⚙</button>
+            <button type="button" class="icon-button" id="autoFillSettingsButton" aria-label="Which meals should Auto-fill fill?" data-tooltip="Auto-fill settings">⚙</button>
           </div>
           <div class="actions-cluster actions-secondary">
             <div class="overflow-menu">
@@ -157,8 +157,15 @@
     </main>
 
     <dialog id="autoFillSettingsDialog" class="recipe-detail confirmation-panel" aria-labelledby="autoFillSettingsTitle">
-      <div class="detail-header"><h3 id="autoFillSettingsTitle">Auto-fill settings</h3></div>
+      <div class="detail-header"><h3 id="autoFillSettingsTitle">Which meals should Auto-fill fill?</h3></div>
+      <p class="hint">This only changes what Auto-fill adds. Every meal below stays on your planner
+        either way.</p>
       <div class="auto-fill-settings-grid" id="autoFillSettingsGrid"></div>
+      <p class="hint">To stop planning a meal altogether — so it disappears from the planner and the
+        dashboard — change <strong>which meals you plan</strong> in household settings.</p>
+      <div class="form-actions form-actions-start">
+        <button type="button" class="ghost-button" id="openHouseholdSettings">Open household settings</button>
+      </div>
       <div class="modal-footer">
         <button type="button" class="ghost-button" id="closeAutoFillSettings">Close</button>
       </div>
