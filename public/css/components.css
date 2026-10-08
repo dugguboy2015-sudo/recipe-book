@@ -505,6 +505,9 @@ dialog.recipe-sheet { padding: 0; }
 /* ---------- Account dialog (P7) ---------- */
 /* A warning that has to be read before the step under it: setting up a second household in a
    browser that already belongs to another account is how the duplicate happened. */
+/* A masked address reads as one thing; letting it wrap at the ellipsis turns it into two. */
+.masked-email { white-space: nowrap; }
+
 .warn-notice {
   background: var(--warn-bg);
   color: var(--warn);
@@ -626,7 +629,9 @@ dialog.recipe-sheet { padding: 0; }
 .account-section { border-top: 1px solid var(--line); margin-top: var(--sp-4); padding-top: var(--sp-4); display: grid; gap: var(--sp-2); }
 .account-section h4, .account-subheading { margin: 0; font-size: var(--fs-3); }
 .account-subheading { margin-top: var(--sp-4); }
-.account-inline-form { display: flex; gap: var(--sp-2); }
+/* min-width: 0 — as a grid item this defaults to min-width: auto and refuses to shrink below its
+   content, so the invite input and its button pushed the account dialog 26px wider than itself. */
+.account-inline-form { display: flex; gap: var(--sp-2); min-width: 0; }
 .account-inline-form input { flex: 1; min-width: 0; }
 
 .choice-list { border: 0; padding: 0; margin: var(--sp-2) 0 0; display: grid; gap: var(--sp-2); }

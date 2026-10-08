@@ -100,7 +100,7 @@ function renderSignIn() {
         <input type="email" id="signInEmail" autocomplete="email" inputmode="email" required value="${escapeHtml(prefill)}" />
       </label>
       <small class="field-error" data-error-for="email" role="alert"></small>
-      ${remembered ? `<p class="hint">This browser last signed in as <strong>${escapeHtml(maskEmail(remembered))}</strong>.
+      ${remembered ? `<p class="hint">This browser last signed in as <strong class="masked-email">${escapeHtml(maskEmail(remembered))}</strong>.
         <button type="button" class="link-button" id="forgetEmail">Use a different email</button></p>` : ''}
       <div class="form-actions">
         <button type="button" class="ghost-button" data-account-close>Not now</button>
@@ -118,6 +118,9 @@ function renderSignIn() {
     // P7: show it back before sending. The built-in mailer allows two sign-in emails an hour for
     // the whole site (§6.2), so a typo is not a free mistake — it costs half the hour's allowance
     // and is only discovered when nothing arrives.
+    // Hold on to it: "Change it" on the next screen must come back with the address still in
+    // the field, since correcting a typo is the whole reason that button exists.
+    signInEmail = email;
     renderConfirmEmail(email);
   });
   body().querySelector('#forgetEmail')?.addEventListener('click', () => {
@@ -219,10 +222,10 @@ function renderCreate() {
 
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Set up your household</h3></div>
-    ${otherAccount ? `<p class="notice warn-notice">You're signed in as <strong>${escapeHtml(maskEmail(current))}</strong>,
-      but this browser was last used by <strong>${escapeHtml(maskEmail(owner))}</strong> — and that account has the
+    ${otherAccount ? `<p class="notice warn-notice">You're signed in as <strong class="masked-email">${escapeHtml(maskEmail(current))}</strong>,
+      but this browser was last used by <strong class="masked-email">${escapeHtml(maskEmail(owner))}</strong> — and that account has the
       household, with its recipes and meal plan. Setting one up here makes a <strong>second, separate</strong> household.
-      <button type="button" class="link-button" id="switchAccount">Sign in as ${escapeHtml(maskEmail(owner))} instead</button></p>` : ''}
+      <button type="button" class="link-button" id="switchAccount">Sign in as <span class="masked-email">${escapeHtml(maskEmail(owner))}</span> instead</button></p>` : ''}
     ${reasonNotice('Set up or join a household')}
     <p class="delete-confirm-copy">A household shares one meal plan and its own food rules. You can invite your family once it's set up.</p>
     <form id="createHouseholdForm" class="account-form" novalidate>
