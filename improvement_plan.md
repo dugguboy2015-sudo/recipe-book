@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Version** | 4.2 — 2026-10-08 |
-| **Status** | Current. Sections 1–5 describe what is true today; section 6 is the work that remains — the six UX slices P1–P6 are **all shipped**; P7 (sign-in) is specified and not started |
+| **Status** | Current. Sections 1–5 describe what is true today; section 6 is the work that remains — P1–P7 are **all shipped**, leaving only §6.1–§6.3 |
 | **Live** | https://recipe-book-9eo.pages.dev · Cloudflare Pages, git-connected (push to `main` = production deploy) |
 | **Repo** | `github.com/dugguboy2015-sudo/recipe-book` |
 | **Database** | Supabase project `xtxufygmwqicrgzjwdxc` |
@@ -295,7 +295,7 @@ branch ahead of P5 ([#56](https://github.com/dugguboy2015-sudo/recipe-book/pull/
 
 ---
 
-### P7 — Sign-in that does not quietly make a second you · *small*
+### P7 — Sign-in that does not quietly make a second you · **shipped 2026-10-08** ([#60](https://github.com/dugguboy2015-sudo/recipe-book/pull/60))
 
 Reviewed 2026-10-02 after the owner reported the flow as confusing. **The code does what it says**:
 after a link is followed, a member with a household is greeted and the dialog closes; "Set up your
