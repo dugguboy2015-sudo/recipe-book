@@ -350,13 +350,12 @@ helper is unit tested; `npm run check` green.
 ### 6.1 Backlog — small, unscheduled
 
 - Recipe titles repeat the cuisine shown in the chip beside them (folded into P4).
-- **The second household is not a duplicate row — it is a second account**, and the earlier
-  description of it here was wrong. Production has two auth users; the 24 Sep one owns a household
-  named "The Babre's" with one planned week and no recipes, and its timing matches M5 testing. It
-  may be a test account left behind (M5's progress entry claims all were removed) or a real second
-  address of the owner's. **Only the owner can tell**, by looking at the address in Supabase →
-  Authentication → Users; reading it here is blocked by a PII guard, which is the right guard.
-  Deleting an account and its household is destructive and irreversible, so it waits on that answer.
+- ~~The second household.~~ **Resolved 2026-10-08.** It was a second account, not a duplicate row.
+  The owner deleted that account; the delete cascaded its membership but left the household itself
+  unreachable (every RLS policy grants access through membership, and it had no member). Removed by
+  , written as a condition — no members, no recipes,
+  not the curator — so it could only ever take a genuinely abandoned household. One household, one
+  member, 34 recipes, zero orphans.
 
 ### 6.2 Owner-only — cannot be done by an agent
 

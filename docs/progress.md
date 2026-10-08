@@ -752,3 +752,27 @@
   3. **"Change it" wiped the address it existed to let you correct** — caught in the browser, not by tests, because the module-level `signInEmail` was only set after a successful send.
   4. **Found in passing:** the paste-an-invite form is a grid item, so it defaulted to `min-width: auto` and pushed the account dialog 26px wider than itself on a phone.
 - Notes for next: `improvement_plan.md` §6.1–§6.3 is what remains — the second account (owner's call, see §6.1), the owner-only items, and the two deferrals. No agent work is queued.
+
+## 021 — Remove the orphaned household — DONE
+- Date: 2026-10-08
+- Branch / PR: direct to `main` (data cleanup, no code change)
+- Migrations applied: `021_remove_orphaned_household.sql`
+- Backup: `backups/2026-10-08T05-58-51-258Z` (34 rows, verified against `select count(*)`)
+- What happened: the owner deleted the second account (the one P7 exists to prevent). Deleting the
+  auth user cascaded its `household_members` row away but **not the household itself** — leaving a
+  row nobody could ever reach, since every RLS policy here grants access through membership.
+- Acceptance:
+  - [x] FK rules checked first: `household_members`, `household_invites`, `household_settings`,
+        `plan_weeks`, `plan_prefs` and `shopping_lists` are `ON DELETE CASCADE`; `recipes` and
+        `recipe_generations` are `NO ACTION` and would have blocked the delete — the candidate held
+        **zero** of both, so nothing was at risk and nothing was blocked
+  - [x] The predicate was dry-run as a SELECT first and matched **exactly one row**, the orphan
+  - [x] After: 1 auth user, 1 household (curator, 34 recipes, 1 member), 1 settings row, 0 plan_weeks,
+        **0 orphans**; 31 live recipes unchanged; production smoke green
+- Deviations from spec / findings while building this:
+  1. **The migration deletes by condition, not by id.** "No members, no recipes, not the curator" can
+     only ever match a genuinely abandoned household, so if production had not been in the state this
+     expected it would have removed nothing rather than the wrong thing.
+  2. **Deleting an auth user does not clean up a household they were alone in.** The cascade stops at
+     `household_members`. Worth knowing before anyone deletes a user again — and an argument for a
+     periodic check rather than a one-off, if this ever has more than one family on it.
