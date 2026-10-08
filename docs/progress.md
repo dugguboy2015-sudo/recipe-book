@@ -796,3 +796,23 @@
   2. **The card bug hid behind being signed out.** Every verification in P1–P7 was signed out, where a card has one action button instead of three — just enough room to look fine. Signed-in layout is now something to check explicitly, by adding the extra buttons in the browser if no session is available.
   3. **A 274px card cannot carry art, a title and three 44px buttons on one row.** The fix was structural rather than a width tweak; moving the actions to the footer also gives them a row of their own at every breakpoint.
 - Notes for next: `improvement_plan.md` §6.2–§6.3 only — the owner-only items and the two deferrals.
+
+## P9 — The auto-fill settings trap, and two gaps — DONE
+- Date: 2026-10-08
+- Branch / PR: p9-autofill-trap / [#62](https://github.com/dugguboy2015-sudo/recipe-book/pull/62)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- **The functional report was not a rendering bug**, and establishing that mattered more than any of the code here. "Snacks and Dessert are unchecked in Settings but still show" was checked three ways:
+  1. The household's settings row still reads `updated_at = 2026-09-18 19:07` — no settings save has happened since the day it was created.
+  2. `applySettingsUpdate` run against the household's **real stored values** with the exact payload the form sends returns ok, with `meal_slots: ["Breakfast","Packed Lunch","Lunch","Dinner"]`.
+  3. An **end-to-end check against production** with a throwaway member — create a household, `PATCH /api/household/settings`, read the row straight back — returned 200 and stored the value. Account and household deleted afterwards.
+- **The actual cause** is the gear beside Auto-fill. It opens a list of the same six meal names and controls only what Auto-fill *adds*, so unticking Snacks there looks like it removes them from the planner and does not. Two near-identical controls, with the wrong one sitting next to the planner.
+- Acceptance:
+  - [x] That dialog is titled "Which meals should Auto-fill fill?", says the meals stay on the planner either way, and offers a button that opens household settings directly
+  - [x] "Plan this week": 12px above and **0px** below → 16 and 24
+  - [x] Week board against the card above it: 17px seam → 25px, matching the page's 24px rhythm
+  - [x] `npm run check` green (462 tests); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **Reaching for the database first was what made this cheap.** The instinct was to hunt a bug in the planner's rendering; one query showed no settings save had ever happened, which moved the search to why the owner thought they had saved.
+  2. **Two controls listing the same six meal names is the defect**, not either control on its own. Renaming one and linking to the other is the smallest honest fix; merging them would mean deciding that "don't auto-fill dessert" and "we never eat dessert" are the same statement, and they are not.
+  3. **This cannot be fixed for the owner.** Only they may write their household's settings, so the existing household still shows all six until they save once.
