@@ -5,6 +5,7 @@ import { sendSignInEmail, signOut, postAsUser, patchAsUser, fetchHouseholdMember
 import { DIET_PRESETS, WEEKDAYS, ALL_SLOTS, dietPresetKey, enabledSlots } from '../shared/household-settings.js';
 import { setFlash } from './account.js';
 import { getPendingInvite, setPendingInvite, clearPendingInvite, inviteCodeFrom, isInviteCode } from '../lib/pending-invite.js';
+import { rememberEmail, recalledEmail, forgetEmail, isDifferentAccount, maskEmail, recalledHouseholdAccount } from '../shared/sign-in-memory.js';
 
 // Everything behind the header account control (M1b): sign in, create or join a household, and the
 // household panel with invites. Loaded on first use only.
@@ -84,18 +85,26 @@ function reasonNotice(prefix) {
 
 function renderSignIn() {
   const invited = Boolean(getPendingInvite());
+  // P7: start from the address this browser last used. The field used to start empty on every
+  // visit, which made signing in as someone else exactly as easy as signing in as yourself.
+  const remembered = recalledEmail();
+  const prefill = signInEmail || remembered;
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Sign in</h3></div>
     ${invited ? '<p class="notice">Sign in first, then you can join the household that invited you.</p>' : reasonNotice('Sign in')}
     <p class="delete-confirm-copy">We'll email you a sign-in link — no password needed.</p>
+    <p class="hint">Your email address <strong>is</strong> your account. A different address is a
+      different household, with its own recipes and meal plan.</p>
     <form id="signInEmailForm" class="account-form" novalidate>
       <label class="field"><span>Email</span>
-        <input type="email" id="signInEmail" autocomplete="email" inputmode="email" required value="${escapeHtml(signInEmail)}" />
+        <input type="email" id="signInEmail" autocomplete="email" inputmode="email" required value="${escapeHtml(prefill)}" />
       </label>
       <small class="field-error" data-error-for="email" role="alert"></small>
+      ${remembered ? `<p class="hint">This browser last signed in as <strong>${escapeHtml(maskEmail(remembered))}</strong>.
+        <button type="button" class="link-button" id="forgetEmail">Use a different email</button></p>` : ''}
       <div class="form-actions">
         <button type="button" class="ghost-button" data-account-close>Not now</button>
-        <button type="submit" class="primary-button">Email me a link</button>
+        <button type="submit" class="primary-button">Continue</button>
       </div>
     </form>`;
   wireCommon();
@@ -106,7 +115,33 @@ function renderSignIn() {
       setErrors({ email: 'Enter a valid email address.' });
       return;
     }
-    const button = body().querySelector('#signInEmailForm button[type="submit"]');
+    // P7: show it back before sending. The built-in mailer allows two sign-in emails an hour for
+    // the whole site (§6.2), so a typo is not a free mistake — it costs half the hour's allowance
+    // and is only discovered when nothing arrives.
+    renderConfirmEmail(email);
+  });
+  body().querySelector('#forgetEmail')?.addEventListener('click', () => {
+    forgetEmail();
+    signInEmail = '';
+    renderSignIn();
+  });
+  focusFirst();
+}
+
+function renderConfirmEmail(email) {
+  body().innerHTML = `
+    <div class="detail-header"><h3 id="accountDialogTitle">Send the link to this address?</h3></div>
+    <p class="delete-confirm-copy">We'll email a sign-in link to <strong>${escapeHtml(email)}</strong>.</p>
+    <p class="hint">Signing in with a different address creates a separate account, with its own
+      household, recipes and meal plan.</p>
+    <small class="field-error" data-error-for="email" role="alert"></small>
+    <div class="form-actions">
+      <button type="button" class="ghost-button" data-account-view="sign-in">Change it</button>
+      <button type="button" class="primary-button" id="confirmSendLink">Email me the link</button>
+    </div>`;
+  wireCommon();
+  body().querySelector('#confirmSendLink').addEventListener('click', async (event) => {
+    const button = event.currentTarget;
     setBusy(button, true);
     // Inside the dialog, not the page: a challenge rendered under a modal dialog can't be clicked.
     // Fails open: if Turnstile can't run here (blocked script, privacy tools), try without a token
@@ -125,6 +160,7 @@ function renderSignIn() {
       return;
     }
     signInEmail = email;
+    rememberEmail(email);
     renderCheckEmail();
   });
   focusFirst();
@@ -174,8 +210,19 @@ async function afterSignIn() {
 function renderCreate() {
   const diets = Object.entries(DIET_PRESETS).map(([key, preset], index) => `
     <label class="choice"><input type="radio" name="diet" value="${key}"${index === 0 ? ' checked' : ''} /><span>${escapeHtml(preset.label)}</span></label>`).join('');
+
+  // P7: the step that actually produced the duplicate. If this browser already belongs to another
+  // account with a household, say so before a second one is made — and offer the way back.
+  const current = ctx?.state.session?.user?.email || '';
+  const owner = recalledHouseholdAccount();
+  const otherAccount = isDifferentAccount(current, owner);
+
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Set up your household</h3></div>
+    ${otherAccount ? `<p class="notice warn-notice">You're signed in as <strong>${escapeHtml(maskEmail(current))}</strong>,
+      but this browser was last used by <strong>${escapeHtml(maskEmail(owner))}</strong> — and that account has the
+      household, with its recipes and meal plan. Setting one up here makes a <strong>second, separate</strong> household.
+      <button type="button" class="link-button" id="switchAccount">Sign in as ${escapeHtml(maskEmail(owner))} instead</button></p>` : ''}
     ${reasonNotice('Set up or join a household')}
     <p class="delete-confirm-copy">A household shares one meal plan and its own food rules. You can invite your family once it's set up.</p>
     <form id="createHouseholdForm" class="account-form" novalidate>
@@ -205,6 +252,15 @@ function renderCreate() {
       <small class="field-error" data-error-for="invite" role="alert"></small>
     </div>`;
   wireCommon();
+
+  body().querySelector('#switchAccount')?.addEventListener('click', async () => {
+    const owner = recalledHouseholdAccount();
+    await signOut();
+    rememberEmail(owner);
+    signInEmail = owner;
+    ctx.state = await ctx.refresh();
+    show('sign-in');
+  });
 
   body().querySelector('#createHouseholdForm').addEventListener('submit', async (event) => {
     event.preventDefault();

@@ -2,6 +2,7 @@ import { escapeHtml } from '../shared/html.js';
 import { showSnackbar } from '../lib/dom.js';
 import { getSession, onAuthChange, fetchMyHousehold } from '../lib/auth.js';
 import { captureInviteFromUrl, getPendingInvite } from '../lib/pending-invite.js';
+import { rememberHouseholdAccount } from '../shared/sign-in-memory.js';
 
 // The header account control (M1b). Kept small because every page loads it; the dialogs behind it
 // (account-dialogs.js) load on first use, the same pattern as the ask dialog.
@@ -85,6 +86,8 @@ export async function getReadyAccount() {
 export async function refresh({ flash } = {}) {
   const session = await getSession();
   const household = session ? await fetchMyHousehold(session) : null;
+  // P7: note whose browser this is, so setting up a *second* household here can say so first.
+  if (session?.user?.email && household) rememberHouseholdAccount(session.user.email);
   const wasReady = state.ready;
   const previousHouseholdId = state.household?.id ?? null;
   Object.assign(state, { session, household, ready: true });

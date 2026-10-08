@@ -498,6 +498,31 @@ dialog.recipe-detail { padding: 0; }
    only the recipe detail moved to a sticky action bar. */
 .modal-footer { margin-top: var(--sp-5); text-align: right; }
 
+/* ---------- Account dialog (P7) ---------- */
+/* A warning that has to be read before the step under it: setting up a second household in a
+   browser that already belongs to another account is how the duplicate happened. */
+.warn-notice {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius-control);
+  padding: var(--sp-3);
+  line-height: 1.5;
+}
+
+/* An action that reads as part of the sentence it sits in, not a button beside it. */
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+
 .delete-confirm-copy { color: var(--ink-muted); line-height: 1.6; margin: var(--sp-3) 0 0; }
 
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); margin-top: var(--sp-4); }
