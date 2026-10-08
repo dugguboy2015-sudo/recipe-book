@@ -32,11 +32,12 @@ function renderStats(stats, cuisineCount, thisWeekPlannedCount) {
   const statsGrid = document.getElementById('statsGrid');
   if (!statsGrid) return;
 
+  const plural = (count, word) => `${word}${count === 1 ? '' : 's'}`;
   statsGrid.innerHTML = `
-    <article class="metric-card"><div class="label">Recipes saved</div><div class="value">${stats.total}</div><div class="sub">Across the full collection</div></article>
-    <article class="metric-card"><div class="label">Protein-smart</div><div class="value">${stats.protein_smart}</div><div class="sub">${stats.protein_smart} of ${stats.total} recipes are protein-smart</div></article>
-    <article class="metric-card"><div class="label">Cuisines</div><div class="value">${cuisineCount}</div><div class="sub">Represented in the collection</div></article>
-    <article class="metric-card"><div class="label">This week planned</div><div class="value">${thisWeekPlannedCount}</div><div class="sub">Meals assigned to this week</div></article>
+    <a href="recipes.html"><b>${stats.total}</b> ${plural(stats.total, 'recipe')}</a>
+    <a href="recipes.html?proteinsmart=1"><b>${stats.protein_smart}</b> protein-smart</a>
+    <a href="recipes.html"><b>${cuisineCount}</b> ${plural(cuisineCount, 'cuisine')}</a>
+    <a href="planner.html"><b>${thisWeekPlannedCount}</b> planned this week</a>
   `;
 }
 
@@ -76,8 +77,8 @@ function renderErrorState(retry) {
       <button type="button" class="primary-button" id="dashboardRetry">Retry</button>
     </div>
   `;
-  if (statsGrid) statsGrid.innerHTML = errorHtml;
-  if (recentGrid) recentGrid.innerHTML = '';
+  if (statsGrid) statsGrid.innerHTML = '<span class="is-error">Collection totals unavailable.</span>';
+  if (recentGrid) recentGrid.innerHTML = errorHtml;
   document.getElementById('dashboardRetry')?.addEventListener('click', retry);
 }
 
@@ -85,7 +86,7 @@ function renderSkeleton() {
   const statsGrid = document.getElementById('statsGrid');
   const recentGrid = document.getElementById('recentGrid');
   const thisWeekBody = document.getElementById('thisWeekBody');
-  if (statsGrid) statsGrid.innerHTML = Array.from({ length: 4 }).map(() => '<div class="skeleton metric-card-skeleton"></div>').join('');
+  if (statsGrid) statsGrid.innerHTML = '<span class="skeleton collection-strip-skeleton"></span>';
   if (recentGrid) recentGrid.innerHTML = Array.from({ length: RECENT_COUNT }).map(() => '<div class="skeleton recipe-card-skeleton"></div>').join('');
   if (thisWeekBody) thisWeekBody.innerHTML = '<div class="skeleton metric-card-skeleton"></div>';
 }
@@ -214,7 +215,9 @@ export async function initDashboardPage() {
       : '';
 
     thisWeekBody.innerHTML = `
-      <div class="week-header-row">
+      ${weekEmptyHint}
+      <div class="today-meals">${todayHtml}</div>
+      <div class="week-footer-row">
         <div class="protein-share">
           ${share === null ? '' : `<div class="progress-bar" aria-hidden="true">
             <span class="progress-bar-fill ${shareClass}"></span>
@@ -224,9 +227,6 @@ export async function initDashboardPage() {
         </div>
         <div class="tomorrow-packed-lunch">${tomorrowHtml}</div>
       </div>
-      ${weekEmptyHint}
-      <div class="content-head"><h3>Today</h3></div>
-      <div class="today-meals">${todayHtml}</div>
     `;
 
     thisWeekBody.querySelectorAll('[data-open-today]').forEach((button) => {

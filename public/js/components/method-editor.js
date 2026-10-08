@@ -19,7 +19,7 @@ function stepHtml(step, index) {
       <div class="method-step-actions">
         <button type="button" class="icon-button move-step-up" aria-label="Move step up">↑</button>
         <button type="button" class="icon-button move-step-down" aria-label="Move step down">↓</button>
-        <button type="button" class="icon-button remove-step" aria-label="Remove step">✕</button>
+        <button type="button" class="icon-button remove-step" aria-label="Remove step"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
       </div>
     </div>
   `;
@@ -33,7 +33,7 @@ function groupHtml(group, index, total) {
         <div class="ingredient-group-actions">
           <button type="button" class="icon-button move-group-up" ${index === 0 ? 'disabled' : ''} aria-label="Move group up">↑</button>
           <button type="button" class="icon-button move-group-down" ${index === total - 1 ? 'disabled' : ''} aria-label="Move group down">↓</button>
-          <button type="button" class="icon-button remove-group" aria-label="Remove group">✕</button>
+          <button type="button" class="icon-button remove-group" aria-label="Remove group"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
         </div>
       </div>
       <div class="method-steps">${group.steps.map(stepHtml).join('')}</div>

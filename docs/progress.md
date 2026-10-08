@@ -816,3 +816,59 @@
   1. **Reaching for the database first was what made this cheap.** The instinct was to hunt a bug in the planner's rendering; one query showed no settings save had ever happened, which moved the search to why the owner thought they had saved.
   2. **Two controls listing the same six meal names is the defect**, not either control on its own. Renaming one and linking to the other is the smallest honest fix; merging them would mean deciding that "don't auto-fill dessert" and "we never eat dessert" are the same statement, and they are not.
   3. **This cannot be fixed for the owner.** Only they may write their household's settings, so the existing household still shows all six until they save once.
+
+## P10 — The visual overhaul — DONE
+- Date: 2026-10-08
+- Branch / PR: p10-overhaul / (see PR link below)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- The brief was the `design-taste-frontend` skill run in **overhaul** mode against a brand new
+  audience read: a common household, on a phone, mostly at 7am and 6pm. The owner's words were
+  that the capabilities were there but the UX was boring, the layouts and reactive behaviour were
+  broken, and the colour scheme was "AI slop".
+- **Palette, twice.** v2 replaced warm cream + sage teal + terracotta + nine saturated cuisine
+  tints (eleven colour families on one card) with neutral paper + forest green + amber. The owner
+  rejected the green outright mid-slice, so v3 took the colour out of the interface entirely:
+  near-black is the interactive colour, and one terracotta accent appears only on the protein
+  figure, the spice meter, the protein-smart badge and the focus ring, which are the same idea
+  four times over. Danger moved to the crimson side so it cannot be read as the accent.
+- **Three things were still wearing the old palette** and only showed up once the tokens changed:
+  1. The dietary badges borrowed *cuisine* tints. Dairy-free was Maharashtrian pink, Packed lunch
+     was Fusion blue, Nut-free was Gujarati olive, so one card could show four unrelated hues none
+     of which meant anything. Neutral now; only protein-smart keeps a colour.
+  2. The cuisine chip was a filled tint saying in colour what it already said in words. Plain text
+     now. The tints stay on the dish illustrations, which have no words at all.
+  3. The mobile add-recipe button, the only way to add a recipe on a phone, was a 64px circle in
+     the same red this app uses for deleting things.
+- **Hover states had broken the same way**: a green button turned amber on hover and a red one
+  turned green, because the hover colours still pointed at the old accent.
+- Acceptance:
+  - [x] Emoji replaced by a real icon family. `scripts/build-icon-sprite.mjs` generates
+        `public/icons/sprite.svg` from `@phosphor-icons/core` (31 symbols, 13KB); `lib/icons.js`
+        injects it inline, because an external `<use>` does not inherit `currentColor` reliably
+  - [x] Fonts self-hosted. `scripts/build-fonts.mjs` copies the eight woff2 files actually used
+        out of `@fontsource`; zero requests to fonts.googleapis.com or fonts.gstatic.com
+  - [x] **0 em-dashes** in visible shipped copy, down from 50, each rewritten as the punctuation
+        the sentence wanted rather than swapped for a hyphen. The middle dot is rationed to one
+        per metadata line
+  - [x] `--shadow-1` was defined and never used, so every surface floated by the same amount.
+        Resting surfaces drop to it; `--shadow-2` is now for things that genuinely float
+  - [x] An empty grid slot waiting for JS to fill it no longer costs 48px of blank page
+  - [x] The dashboard leads with today's meals, not with a protein percentage. The four stat tiles
+        are one line of four numbers, each linking to the view it came from
+  - [x] **Form field borders** moved off `--line` (1.3:1, effectively borderless) to a dedicated
+        `--field-border` at 3:1, per WCAG 1.4.11. `contrast.mjs` now checks it and the focus ring,
+        neither of which anything had ever checked
+  - [x] Every page gains a description, canonical link and og/twitter tags; the stale `#1a3d2f`
+        theme-color is gone and the PWA icons are repainted
+  - [x] `npm run check` green (462 tests); both new generators have `--check` modes wired into it
+- Deviations from spec / findings while building this:
+  1. **Changing the tokens is what found the bugs.** The badge tints, the hover hues and the red
+     add button had all been wrong for as long as they had existed; none of them were visible
+     while every other surface was also coloured. A palette is a test.
+  2. **Image upload is approved but not in this slice.** The owner asked for optional photo upload
+     and it needs a Storage bucket, its own RLS, a migration and form work. It is a slice, not a
+     detail of this one, and bundling it would have made an already large visual branch unreviewable.
+  3. **Fraunces stays**, although the skill names it as an over-used display serif. It is the
+     existing brand type stack and Step 3's instruction was to preserve the brand unless the owner
+     approved a change; they approved the colour scheme and nothing else.

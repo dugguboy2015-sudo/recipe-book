@@ -126,7 +126,7 @@ function isSlotEnabled(autoSlots, slot, day) {
 function isNotAgainExcluded(prefs, recipeId, weekOf) {
   const stats = statsFor(prefs, recipeId);
   if (stats.notAgain <= 0) return false;
-  if (!stats.lastNotAgain) return true; // no timestamp recorded — be conservative and keep excluding
+  if (!stats.lastNotAgain) return true; // no timestamp recorded, so be conservative and keep excluding
   return daysBetween(stats.lastNotAgain, weekOf) < NOT_AGAIN_EXCLUSION_WEEKS * 7;
 }
 
@@ -194,7 +194,7 @@ export function planWeek({ recipes, plan, prefs, household, weekOf }) {
   for (const { day, slot } of buildFillOrder()) {
     if (!slotsForDay(day, household).includes(slot)) continue; // a meal this household doesn't plan
     if (!isSlotEnabled(prefs?.settings?.autoSlots, slot, day)) continue;
-    if ((workingPlan[day] || []).some((e) => e.slot === slot)) continue; // not empty — never touch
+    if ((workingPlan[day] || []).some((e) => e.slot === slot)) continue; // not empty, never touch
 
     const candidates = eligibleCandidates(recipes, { slot, plan: workingPlan, prefs, recipesById, weekOf });
     if (candidates.length === 0) {
@@ -235,7 +235,7 @@ function repairForProteinSmartTarget(workingPlan, recipes, recipesById, { prefs,
 
     const swappable = DAYS.flatMap((day) => (workingPlan[day] || []).map((entry, index) => ({ day, index, entry })))
       .filter(({ entry }) => entry.source === 'auto' && PROTEIN_SMART_SLOTS.includes(entry.slot) && !isProteinSmart(recipesById, entry.recipeId));
-    if (swappable.length === 0) return; // nothing left to swap — report the shortfall as-is
+    if (swappable.length === 0) return; // nothing left to swap, so report the shortfall as-is
 
     const withScores = swappable.map((candidate) => ({
       ...candidate,

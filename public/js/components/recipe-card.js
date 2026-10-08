@@ -21,7 +21,7 @@ export function normalizeRecipe(recipe) {
     mealTypes: Array.isArray(recipe.meal_types) ? recipe.meal_types : [],
     cuisine: recipe.cuisine || 'General',
     serves: recipe.serves || 4,
-    totalTime: recipe.total_time_minutes ?? '—',
+    totalTime: recipe.total_time_minutes ?? null,
     is_vegetarian: Boolean(recipe.is_vegetarian),
     is_egg_free: Boolean(recipe.is_egg_free),
     contains_dairy: Boolean(recipe.contains_dairy),
@@ -72,6 +72,8 @@ function tagList(recipe, limit) {
   return (recipe.tags || []).slice(0, limit).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
 }
 
+const svgFlame = '<svg class="icon" aria-hidden="true"><use href="#i-chili"></use></svg>';
+
 export const SPICE_WORDS = ['', 'mild', 'mild to medium', 'medium', 'hot', 'very hot'];
 
 /**
@@ -83,8 +85,9 @@ export function spiceMeter(level, { showUnknown = false } = {}) {
   // A blank where the meter should be reads as "not spicy"; on the recipe detail, where there is
   // room to be explicit, say that nobody has recorded it instead.
   if (!level) return showUnknown ? '<span class="spice-meter is-unknown">Spice not recorded</span>' : '';
-  const chillies = Array.from({ length: 5 }, (_, i) => `<span class="chilli${i < level ? ' lit' : ''}" aria-hidden="true">🌶</span>`).join('');
-  return `<span class="spice-meter"><span aria-hidden="true">${chillies}<span class="spice-meter-text">${level}/5</span></span><span class="sr-only">Spice ${level} of 5, ${SPICE_WORDS[level]}</span></span>`;
+  // One flame and the number. Five repeated glyphs was five times the ink for one fact, and the
+  // number already carried it for anyone who could not separate the lit glyphs from the unlit.
+  return `<span class="spice-meter"><span aria-hidden="true">${svgFlame}<span class="spice-meter-text">${level}/5</span></span><span class="sr-only">Spice ${level} of 5, ${SPICE_WORDS[level]}</span></span>`;
 }
 
 /**
@@ -95,16 +98,16 @@ export function spiceMeter(level, { showUnknown = false } = {}) {
 export function renderRecipeCard(recipe, { actions = false, showTime = false, tagLimit = 3, favourite = false } = {}) {
   // M5: the heart is for everyone — a household's favourites, or this browser's when signed out.
   const favouriteButton = `<button type="button" class="icon-button favourite-button${favourite ? ' is-favourite' : ''}" data-action="favourite" data-id="${recipe.id}"
-      data-tooltip="${favourite ? 'Remove from favourites' : 'Add to favourites'}" aria-pressed="${favourite}" aria-label="${favourite ? 'Remove' : 'Add'} ${escapeHtml(recipe.name)} ${favourite ? 'from' : 'to'} favourites">${favourite ? '♥' : '♡'}</button>`;
+      data-tooltip="${favourite ? 'Remove from favourites' : 'Add to favourites'}" aria-pressed="${favourite}" aria-label="${favourite ? 'Remove' : 'Add'} ${escapeHtml(recipe.name)} ${favourite ? 'from' : 'to'} favourites">${favourite ? `<svg class="icon" aria-hidden="true"><use href="#i-heart-fill"></use></svg>` : `<svg class="icon" aria-hidden="true"><use href="#i-heart"></use></svg>`}</button>`;
   const actionButtons = `<div class="recipe-card-actions">
         ${favouriteButton}
         ${actions ? `
-        <button type="button" class="icon-button edit-button" data-action="edit" data-id="${recipe.id}" aria-label="Edit recipe">✎</button>
-        <button type="button" class="icon-button delete-button" data-action="delete" data-id="${recipe.id}" aria-label="Delete recipe">🗑</button>` : ''}
+        <button type="button" class="icon-button edit-button" data-action="edit" data-id="${recipe.id}" aria-label="Edit recipe"><svg class="icon" aria-hidden="true"><use href="#i-edit"></use></svg></button>
+        <button type="button" class="icon-button delete-button" data-action="delete" data-id="${recipe.id}" aria-label="Delete recipe"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg></button>` : ''}
       </div>`;
 
   const timeMeta = showTime
-    ? `<span>•</span><span>${recipe.totalTime !== '—' ? `${recipe.totalTime} min` : 'Time TBD'}</span>`
+    ? `<span>•</span><span>${recipe.totalTime != null ? `${recipe.totalTime} min` : 'Time TBD'}</span>`
     : '';
 
   return `

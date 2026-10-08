@@ -1,42 +1,72 @@
-/* All design tokens (light + dark). Nothing else lives in this file — enforced by lint-css.mjs,
-   which fails on any hex/rgb/hsl colour literal outside this file. */
+/* All design tokens (light + dark). Nothing else lives in this file. Enforced by lint-css.mjs,
+   which fails on any hex/rgb/hsl colour literal outside this file.
+
+   PALETTE v3 (P10). v2 tried forest green as the brand colour and the owner rejected it outright.
+   This one takes the colour out of the interface entirely and spends all of it in one place.
+
+     1. Near-black is the interactive colour. Buttons, headings, nav, the wordmark. Black does not
+        date, does not fight the food, and never reads as a theme someone picked.
+     2. A warm paper canvas, barely off-white, with a neutral grey-brown ink. Not cream.
+     3. One accent: terracotta. It appears only where something is hot or high in protein, which
+        in this app are the same kind of fact, plus the focus ring. Nothing else is coloured.
+
+     Red is for danger only, and sits deliberately on the crimson side so it cannot be mistaken
+     for the terracotta accent. A restrained green survives for success messages alone, where the
+     convention is worth more than the consistency.
+
+   Cuisine tints are near-neutral and used by the dish illustrations only. The cuisine chip itself
+   is plain text, because the chip already names the cuisine in words.
+
+   Every pair here is checked by scripts/contrast.mjs in both themes. */
 
 :root {
-  /* Colour — light theme (derived from the original styles.css palette) */
-  --bg: #FFF3E6;
-  --surface: #FFFCF7;
-  --surface-raised: #FFFAF5;
-  --ink: #283044;
-  --ink-muted: #5E6872;
-  --line: #E8CDB8;
-  --brand: #4D9A8B;
-  --brand-ink: #23665F;
-  --focus-ring: #23665F;
-  --ok: #1B6E4F;
-  --ok-bg: #E2F3EC;
-  --warn: #8A5A0F;
-  --warn-bg: #FCEFD9;
-  --danger: #B42318;
-  --danger-bg: #FCE9E5;
-  --protein: #1B6E4F;
-  --protein-bg: #E2F3EC;
-  --spice: #D95D39;
-  --spice-bg: #F7E4DC;
-  --spice-ink: #8A3C1E;
-  --overlay: rgba(40, 48, 68, 0.45);
-  --shadow-color: rgba(40, 48, 68, 0.08);
-  --shadow-color-raised: rgba(40, 48, 68, 0.12);
+  /* Canvas and ink */
+  --bg: #F7F6F4;
+  --surface: #FFFFFF;
+  --surface-raised: #FAFAF8;
+  --ink: #16161A;
+  --ink-muted: #5A5A60;
+  --line: #E4E3DF;
+  --field-border: #8A8A8E;
 
-  /* Cuisine tints (muted tints with AA-contrast text) */
-  --cuisine-south-indian-bg: #F6EBDF;   --cuisine-south-indian-ink: #6A421B;
-  --cuisine-north-indian-bg: #F6E5DF;   --cuisine-north-indian-ink: #6A2E1B;
-  --cuisine-maharashtrian-bg: #F6DFE3;  --cuisine-maharashtrian-ink: #6A1B28;
-  --cuisine-rajasthani-bg: #F6F0DF;     --cuisine-rajasthani-ink: #6A561B;
-  --cuisine-chaat-bg: #ECDFF6;          --cuisine-chaat-ink: #491B6A;
-  --cuisine-indo-chinese-bg: #F6E1DF;   --cuisine-indo-chinese-ink: #6A211B;
-  --cuisine-gujarati-bg: #F6F4DF;       --cuisine-gujarati-ink: #6A631B;
-  --cuisine-fusion-bg: #DFEEF6;         --cuisine-fusion-ink: #1B506A;
-  --cuisine-other-bg: #F0EAE3;          --cuisine-other-ink: #5E5548;
+  /* Brand: near-black, two weights. --brand is the lighter one, for borders and icons. */
+  --brand: #2A2A30;
+  --brand-ink: #16161A;
+  --brand-hover: #35353C;
+  /* The focus ring is the accent, so it stays visible against a near-black button. */
+  --focus-ring: #C2410C;
+
+  /* Status. warn and protein both share the accent family: heat and protein are the two things
+     this household plans around, and they read as one idea. */
+  --ok: #15663C;
+  --ok-bg: #E8F0EB;
+  --warn: #9A3412;
+  --warn-bg: #FBEADF;
+  --danger: #9F1239;
+  --danger-hover: #7A0D2B;
+  --danger-bg: #FBE9EE;
+  --protein: #9A3412;
+  --protein-bg: #FBEADF;
+
+  /* Accent: heat */
+  --spice: #C2410C;
+  --spice-bg: #FBEADF;
+  --spice-ink: #7C2D0C;
+
+  --overlay: rgba(18, 18, 20, 0.52);
+  --shadow-color: rgba(18, 18, 20, 0.07);
+  --shadow-color-raised: rgba(18, 18, 20, 0.11);
+
+  /* Cuisine tints: near-neutral, enough hue to tell the dish illustrations apart and no more. */
+  --cuisine-south-indian-bg: #F0EDE5;   --cuisine-south-indian-ink: #574B36;
+  --cuisine-north-indian-bg: #F1EBE6;   --cuisine-north-indian-ink: #5A4639;
+  --cuisine-maharashtrian-bg: #F2EAEA;  --cuisine-maharashtrian-ink: #5C4040;
+  --cuisine-rajasthani-bg: #F1EFE4;     --cuisine-rajasthani-ink: #555033;
+  --cuisine-chaat-bg: #EDEAF1;          --cuisine-chaat-ink: #474059;
+  --cuisine-indo-chinese-bg: #F2EAE8;   --cuisine-indo-chinese-ink: #5B403B;
+  --cuisine-gujarati-bg: #F0F0E5;       --cuisine-gujarati-ink: #515236;
+  --cuisine-fusion-bg: #E8EEF1;         --cuisine-fusion-ink: #3A4C57;
+  --cuisine-other-bg: #EEEEEB;          --cuisine-other-ink: #4C4E4A;
 
   /* Type scale (1.25 ratio) */
   --fs-1: 12px;
@@ -65,85 +95,99 @@
   --radius-pill: 999px;
 
   /* Elevation */
-  --shadow-1: 0 2px 8px var(--shadow-color);
-  --shadow-2: 0 12px 28px var(--shadow-color);
+  --shadow-1: 0 1px 2px var(--shadow-color), 0 4px 12px var(--shadow-color);
+  --shadow-2: 0 1px 2px var(--shadow-color), 0 12px 28px var(--shadow-color);
 
   /* Motion */
   --motion-fast: 150ms;
   --motion-slow: 250ms;
-  --motion-ease: ease-out;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1B2130;
-    --surface: #232B3D;
-    --surface-raised: #2B3448;
-    --ink: #F3EEE6;
-    --ink-muted: #A8B0C0;
-    --line: #3A4358;
-    --brand: #6FBBAC;
-    --brand-ink: #8FD0C2;
-    --focus-ring: #8FD0C2;
-    --ok: #4FD9A8;
-    --ok-bg: #1E3B32;
-    --warn: #F0B34D;
-    --warn-bg: #3D3018;
-    --danger: #FF8A73;
-    --danger-bg: #402420;
-    --protein: #4FD9A8;
-    --protein-bg: #1E3B32;
-    --spice: #FF8A73;
-    --spice-bg: #402420;
-    --spice-ink: #FFB6A3;
-    --overlay: rgba(0, 0, 0, 0.6);
-    --shadow-color: rgba(0, 0, 0, 0.35);
-    --shadow-color-raised: rgba(0, 0, 0, 0.45);
+    --bg: #121214;
+    --surface: #1A1A1D;
+    --surface-raised: #212125;
+    --ink: #EDEDEA;
+    --ink-muted: #A0A0A6;
+    --line: #303035;
+  --field-border: #7A7A80;
 
-    --cuisine-south-indian-bg: #4C3824;   --cuisine-south-indian-ink: #F1D1B1;
-    --cuisine-north-indian-bg: #4C2E24;   --cuisine-north-indian-ink: #F1C1B1;
-    --cuisine-maharashtrian-bg: #4C242B;  --cuisine-maharashtrian-ink: #F1B1BC;
-    --cuisine-rajasthani-bg: #4C4224;     --cuisine-rajasthani-ink: #F1E1B1;
-    --cuisine-chaat-bg: #3B244C;          --cuisine-chaat-ink: #D6B1F1;
-    --cuisine-indo-chinese-bg: #4C2824;   --cuisine-indo-chinese-ink: #F1B6B1;
-    --cuisine-gujarati-bg: #4C4824;       --cuisine-gujarati-ink: #F1ECB1;
-    --cuisine-fusion-bg: #243F4C;         --cuisine-fusion-ink: #B1DCF1;
-    --cuisine-other-bg: #383430;          --cuisine-other-ink: #D8D0C4;
+    --brand: #D8D8D4;
+    --brand-ink: #F2F2EE;
+    --brand-hover: #FFFFFF;
+    --focus-ring: #F0A868;
+
+    --ok: #6EC58F;
+    --ok-bg: #16281D;
+    --warn: #F0A868;
+    --warn-bg: #2B2016;
+    --danger: #F7879E;
+    --danger-hover: #FBA7B8;
+    --danger-bg: #2C171C;
+    --protein: #F0A868;
+    --protein-bg: #2B2016;
+
+    --spice: #F0A868;
+    --spice-bg: #2B2016;
+    --spice-ink: #F6C79B;
+
+    --overlay: rgba(0, 0, 0, 0.64);
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --shadow-color-raised: rgba(0, 0, 0, 0.5);
+
+    --cuisine-south-indian-bg: #2A2619;   --cuisine-south-indian-ink: #D6CBB2;
+    --cuisine-north-indian-bg: #2B221C;   --cuisine-north-indian-ink: #D8C4B6;
+    --cuisine-maharashtrian-bg: #2C1F1F;  --cuisine-maharashtrian-ink: #D9BDBD;
+    --cuisine-rajasthani-bg: #292719;     --cuisine-rajasthani-ink: #D4CFB0;
+    --cuisine-chaat-bg: #231F2C;          --cuisine-chaat-ink: #C4BBD8;
+    --cuisine-indo-chinese-bg: #2C201D;   --cuisine-indo-chinese-ink: #D9BCB5;
+    --cuisine-gujarati-bg: #282818;       --cuisine-gujarati-ink: #D2D3AF;
+    --cuisine-fusion-bg: #1B262C;         --cuisine-fusion-ink: #B3CBD8;
+    --cuisine-other-bg: #26261F;          --cuisine-other-ink: #CBCCC4;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #1B2130;
-  --surface: #232B3D;
-  --surface-raised: #2B3448;
-  --ink: #F3EEE6;
-  --ink-muted: #A8B0C0;
-  --line: #3A4358;
-  --brand: #6FBBAC;
-  --brand-ink: #8FD0C2;
-  --focus-ring: #8FD0C2;
-  --ok: #4FD9A8;
-  --ok-bg: #1E3B32;
-  --warn: #F0B34D;
-  --warn-bg: #3D3018;
-  --danger: #FF8A73;
-  --danger-bg: #402420;
-  --protein: #4FD9A8;
-  --protein-bg: #1E3B32;
-  --spice: #FF8A73;
-  --spice-bg: #402420;
-  --spice-ink: #FFB6A3;
-  --overlay: rgba(0, 0, 0, 0.6);
-  --shadow-color: rgba(0, 0, 0, 0.35);
-  --shadow-color-raised: rgba(0, 0, 0, 0.45);
+  --bg: #121214;
+  --surface: #1A1A1D;
+  --surface-raised: #212125;
+  --ink: #EDEDEA;
+  --ink-muted: #A0A0A6;
+  --line: #303035;
+  --field-border: #7A7A80;
 
-  --cuisine-south-indian-bg: #4C3824;   --cuisine-south-indian-ink: #F1D1B1;
-  --cuisine-north-indian-bg: #4C2E24;   --cuisine-north-indian-ink: #F1C1B1;
-  --cuisine-maharashtrian-bg: #4C242B;  --cuisine-maharashtrian-ink: #F1B1BC;
-  --cuisine-rajasthani-bg: #4C4224;     --cuisine-rajasthani-ink: #F1E1B1;
-  --cuisine-chaat-bg: #3B244C;          --cuisine-chaat-ink: #D6B1F1;
-  --cuisine-indo-chinese-bg: #4C2824;   --cuisine-indo-chinese-ink: #F1B6B1;
-  --cuisine-gujarati-bg: #4C4824;       --cuisine-gujarati-ink: #F1ECB1;
-  --cuisine-fusion-bg: #243F4C;         --cuisine-fusion-ink: #B1DCF1;
-  --cuisine-other-bg: #383430;          --cuisine-other-ink: #D8D0C4;
+  --brand: #D8D8D4;
+  --brand-ink: #F2F2EE;
+  --brand-hover: #FFFFFF;
+  --focus-ring: #F0A868;
+
+  --ok: #6EC58F;
+  --ok-bg: #16281D;
+  --warn: #F0A868;
+  --warn-bg: #2B2016;
+  --danger: #F7879E;
+  --danger-hover: #FBA7B8;
+  --danger-bg: #2C171C;
+  --protein: #F0A868;
+  --protein-bg: #2B2016;
+
+  --spice: #F0A868;
+  --spice-bg: #2B2016;
+  --spice-ink: #F6C79B;
+
+  --overlay: rgba(0, 0, 0, 0.64);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --shadow-color-raised: rgba(0, 0, 0, 0.5);
+
+  --cuisine-south-indian-bg: #2A2619;   --cuisine-south-indian-ink: #D6CBB2;
+  --cuisine-north-indian-bg: #2B221C;   --cuisine-north-indian-ink: #D8C4B6;
+  --cuisine-maharashtrian-bg: #2C1F1F;  --cuisine-maharashtrian-ink: #D9BDBD;
+  --cuisine-rajasthani-bg: #292719;     --cuisine-rajasthani-ink: #D4CFB0;
+  --cuisine-chaat-bg: #231F2C;          --cuisine-chaat-ink: #C4BBD8;
+  --cuisine-indo-chinese-bg: #2C201D;   --cuisine-indo-chinese-ink: #D9BCB5;
+  --cuisine-gujarati-bg: #282818;       --cuisine-gujarati-ink: #D2D3AF;
+  --cuisine-fusion-bg: #1B262C;         --cuisine-fusion-ink: #B3CBD8;
+  --cuisine-other-bg: #26261F;          --cuisine-other-ink: #CBCCC4;
 }

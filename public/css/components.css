@@ -8,6 +8,7 @@
   gap: var(--sp-2);
   border: 0;
   border-radius: var(--radius-control);
+  text-decoration: none; /* some of these are <a>, and a button does not get underlined */
   padding: var(--sp-2) var(--sp-4);
   min-height: 44px;
   font-weight: 600;
@@ -16,13 +17,17 @@
 }
 
 .primary-button { background: var(--brand-ink); color: var(--surface); }
-.primary-button:hover { background: var(--spice); }
+.primary-button:hover { background: var(--brand-hover); }
 
 .secondary-button, .danger-button { background: var(--danger); color: var(--surface); }
-.secondary-button:hover, .danger-button:hover { background: var(--brand-ink); }
+.secondary-button:hover, .danger-button:hover { background: var(--danger-hover); }
 
 .ghost-button { background: transparent; border: 1px solid var(--line); color: var(--ink); }
-.ghost-button:hover { border-color: var(--brand); }
+.ghost-button:hover { border-color: var(--brand); background: var(--surface-raised); }
+
+.primary-button:active, .secondary-button:active, .danger-button:active, .ghost-button:active, .icon-button:active, .chip:active {
+  transform: translateY(1px);
+}
 
 .primary-button.is-busy, .secondary-button.is-busy, .ghost-button.is-busy {
   position: relative;
@@ -129,35 +134,24 @@
   letter-spacing: 0.02em;
 }
 
-.badge.veg { background: var(--ok-bg); color: var(--ok); }
-.badge.egg { background: var(--warn-bg); color: var(--warn); }
-.badge.pending { background: var(--surface-raised); color: var(--ink-muted); border: 1px dashed var(--line); }
+.badge { background: var(--surface-raised); color: var(--ink-muted); border: 1px solid var(--line); }
+.badge.pending { border-style: dashed; }
 .pending-notice { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
-.badge.dairy { background: var(--cuisine-maharashtrian-bg); color: var(--cuisine-maharashtrian-ink); }
-.badge.protein-smart { background: var(--protein-bg); color: var(--protein); }
-.badge.packed-lunch { background: var(--cuisine-fusion-bg); color: var(--cuisine-fusion-ink); }
-.badge.nut-free { background: var(--cuisine-gujarati-bg); color: var(--cuisine-gujarati-ink); }
+.badge.protein-smart { background: var(--protein-bg); color: var(--protein); border-color: var(--protein-bg); }
 
 /* ---------- Cuisine tint helper (used by RecipeCard's accent band) ---------- */
+/* The chip says the cuisine in words, so it does not also need a fill: nine of them across a
+   grid was nine background colours carrying information the text already carried. The tints
+   survive where they do work, on the dish illustrations (dish-art.js, monogram.js), which have
+   no words at all. */
 .cuisine-band {
-  padding: var(--sp-1) var(--sp-2);
-  border-radius: var(--radius-control);
   font-size: var(--fs-1);
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
   display: inline-block;
-  /* Fallback for any cuisine without a specific tint below (lower specificity, so the
-     [data-cuisine="X"] rules always win for the 8 named cuisines regardless of source order). */
-  background: var(--cuisine-other-bg);
-  color: var(--cuisine-other-ink);
 }
-.cuisine-band[data-cuisine="South Indian"] { background: var(--cuisine-south-indian-bg); color: var(--cuisine-south-indian-ink); }
-.cuisine-band[data-cuisine="North Indian"] { background: var(--cuisine-north-indian-bg); color: var(--cuisine-north-indian-ink); }
-.cuisine-band[data-cuisine="Maharashtrian"] { background: var(--cuisine-maharashtrian-bg); color: var(--cuisine-maharashtrian-ink); }
-.cuisine-band[data-cuisine="Rajasthani"] { background: var(--cuisine-rajasthani-bg); color: var(--cuisine-rajasthani-ink); }
-.cuisine-band[data-cuisine="Chaat"] { background: var(--cuisine-chaat-bg); color: var(--cuisine-chaat-ink); }
-.cuisine-band[data-cuisine="Indo-Chinese"] { background: var(--cuisine-indo-chinese-bg); color: var(--cuisine-indo-chinese-ink); }
-.cuisine-band[data-cuisine="Gujarati"] { background: var(--cuisine-gujarati-bg); color: var(--cuisine-gujarati-ink); }
-.cuisine-band[data-cuisine="Fusion"] { background: var(--cuisine-fusion-bg); color: var(--cuisine-fusion-ink); }
 
 /* ---------- RecipeCard ---------- */
 .recipe-grid, .card-grid {
@@ -174,7 +168,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-1);
   transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
 }
 
@@ -235,10 +229,13 @@
 .slot-card-art { width: 36px; height: 36px; flex-shrink: 0; }
 .slot-card-art .monogram { width: 100%; height: 100%; display: block; border-radius: var(--radius-control); }
 
-/* ---------- SpiceMeter (1-5 chillies) ---------- */
-/* The number carries the level for anyone who can't separate the lit chillies from the unlit ones. */
-.spice-meter { display: inline-flex; align-items: center; gap: 2px; color: var(--line); font-size: var(--fs-2); }
-.spice-meter .chilli.lit { color: var(--spice); }
+/* ---------- Icons ----------
+   One sprite, generated from @phosphor-icons/core and injected once per page (js/lib/icons.js).
+   Everything inherits currentColor, so an icon is always the colour of the text beside it. */
+.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; display: inline-block; vertical-align: -0.17em; }
+
+/* ---------- SpiceMeter ---------- */
+.spice-meter { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--spice); font-size: var(--fs-2); }
 .spice-meter-text { margin-left: var(--sp-1); color: var(--ink-muted); }
 .spice-meter.is-unknown { color: var(--ink-muted); font-size: var(--fs-1); }
 
@@ -288,7 +285,7 @@
 
 .field input, .field textarea, .field select {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid var(--field-border);
   border-radius: var(--radius-control);
   background: var(--surface);
   padding: var(--sp-2) var(--sp-3);
@@ -298,6 +295,11 @@
 }
 
 .field textarea { resize: vertical; min-height: 90px; }
+
+/* The browser default placeholder is the text colour at roughly half opacity, which lands below
+   4.5:1 in both themes. --ink-muted is the colour this app already uses for secondary text and is
+   checked by contrast.mjs. */
+::placeholder { color: var(--ink-muted); opacity: 1; }
 
 .field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible {
   border-color: var(--brand);
@@ -610,10 +612,31 @@ dialog.recipe-sheet { padding: 0; }
 /* ---------- Skeleton ---------- */
 .skeleton { background: linear-gradient(90deg, var(--line) 25%, var(--surface-raised) 37%, var(--line) 63%); background-size: 400% 100%; border-radius: var(--radius-control); animation: skeleton-shimmer 1.4s ease infinite; }
 @keyframes skeleton-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ---------- Entrance ---------- */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.recipe-grid > *, .card-grid > *, .today-meals > *, .shopping-group > li {
+  animation: card-in var(--motion-slow) var(--motion-ease) both;
+}
+.recipe-grid > :nth-child(1), .card-grid > :nth-child(1), .today-meals > :nth-child(1) { animation-delay: 0ms; }
+.recipe-grid > :nth-child(2), .card-grid > :nth-child(2), .today-meals > :nth-child(2) { animation-delay: 40ms; }
+.recipe-grid > :nth-child(3), .card-grid > :nth-child(3), .today-meals > :nth-child(3) { animation-delay: 80ms; }
+.recipe-grid > :nth-child(4), .card-grid > :nth-child(4), .today-meals > :nth-child(4) { animation-delay: 120ms; }
+.recipe-grid > :nth-child(5), .card-grid > :nth-child(5), .today-meals > :nth-child(5) { animation-delay: 160ms; }
+.recipe-grid > :nth-child(n + 6), .card-grid > :nth-child(n + 6), .today-meals > :nth-child(n + 6) { animation-delay: 200ms; }
+
+/* A dialog gets the same treatment, once, on open. */
+dialog[open] { animation: card-in var(--motion-fast) var(--motion-ease) both; }
+
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background: var(--line); } }
 
 .recipe-card-skeleton { height: 220px; border-radius: var(--radius-card); }
 .metric-card-skeleton { height: 96px; border-radius: var(--radius-card); }
+.collection-strip-skeleton { display: block; height: 28px; width: 100%; border-radius: var(--radius-control); }
 .browser-item-skeleton { height: 64px; border-radius: var(--radius-card); }
 
 /* ---------- StatusRegion (aria-live) ---------- */

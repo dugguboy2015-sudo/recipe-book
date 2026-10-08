@@ -15,7 +15,7 @@ const PLAN_KEY_V1 = 'recipeBookPlanner';
 const PLAN_KEY_V2 = 'recipeBookPlanner.v2';
 const PLAN_KEY_V3 = 'recipeBookPlanner.v3';
 const PREFS_KEY = 'recipeBook.prefs.v1';
-const RETENTION_WEEKS = 260; // ~5 years — a defensive cap on storage growth, not a user-facing feature
+const RETENTION_WEEKS = 260; // ~5 years, a defensive cap on storage growth, not a user-facing feature
 
 export const DEFAULT_AUTO_SLOTS = { Breakfast: true, 'Packed Lunch': true, Lunch: 'weekends', Dinner: true, Snacks: false, Dessert: false };
 

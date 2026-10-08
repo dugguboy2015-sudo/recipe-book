@@ -426,7 +426,7 @@ export function createRecipeForm({ client, onSaved }) {
         items.push(`<li><strong>${escapeHtml(label)}:</strong> ${escapeHtml(warning.message)}${escapeHtml(evidence)}</li>`);
         const errorSlot = form.querySelector(`[data-error-for="${field}"]`);
         if (errorSlot) {
-          errorSlot.textContent = `⚠ ${warning.message}${evidence}`;
+          errorSlot.innerHTML = `<svg class="icon" aria-hidden="true"><use href="#i-warning"></use></svg> ${escapeHtml(`${warning.message}${evidence}`)}`;
           errorSlot.dataset.aiWarning = 'true';
         }
       }
@@ -499,7 +499,7 @@ export function createRecipeForm({ client, onSaved }) {
     if (recipe.contains_dairy === null) errors.contains_dairy = 'Please answer Yes or No.';
     // Phase 10: full nutrition is required to save, manual and AI recipes alike.
     for (const field of NUTRITION_FIELDS) {
-      if (recipe[field] === null) errors[field] = 'Required — use Estimate nutrition or enter a value.';
+      if (recipe[field] === null) errors[field] = 'Required. Use Estimate nutrition or enter a value.';
       else if (recipe[field] < 0) errors[field] = 'Must be 0 or more.';
     }
 
@@ -599,7 +599,7 @@ export function createRecipeForm({ client, onSaved }) {
         if (input && nutrition[field] !== null && nutrition[field] !== undefined) input.value = nutrition[field];
       }
       form.querySelector('[name="nutrition_basis"]').value = nutrition.nutrition_basis || '';
-      if (estimateNutritionStatus) estimateNutritionStatus.textContent = 'Estimated — check before saving.';
+      if (estimateNutritionStatus) estimateNutritionStatus.textContent = 'Estimated. Check before saving.';
     } finally {
       setBusy(estimateNutritionButton, false);
     }

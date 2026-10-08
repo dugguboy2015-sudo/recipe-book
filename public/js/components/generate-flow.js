@@ -30,7 +30,7 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
   function render() {
     // M1c: the personal allowance belongs to a household, so a signed-out visitor has none yet.
     let quotaLine = '';
-    if (quota?.requiresSignIn) quotaLine = 'Sign in to ask for recipes — each household gets a few a day.';
+    if (quota?.requiresSignIn) quotaLine = 'Sign in to ask for recipes. Each household gets a few a day.';
     else if (quota) quotaLine = `${Math.min(quota.remainingToday, quota.remainingForYou)} generations left today`;
     const quotaExhausted = quota && (quota.remainingToday <= 0 || (!quota.requiresSignIn && quota.remainingForYou <= 0));
 

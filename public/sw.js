@@ -44,7 +44,7 @@ function isCacheable(request, url) {
     const auth = request.headers.get('Authorization');
     return !auth || auth === PUBLISHABLE_BEARER;
   }
-  return false; // fonts, the Supabase library on its CDN, auth — straight to the network
+  return false; // fonts, the Supabase library on its CDN, auth: straight to the network
 }
 
 async function networkFirst(request) {
