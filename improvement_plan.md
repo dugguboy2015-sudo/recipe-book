@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 4.1 — 2026-10-02 |
-| **Status** | Current. Sections 1–5 describe what is true today; section 6 is the work that remains — the six UX slices are **all shipped**, leaving only §6.1–§6.3 |
+| **Version** | 4.2 — 2026-10-08 |
+| **Status** | Current. Sections 1–5 describe what is true today; section 6 is the work that remains — the six UX slices P1–P6 are **all shipped**; P7 (sign-in) is specified and not started |
 | **Live** | https://recipe-book-9eo.pages.dev · Cloudflare Pages, git-connected (push to `main` = production deploy) |
 | **Repo** | `github.com/dugguboy2015-sudo/recipe-book` |
 | **Database** | Supabase project `xtxufygmwqicrgzjwdxc` |
@@ -295,12 +295,68 @@ branch ahead of P5 ([#56](https://github.com/dugguboy2015-sudo/recipe-book/pull/
 
 ---
 
+### P7 — Sign-in that does not quietly make a second you · *small*
+
+Reviewed 2026-10-02 after the owner reported the flow as confusing. **The code does what it says**:
+after a link is followed, a member with a household is greeted and the dialog closes; "Set up your
+household" only appears when the account genuinely has none. The confusion is real but it is not a
+logic bug — it is that **the email address silently *is* the account**, and nothing in the
+interface says so.
+
+What the evidence showed, from production:
+
+- Two auth accounts, two households both named "The Babre's", **no user in both**. So this was never
+  one person creating two households — it was a second email address becoming a second person.
+- Both accounts went created → signed in → household made inside 40 seconds, and the real one
+  (18 Sep, curator, all 31 recipes) **has not been signed into since**.
+
+Four defects, in the order they bite:
+
+1. **The sign-in screen never says the email is the identity.** One typo, or a different address
+   from the one used last time, and you silently become a new person with an empty household.
+2. **Nothing is remembered between visits.** The field starts empty every time, so the "different
+   address" mistake is as easy as the right one.
+3. **The address is never shown back before the link is sent**, so a typo is only discovered when
+   the email does not arrive — against a 2-per-hour ceiling (§6.2).
+4. **Creating a second household in a browser that was last used by another account is silent.**
+   This is the step that actually produced the duplicate, and the one place the app had a cheap
+   local signal it ignored.
+
+**Changes**
+
+- Say it plainly on the sign-in screen: this email is the account; a different one is a different
+  household and a different meal plan.
+- Remember the last address used **in this browser** (localStorage, never synced) and prefill it, so
+  returning is one tap. "Use a different email" clears it.
+- Confirm the address back before sending — "we'll email *x*", with a way to correct it — rather
+  than sending blind.
+- When a browser that remembers a previous address signs in with a different one and lands on
+  "Set up your household", warn first: the recipes and plan belong to the other address.
+
+**Not doing:** a global household-name uniqueness check. Two unrelated families may both be "The
+Patels", RLS rightly forbids a non-member reading other households, and decision 9 points at more
+than one family. The browser-local signal above catches the real case without leaking anything.
+
+**Files:** `js/components/account-dialogs.js`, `js/components/account.js`, a small
+`js/shared/` helper for the remembered address so it can be unit tested.
+
+**Acceptance** — the sign-in screen states that email is the account; a second visit in the same
+browser arrives prefilled; the address is confirmed before any email is sent; signing in with a
+different address than this browser remembers and reaching household setup shows the warning; the
+helper is unit tested; `npm run check` green.
+
+---
+
 ### 6.1 Backlog — small, unscheduled
 
 - Recipe titles repeat the cuisine shown in the chip beside them (folded into P4).
-- The duplicate `household_members`/`households` row from M5 testing — a second household named
-  "The Babre's" created 2026-09-24 with one planned week and no recipes. Confirm it is disposable
-  and remove it.
+- **The second household is not a duplicate row — it is a second account**, and the earlier
+  description of it here was wrong. Production has two auth users; the 24 Sep one owns a household
+  named "The Babre's" with one planned week and no recipes, and its timing matches M5 testing. It
+  may be a test account left behind (M5's progress entry claims all were removed) or a real second
+  address of the owner's. **Only the owner can tell**, by looking at the address in Supabase →
+  Authentication → Users; reading it here is blocked by a PII guard, which is the right guard.
+  Deleting an account and its household is destructive and irreversible, so it waits on that answer.
 
 ### 6.2 Owner-only — cannot be done by an agent
 
