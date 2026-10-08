@@ -845,6 +845,14 @@ export async function initPlannerPage() {
   // an inline <details> sibling of these buttons in a flex row with default align-items:stretch) ----------
   autoFillSettingsButton?.addEventListener('click', () => autoFillSettingsDialog.open());
   document.getElementById('closeAutoFillSettings')?.addEventListener('click', () => autoFillSettingsDialog.close());
+  // The setting people actually want when they come here to remove a meal is the household's, not
+  // auto-fill's — so take them straight to it.
+  document.getElementById('openHouseholdSettings')?.addEventListener('click', async () => {
+    autoFillSettingsDialog.close();
+    const { openAccountDialog } = await import('../components/account-dialogs.js');
+    const { getAccountState, refresh } = await import('../components/account.js');
+    openAccountDialog({ state: getAccountState(), view: 'settings', refresh });
+  });
 
   // ---------- Auto-fill (task 11.4 / Appendix K.3) — contextually scoped to whatever's on screen ----------
   async function runWeekAutoFill() {
