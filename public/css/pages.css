@@ -284,7 +284,7 @@
   .shopping-aisle { break-inside: avoid; border: 0; box-shadow: none; }
 
   /* The recipe itself: ink on white, no chrome, nothing clipped, and no actions you can't click. */
-  dialog.recipe-detail[open] {
+  dialog.recipe-sheet[open] {
     position: static;
     max-width: 100%;
     max-height: none;
@@ -293,24 +293,24 @@
     box-shadow: none;
     padding: 0;
   }
-  dialog.recipe-detail[open]::backdrop { background: transparent; }
-  dialog.recipe-detail[open] .detail-action-bar,
-  dialog.recipe-detail[open] .overflow-menu,
-  dialog.recipe-detail[open] .detail-header-controls,
-  dialog.recipe-detail[open] .servings-stepper,
-  dialog.recipe-detail[open] .icon-button { display: none; }
+  dialog.recipe-sheet[open]::backdrop { background: transparent; }
+  dialog.recipe-sheet[open] .detail-action-bar,
+  dialog.recipe-sheet[open] .overflow-menu,
+  dialog.recipe-sheet[open] .detail-header-controls,
+  dialog.recipe-sheet[open] .servings-stepper,
+  dialog.recipe-sheet[open] .icon-button { display: none; }
   /* The header sticks to the top of a scrolling dialog on screen; on paper that would reprint it
      on every page. */
-  dialog.recipe-detail[open] .detail-header,
-  dialog.recipe-detail[open] .detail-action-bar { position: static; border: 0; }
-  dialog.recipe-detail[open] .detail-header,
-  dialog.recipe-detail[open] .detail-body { padding: 0; }
-  dialog.recipe-detail[open] .detail-collapsible > summary { list-style: none; }
-  dialog.recipe-detail[open] .recipe-hero-art { max-width: 90px; }
-  dialog.recipe-detail[open] .detail-grid { display: block; }
-  dialog.recipe-detail[open] .detail-panel { break-inside: avoid; margin-bottom: var(--sp-4); }
-  dialog.recipe-detail[open] #modalIngredients li,
-  dialog.recipe-detail[open] #modalSteps li { break-inside: avoid; }
+  dialog.recipe-sheet[open] .detail-header,
+  dialog.recipe-sheet[open] .detail-action-bar { position: static; border: 0; }
+  dialog.recipe-sheet[open] .detail-header,
+  dialog.recipe-sheet[open] .detail-body { padding: 0; }
+  dialog.recipe-sheet[open] .detail-collapsible > summary { list-style: none; }
+  dialog.recipe-sheet[open] .recipe-hero-art { max-width: 90px; }
+  dialog.recipe-sheet[open] .detail-grid { display: block; }
+  dialog.recipe-sheet[open] .detail-panel { break-inside: avoid; margin-bottom: var(--sp-4); }
+  dialog.recipe-sheet[open] #modalIngredients li,
+  dialog.recipe-sheet[open] #modalSteps li { break-inside: avoid; }
   a[href]::after { content: ''; } /* no URL trails after every link */
 }
 .slot-card-added-by { color: var(--ink-muted); font-size: var(--fs-1); margin: 0; }
