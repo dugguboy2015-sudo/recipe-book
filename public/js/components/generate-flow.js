@@ -35,8 +35,7 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
     const quotaExhausted = quota && (quota.remainingToday <= 0 || (!quota.requiresSignIn && quota.remainingForYou <= 0));
 
     container.innerHTML = `
-      <section class="generate-panel">
-        <h2>Describe a recipe</h2>
+      <section class="generate-panel panel">
         ${quotaExhausted
           ? `<p class="notice">${escapeHtml(quotaLine || 'No generations left today.')}</p>`
           : `
@@ -47,9 +46,11 @@ export function createGenerateFlow({ container, onDraftReady, mealType, initialP
             <div class="chip-group" id="generateSuggestedPrompts">
               ${SUGGESTED_PROMPTS.map((p) => `<button type="button" class="chip" data-prompt="${escapeHtml(p)}">${escapeHtml(p)}</button>`).join('')}
             </div>
-            <div class="form-grid">
+            <div class="form-grid generate-numbers">
               <label class="field"><span>Serves</span><input type="number" id="generateServes" min="1" max="12" placeholder="4" /></label>
               <label class="field"><span>Max time (minutes)</span><input type="number" id="generateMaxMinutes" min="5" max="480" placeholder="45" /></label>
+            </div>
+            <div class="checkbox-row">
               <label class="checkbox-field"><input type="checkbox" id="generateVegetarian" /><span>Vegetarian</span></label>
               <label class="checkbox-field"><input type="checkbox" id="generateEggFree" /><span>Egg-free</span></label>
               <label class="checkbox-field"><input type="checkbox" id="generateDairyFree" /><span>Dairy-free</span></label>

@@ -79,6 +79,7 @@
       </header>
 
       <div class="dashboard-grid">
+        <div class="dashboard-main">
         <section class="planner-card this-week-card" id="thisWeekCard">
           <div class="content-head">
             <h2>This week</h2>
@@ -86,6 +87,15 @@
           <div id="thisWeekBody"></div>
         </section>
 
+        <section class="dashboard-recent">
+          <div class="content-head">
+            <h2>Recently added</h2>
+          </div>
+          <div class="card-grid recent-grid" id="recentGrid"></div>
+        </section>
+        </div>
+
+        <div class="dashboard-side">
         <section class="planner-card ask-inline-card">
           <div class="content-head">
             <h2><span aria-hidden="true">✨</span> Ask for a recipe</h2>
@@ -104,14 +114,8 @@
           <div id="askRecipeTip"></div>
         </section>
 
-        <section class="dashboard-recent">
-          <div class="content-head">
-            <h2>Recently added</h2>
-          </div>
-          <div class="card-grid recent-grid" id="recentGrid"></div>
-        </section>
-
         <section class="card-grid stats-grid dashboard-stats" id="statsGrid"></section>
+        </div>
       </div>
     </main>
 

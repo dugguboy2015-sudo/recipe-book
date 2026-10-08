@@ -239,6 +239,12 @@ function renderCreate() {
       <small class="field-error" data-error-for="displayName" role="alert"></small>
       <fieldset class="choice-list"><legend>How does your household eat?</legend>${diets}</fieldset>
       <small class="field-error" data-error-for="diet" role="alert"></small>
+      <fieldset class="choice-list compact"><legend>Which meals do you plan?</legend>
+        ${ALL_SLOTS.map((slot) => `<label class="checkbox-field"><input type="checkbox" name="setupSlot" value="${escapeHtml(slot)}" checked /><span>${escapeHtml(slot)}</span></label>`).join('')}
+      </fieldset>
+      <p class="hint">Untick anything you don't plan — the planner, the dashboard and auto-fill all
+        follow this. You can change it later in Settings.</p>
+      <small class="field-error" data-error-for="mealSlots" role="alert"></small>
       <div class="form-actions">
         <button type="button" class="ghost-button" data-account-close>Not now</button>
         <button type="submit" class="primary-button">Create household</button>
@@ -272,6 +278,7 @@ function renderCreate() {
       name: form.querySelector('#householdName').value,
       displayName: form.querySelector('#householdDisplayName').value,
       diet: form.querySelector('input[name="diet"]:checked')?.value,
+      mealSlots: [...form.querySelectorAll('input[name="setupSlot"]:checked')].map((input) => input.value),
     };
     const button = form.querySelector('button[type="submit"]');
     setBusy(button, true);
