@@ -776,3 +776,23 @@
   2. **Deleting an auth user does not clean up a household they were alone in.** The cascade stops at
      `household_members`. Worth knowing before anyone deletes a user again — and an argument for a
      periodic check rather than a one-off, if this ever has more than one family on it.
+
+## P8 — The polish that was killing the professional feel — DONE
+- Date: 2026-10-08
+- Branch / PR: p8-polish / [#61](https://github.com/dugguboy2015-sudo/recipe-book/pull/61)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Raised by the owner from screenshots of the **signed-in** app. Four of the six were mine from P4 and P6.
+- Acceptance (before → after):
+  - [x] **Recipe cards.** P6 made the title `display: inline-flex` for a 44px tap target; an inline-flex box sizes to min-content under pressure, so every title collapsed to its longest word. At three columns a card is **274px**: art (56) + three 44px buttons (148) + gaps left **88px** for the title and overflowed the card by **42px**. Actions moved to a footer row, title 22 → 18px: **88px/5 lines → 172px/2 lines**, no overflow
+  - [x] **"Add a recipe" appeared twice at desktop** — the nav's and the floating one. The floating one is for widths where the nav has no room for it, so it is hidden at ≥1100px
+  - [x] **The AI section had two headings** (P4's "Nothing here fits?" over the panel's own "Describe a recipe"), and its three dietary checkboxes shared a 220px auto-fit grid with two number fields, laying out two-and-two-and-one. One heading; the checkboxes wrap as one set
+  - [x] **The dashboard's dead band**: "This week" and "Ask" shared a grid row, so the shorter stretched to the taller and the next row began below both. Two independent columns now
+  - [x] **The shopping add-item row** sat flush against the week nav with its button able to wrap away from its field
+  - [x] **Setup now asks which meals a household plans** (see deviation 1)
+  - [x] `npm run check` green (462 tests, 4 new); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **"Snacks and Dessert still show after unselecting them" was not a rendering bug.** The household's settings row has `updated_at = 2026-09-18 19:07` — one minute after creation and days *before* meal slots existed — so `meal_slots` has never been stored and `enabledSlots` correctly falls back to all six. The cause is that **setup never asked**; only the Settings dialog had the choice. Setup asks now. This cannot retroactively fix the existing household: nothing but the owner may change its stored settings, so they have to save it once.
+  2. **The card bug hid behind being signed out.** Every verification in P1–P7 was signed out, where a card has one action button instead of three — just enough room to look fine. Signed-in layout is now something to check explicitly, by adding the extra buttons in the browser if no session is available.
+  3. **A 274px card cannot carry art, a title and three 44px buttons on one row.** The fix was structural rather than a width tweak; moving the actions to the footer also gives them a row of their own at every breakpoint.
+- Notes for next: `improvement_plan.md` §6.2–§6.3 only — the owner-only items and the two deferrals.
