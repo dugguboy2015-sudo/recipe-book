@@ -353,7 +353,7 @@ helper is unit tested; `npm run check` green.
 - ~~The second household.~~ **Resolved 2026-10-08.** It was a second account, not a duplicate row.
   The owner deleted that account; the delete cascaded its membership but left the household itself
   unreachable (every RLS policy grants access through membership, and it had no member). Removed by
-  , written as a condition — no members, no recipes,
+  `migrations/021_remove_orphaned_household.sql`, written as a condition — no members, no recipes,
   not the curator — so it could only ever take a genuinely abandoned household. One household, one
   member, 34 recipes, zero orphans.
 
