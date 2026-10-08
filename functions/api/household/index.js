@@ -40,7 +40,7 @@ export async function onRequestPost({ request, env }) {
   const { ok, value, errors } = validateCreateHousehold(body, DIET_PRESET_KEYS, { requireDiet: !founding });
   if (!ok) return problem(400, 'validation_failed', 'Please fix the highlighted fields.', { errors });
 
-  const settings = founding ? household : buildNewHouseholdSettings(household, value.diet);
+  const settings = founding ? household : buildNewHouseholdSettings(household, value.diet, body?.mealSlots);
   const db = createDb(config);
 
   let householdId;

@@ -115,7 +115,6 @@ export function renderRecipeCard(recipe, { actions = false, showTime = false, ta
           <span class="cuisine-band" data-cuisine="${escapeHtml(recipe.cuisine)}">${escapeHtml(recipe.cuisine)}</span>
           <h3><a class="recipe-card-title-link" href="recipes.html?recipe=${encodeURIComponent(recipe.slug || '')}">${escapeHtml(displayName(recipe))}</a></h3>
         </div>
-        ${actionButtons}
       </div>
       <div class="recipe-meta">
         <span>${recipe.serves || 4} serves</span>
@@ -124,7 +123,10 @@ export function renderRecipeCard(recipe, { actions = false, showTime = false, ta
       </div>
       <div class="tag-list">${tagList(recipe, tagLimit)}</div>
       <div class="badge-list">${dietaryBadges(recipe)}</div>
-      ${recipe.protein_g ? `<div class="recipe-card-protein">${recipe.protein_g}g protein per serving</div>` : ''}
+      <div class="recipe-card-footer">
+        <span class="recipe-card-protein">${recipe.protein_g ? `${recipe.protein_g}g protein per serving` : ''}</span>
+        ${actionButtons}
+      </div>
     </article>
   `;
 }

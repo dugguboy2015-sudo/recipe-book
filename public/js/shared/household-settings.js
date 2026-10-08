@@ -29,14 +29,21 @@ export const DIET_PRESET_KEYS = Object.keys(DIET_PRESETS);
  * style, country — come from the template. Everything specific to one family is reset, because a
  * stranger's household must not inherit this family's cuisines, spice level or school lunches.
  */
-export function buildNewHouseholdSettings(template, dietKey) {
+/**
+ * @param {object} template - config/household.json
+ * @param {string} dietKey
+ * @param {string[]} [mealSlots] - the meals this household plans; all of them if not given
+ */
+export function buildNewHouseholdSettings(template, dietKey, mealSlots) {
   const preset = DIET_PRESETS[dietKey];
   if (!preset) throw new Error(`Unknown diet: ${dietKey}`);
   const base = structuredClone(template);
+  // Stored in the canonical order, and never empty — a household with no meals has no planner.
+  const chosen = Array.isArray(mealSlots) ? SLOTS.filter((slot) => mealSlots.includes(slot)) : [];
   return {
     ...base,
     diet: structuredClone(preset.diet),
-    meal_slots: [...SLOTS],
+    meal_slots: chosen.length ? chosen : [...SLOTS],
     default_servings: 4,
     favourite_cuisines: [],
     exploring_cuisines: [],

@@ -53,3 +53,28 @@ describe('buildNewHouseholdSettings', () => {
     expect(() => buildNewHouseholdSettings(template, 'carnivore')).toThrow(/Unknown diet/);
   });
 });
+
+describe('buildNewHouseholdSettings — meal slots chosen at setup (P8)', () => {
+  const template = { version: 1, spice: { preference: 'medium' } };
+
+  it('stores only the meals the household said it plans', () => {
+    const s = buildNewHouseholdSettings(template, 'vegetarian_egg_free', ['Breakfast', 'Dinner']);
+    expect(s.meal_slots).toEqual(['Breakfast', 'Dinner']);
+  });
+
+  it('stores them in the canonical order, not the order they were ticked', () => {
+    const s = buildNewHouseholdSettings(template, 'vegetarian_egg_free', ['Dinner', 'Breakfast', 'Lunch']);
+    expect(s.meal_slots).toEqual(['Breakfast', 'Lunch', 'Dinner']);
+  });
+
+  it('ignores anything that is not a real slot', () => {
+    const s = buildNewHouseholdSettings(template, 'vegetarian_egg_free', ['Dinner', 'Elevenses']);
+    expect(s.meal_slots).toEqual(['Dinner']);
+  });
+
+  // A household with no meals has no planner, so an empty or missing choice means all of them.
+  it('falls back to every meal when none is chosen or the field is absent', () => {
+    expect(buildNewHouseholdSettings(template, 'vegetarian_egg_free', []).meal_slots).toHaveLength(6);
+    expect(buildNewHouseholdSettings(template, 'vegetarian_egg_free').meal_slots).toHaveLength(6);
+  });
+});

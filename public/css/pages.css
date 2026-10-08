@@ -22,17 +22,11 @@
 .dashboard-grid { display: grid; gap: var(--sp-5); }
 
 @media (min-width: 1100px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr 380px;
-    grid-template-areas: "thisweek ask" "recent stats";
-  }
-  /* align-items: stretch is the grid default — the thisweek/ask row already matches height. */
-  .dashboard-grid .this-week-card { grid-area: thisweek; }
-  .dashboard-grid .ask-inline-card { grid-area: ask; }
-  .dashboard-grid .dashboard-recent { grid-area: recent; }
-  .dashboard-grid .dashboard-stats { grid-area: stats; }
-  /* .dashboard-stats' 380px area is under the .card-grid auto-fit threshold (2 * 250px), so it
-     naturally renders as one column here with no override needed. */
+  /* Two independent columns, not a 2x2 grid. The grid put "this week" and "Ask" in one row, so
+     the shorter card stretched to the taller one and the next row began below both — a band of
+     dead space across the page. Columns that flow on their own cannot leave one. */
+  .dashboard-grid { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
+  .dashboard-main, .dashboard-side { display: grid; gap: var(--sp-5); align-content: start; min-width: 0; }
 }
 
 @media (min-width: 761px) and (max-width: 1099px) {
@@ -153,6 +147,12 @@
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: var(--sp-3); margin-top: var(--sp-5); }
 
+/* Only below 1100px. At desktop the nav's own "Add a recipe" is visible, and two buttons for one
+   action on the same screen is one too many. */
+@media (min-width: 1100px) {
+  .floating-add-button { display: none; }
+}
+
 .floating-add-button {
   position: fixed;
   right: var(--sp-6);
@@ -256,8 +256,9 @@
 /* ---------- Shopping list (M2) ---------- */
 .shopping-controls { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
 .shopping-actions { margin: 0; }
-.add-item-form { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
-.add-item-form input { flex: 1 1 200px; min-width: 0; }
+.add-item-form { display: flex; gap: var(--sp-2); align-items: center; margin-top: var(--sp-4); }
+.add-item-form input { flex: 1 1 auto; min-width: 0; }
+.add-item-form button { flex: 0 0 auto; }
 .shopping-actions[hidden] { display: none; }
 .shopping-aisle { margin-top: var(--sp-4); }
 .shopping-aisle h2 { font-size: var(--fs-4); margin-bottom: var(--sp-2); }
