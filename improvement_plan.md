@@ -124,7 +124,8 @@ owner changes them here.
    household) approves them into the shared catalogue.
 5. **Diet is per household** — not vegetarian-only. It drives AI prompts, validation, planner,
    copy, and which catalogue recipes a household sees.
-6. **Photos** — curated illustrations now; real photo upload later (still deferred, §6.3).
+6. **Photos** — curated illustrations are the permanent fallback. Optional photo upload was
+   approved by the owner on 2026-10-08 and is now scheduled work, §6.4, not a deferral.
 7. **AI quota** — 5/day, per household.
 8. **Recipes are a shared catalogue**, not per-household silos.
 9. **Audience** — family now, with commercialising in mind. Household rules live in the database,
@@ -368,11 +369,24 @@ helper is unit tested; `npm run check` green.
 
 ### 6.3 Deferred by decision
 
-- **Photo upload** (Supabase Storage, resized on upload, household-scoped). Deferred by decision 6;
-  M1 made the scoping available whenever it is wanted.
 - **Legacy `recipes.ingredients` column.** The UI reads the structured `recipe_ingredients` table;
   the JSON column is dead weight. Dropping it is an expand/contract migration whenever something
   else touches that table.
+
+### 6.4 Scheduled: optional photo upload (P11)
+
+Approved by the owner on 2026-10-08, in their words: upload is a good option, it must not be
+mandatory, and a household should be able to upload if they want to. This reverses decision 6,
+which deferred it.
+
+- A Supabase Storage bucket, household-scoped, with RLS and explicit revokes in the same
+  migration as every other `public` object here.
+- A nullable image column on `recipes`, added expand-style. Nothing currently live reads it.
+- Upload is one optional control on the add/edit form. No validation depends on it and no recipe
+  can be blocked for lacking a photo.
+- **The dish-art SVG stays as the permanent fallback**, not a placeholder: a recipe with no photo
+  is the normal case, not a degraded one, and must never look like a missing image.
+- Resize before upload, in the browser, because free-tier storage is a standing constraint.
 
 ---
 
@@ -380,7 +394,8 @@ helper is unit tested; `npm run check` green.
 
 - **Paid tiers of anything** — free tier is a standing constraint, not a budget target.
 - **A framework or bundler rewrite.**
-- **A visual redesign.** Tokens, type and colour stay; section 6 is layout and priority.
+- ~~**A visual redesign.**~~ Superseded on 2026-10-08: the owner commissioned one (P10). The
+  type stack and the wordmark stayed; the colour scheme was rebuilt twice on their instruction.
 - **New features.** The capability list in section 1 is the capability list afterwards.
 - **Native apps.** The PWA installs; P1–P6 are what would make it worth keeping on a home screen.
 - **Social features or cross-household sharing.**
