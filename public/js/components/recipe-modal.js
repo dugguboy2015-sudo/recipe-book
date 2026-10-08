@@ -33,7 +33,7 @@ const NUTRITION_ROWS = [
 ];
 
 const MODAL_HTML = `
-  <dialog id="recipeModal" class="recipe-detail">
+  <dialog id="recipeModal" class="recipe-detail recipe-sheet">
     <header class="detail-header">
       <div class="detail-header-bar">
         <h3 id="modalTitle" tabindex="-1" autofocus>Recipe</h3>
