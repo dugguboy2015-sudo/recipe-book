@@ -27,6 +27,7 @@
   --ink: #16161A;
   --ink-muted: #5A5A60;
   --line: #E4E3DF;
+  --field-border: #8A8A8E;
 
   /* Brand: near-black, two weights. --brand is the lighter one, for borders and icons. */
   --brand: #2A2A30;
@@ -111,6 +112,7 @@
     --ink: #EDEDEA;
     --ink-muted: #A0A0A6;
     --line: #303035;
+  --field-border: #7A7A80;
 
     --brand: #D8D8D4;
     --brand-ink: #F2F2EE;
@@ -154,6 +156,7 @@
   --ink: #EDEDEA;
   --ink-muted: #A0A0A6;
   --line: #303035;
+  --field-border: #7A7A80;
 
   --brand: #D8D8D4;
   --brand-ink: #F2F2EE;

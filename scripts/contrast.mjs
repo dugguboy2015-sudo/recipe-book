@@ -70,6 +70,10 @@ const PAIRS = [
   ['warn', 'warn-bg', 4.5, 'warn text on warn tint (egg badge)'],
   ['spice-ink', 'spice-bg', 4.5, 'spice ink on spice tint'],
   ['brand', 'bg', 3.0, 'brand as UI border/icon colour (3:1)'],
+  ['field-border', 'surface', 3.0, 'form field border against its own fill (WCAG 1.4.11)'],
+  ['field-border', 'bg', 3.0, 'form field border against the page background'],
+  ['focus-ring', 'bg', 3.0, 'focus ring against the page background'],
+  ['focus-ring', 'surface', 3.0, 'focus ring against a card'],
   // Card borders (--line) are decorative — cards are already visually separated by box-shadow and
   // spacing, so the border isn't the sole means of identifying the component (WCAG 1.4.11 doesn't
   // apply); not checked here for that reason, unlike the focus ring and button/chip borders below.

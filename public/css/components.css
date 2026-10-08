@@ -285,7 +285,7 @@
 
 .field input, .field textarea, .field select {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid var(--field-border);
   border-radius: var(--radius-control);
   background: var(--surface);
   padding: var(--sp-2) var(--sp-3);
@@ -295,6 +295,11 @@
 }
 
 .field textarea { resize: vertical; min-height: 90px; }
+
+/* The browser default placeholder is the text colour at roughly half opacity, which lands below
+   4.5:1 in both themes. --ink-muted is the colour this app already uses for secondary text and is
+   checked by contrast.mjs. */
+::placeholder { color: var(--ink-muted); opacity: 1; }
 
 .field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible {
   border-color: var(--brand);
