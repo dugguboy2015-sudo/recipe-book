@@ -725,3 +725,30 @@
   2. **The dynamic import in `main.js` was costing an extra wave on top of the seven.** The page module can't be discovered until main.js has run, so the preload list includes it and `components/account.js` explicitly.
   3. **The depth target was the wrong measure** and is recorded as missed rather than quietly reinterpreted. Waves, not depth, is what a cold phone pays.
 - Notes for next: all six slices of the UX uplift are shipped. What remains in `improvement_plan.md` is §6.1–§6.3 — the duplicate household row, the two owner-only items (custom SMTP sender, sign-in captcha), and the two things deferred by decision (photo upload, the legacy `recipes.ingredients` column).
+
+## Fix — P3's sheet treatment applied to all nine dialogs — DONE
+- Date: 2026-10-08
+- Branch / PR: fix-dialog-sheet / [#59](https://github.com/dugguboy2015-sudo/recipe-book/pull/59)
+- The second live regression from P3, shipped on its own like #56.
+- **What happened:** P3 made the recipe detail a full-screen sheet below 768px with `padding: 0`, so its own header/body/action-bar could carry the padding and stick. Those rules were written against `.recipe-detail` — the base class nine dialogs share (account, add-recipe, planner picker, ask, and every confirmation). None of them has that inner structure, so on a phone they all rendered edge to edge with their buttons flush against the screen. The account dialog is the first thing a new visitor sees.
+- **The fix:** a dedicated `.recipe-sheet` class on the recipe detail, with the sheet rules and the print rules scoped to it. Verified at 375px: account dialog back to a padded 343px dialog with its last button 53px clear of the edge; recipe sheet still full width with sticky Close at y=16.
+- **The pattern worth naming:** both #56 and this came from P3 reusing a shared base class for a change that belonged to one surface. Found here by opening the *account* dialog on a phone — P3's verification only ever opened the recipe detail.
+
+## P7 — Sign-in that does not quietly make a second you — DONE
+- Date: 2026-10-08
+- Branch / PR: p7-sign-in / [#60](https://github.com/dugguboy2015-sudo/recipe-book/pull/60)
+- Migrations applied: none
+- Backup: not needed (no schema or data change)
+- Acceptance (375px, verified in a browser):
+  - [x] The sign-in screen states that the email **is** the account, and that a different one is a different household
+  - [x] A returning visit arrives prefilled from this browser's last address, with "Use a different email" to clear it
+  - [x] The address is confirmed before any email is sent; "Change it" comes back with it still in the field
+  - [x] Signing in as a different address than this browser's household account, and reaching household setup, warns naming both and offers to sign in as the other one
+  - [x] Addresses masked on screen (`pr…a@gmail.com`); compared case- and space-insensitively
+  - [x] 8 unit tests for the pure helpers; `npm run check` green (458 tests); preview and production smoke pass
+- Deviations from spec / findings while building this:
+  1. **One key could not do both jobs.** Prefill wants "the address that last asked for a link"; the warning wants "whose browser is this". Asking for a link as somebody else overwrites the first, so the second is a separate key, written only when a session with a household is actually observed.
+  2. **No global household-name uniqueness check**, though a name collision is what made the duplicate visible. Two unrelated families may both be "The Patels", RLS rightly forbids a non-member reading other households, and decision 9 points at more than one family. The browser-local signal catches the real case without leaking anything.
+  3. **"Change it" wiped the address it existed to let you correct** — caught in the browser, not by tests, because the module-level `signInEmail` was only set after a successful send.
+  4. **Found in passing:** the paste-an-invite form is a grid item, so it defaulted to `min-width: auto` and pushed the account dialog 26px wider than itself on a phone.
+- Notes for next: `improvement_plan.md` §6.1–§6.3 is what remains — the second account (owner's call, see §6.1), the owner-only items, and the two deferrals. No agent work is queued.
