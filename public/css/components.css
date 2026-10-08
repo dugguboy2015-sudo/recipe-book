@@ -373,15 +373,19 @@ dialog.confirmation-panel { width: min(460px, calc(100vw - 2 * var(--sp-4))); }
    Now: the dialog itself is the scroll container, with a header that sticks to the top (title,
    overflow menu, Close) and an action bar that sticks to the bottom (plan it, cook it). Below
    768px it fills the screen, because a backdrop margin on a phone is 106px of nothing. */
-/* [open] matters. An unqualified display on a <dialog> beats the browser rule that hides it
-   while closed, and nine dialogs across the app share this class — so every one of them rendered
-   inline on page load. */
-dialog.recipe-detail[open] {
+/* Scoped to .recipe-sheet, not .recipe-detail. Nine dialogs share the base class — the account
+   dialog, the add-recipe form, every confirmation — and none of them has the header/body/action-bar
+   structure that carries the padding here, so they rendered flush against the screen edges with
+   their buttons touching the sides. Only the recipe detail is a sheet.
+
+   [open] matters too: an unqualified display on a <dialog> beats the browser rule that hides it
+   while closed, which is how all nine briefly rendered inline on page load. */
+dialog.recipe-sheet[open] {
   display: flex;
   flex-direction: column;
 }
 
-dialog.recipe-detail { padding: 0; }
+dialog.recipe-sheet { padding: 0; }
 
 .detail-header {
   position: sticky;
@@ -468,7 +472,7 @@ dialog.recipe-detail { padding: 0; }
 .detail-collapsible[open] > summary { margin-bottom: var(--sp-2); }
 
 @media (max-width: 767px) {
-  dialog.recipe-detail {
+  dialog.recipe-sheet {
     width: 100%;
     max-width: 100%;
     height: 100%;
