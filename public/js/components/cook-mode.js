@@ -42,7 +42,7 @@ export function openCookMode({ recipeName, stepGroups, ingredientsHtml }) {
     overlay.innerHTML = `
       <div class="cook-mode-header">
         <strong>${escapeHtml(recipeName)}</strong>
-        <button type="button" class="icon-button" id="cookModeClose" aria-label="Close cook mode">✕</button>
+        <button type="button" class="icon-button" id="cookModeClose" aria-label="Close cook mode"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
       </div>
       <div class="cook-mode-body">
         <div class="cook-mode-step">

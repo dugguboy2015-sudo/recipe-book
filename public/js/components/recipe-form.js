@@ -426,7 +426,7 @@ export function createRecipeForm({ client, onSaved }) {
         items.push(`<li><strong>${escapeHtml(label)}:</strong> ${escapeHtml(warning.message)}${escapeHtml(evidence)}</li>`);
         const errorSlot = form.querySelector(`[data-error-for="${field}"]`);
         if (errorSlot) {
-          errorSlot.textContent = `⚠ ${warning.message}${evidence}`;
+          errorSlot.innerHTML = `<svg class="icon" aria-hidden="true"><use href="#i-warning"></use></svg> ${escapeHtml(`${warning.message}${evidence}`)}`;
           errorSlot.dataset.aiWarning = 'true';
         }
       }

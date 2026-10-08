@@ -1,57 +1,60 @@
-/* All design tokens (light + dark). Nothing else lives in this file — enforced by lint-css.mjs,
+/* All design tokens (light + dark). Nothing else lives in this file. Enforced by lint-css.mjs,
    which fails on any hex/rgb/hsl colour literal outside this file.
 
-   PALETTE v2 (P10). The previous palette was warm cream (#FFF3E6) + dusty sage teal + terracotta,
-   with nine saturated cuisine tints on top: eleven colour families competing on one page, in the
-   beige-and-clay neighbourhood that every generated "warm artisan" interface lands in.
+   PALETTE v3 (P10). v2 tried forest green as the brand colour and the owner rejected it outright.
+   This one takes the colour out of the interface entirely and spends all of it in one place.
 
-   This one is built on three families and nothing else:
+     1. Near-black is the interactive colour. Buttons, headings, nav, the wordmark. Black does not
+        date, does not fight the food, and never reads as a theme someone picked.
+     2. A warm paper canvas, barely off-white, with a neutral grey-brown ink. Not cream.
+     3. One accent: terracotta. It appears only where something is hot or high in protein, which
+        in this app are the same kind of fact, plus the focus ring. Nothing else is coloured.
 
-     1. A neutral paper canvas with a faint green cast. Not cream, not beige. It stays out of the
-        way of food, which is the only thing on these pages that should be colourful.
-     2. Forest green as the single brand colour: interactive, headings, focus, and "good" status.
-        Green stays green, so the brand is still recognisable, but confident rather than dusty.
-     3. Amber as the single accent, reserved for heat. The spice meter and warnings share it,
-        because they mean the same thing to a reader.
+     Red is for danger only, and sits deliberately on the crimson side so it cannot be mistaken
+     for the terracotta accent. A restrained green survives for success messages alone, where the
+     convention is worth more than the consistency.
 
-   Red remains for danger only. Cuisine tints are now near-neutral and used by the dish
-   illustrations alone; the cuisine chip is plain, because the chip already says the cuisine in
-   words and the colour was carrying no information the text did not.
+   Cuisine tints are near-neutral and used by the dish illustrations only. The cuisine chip itself
+   is plain text, because the chip already names the cuisine in words.
 
    Every pair here is checked by scripts/contrast.mjs in both themes. */
 
 :root {
   /* Canvas and ink */
-  --bg: #F6F7F4;
+  --bg: #F7F6F4;
   --surface: #FFFFFF;
-  --surface-raised: #FBFCFA;
-  --ink: #171A17;
-  --ink-muted: #585E57;
-  --line: #E3E7E0;
+  --surface-raised: #FAFAF8;
+  --ink: #16161A;
+  --ink-muted: #5A5A60;
+  --line: #E4E3DF;
 
-  /* Brand: one green, two weights */
-  --brand: #2F7A55;
-  --brand-ink: #1A5637;
-  --focus-ring: #1A5637;
+  /* Brand: near-black, two weights. --brand is the lighter one, for borders and icons. */
+  --brand: #2A2A30;
+  --brand-ink: #16161A;
+  --brand-hover: #35353C;
+  /* The focus ring is the accent, so it stays visible against a near-black button. */
+  --focus-ring: #C2410C;
 
-  /* Status. ok shares the brand family on purpose; warn shares the accent. */
-  --ok: #1A5637;
-  --ok-bg: #E4EFE8;
-  --warn: #8A4B09;
-  --warn-bg: #FBEEDC;
-  --danger: #A32019;
-  --danger-bg: #FBE8E6;
-  --protein: #1A5637;
-  --protein-bg: #E4EFE8;
+  /* Status. warn and protein both share the accent family: heat and protein are the two things
+     this household plans around, and they read as one idea. */
+  --ok: #15663C;
+  --ok-bg: #E8F0EB;
+  --warn: #9A3412;
+  --warn-bg: #FBEADF;
+  --danger: #9F1239;
+  --danger-hover: #7A0D2B;
+  --danger-bg: #FBE9EE;
+  --protein: #9A3412;
+  --protein-bg: #FBEADF;
 
   /* Accent: heat */
-  --spice: #B4530A;
-  --spice-bg: #FBEEDC;
-  --spice-ink: #7A3607;
+  --spice: #C2410C;
+  --spice-bg: #FBEADF;
+  --spice-ink: #7C2D0C;
 
-  --overlay: rgba(14, 18, 14, 0.48);
-  --shadow-color: rgba(14, 18, 14, 0.07);
-  --shadow-color-raised: rgba(14, 18, 14, 0.11);
+  --overlay: rgba(18, 18, 20, 0.52);
+  --shadow-color: rgba(18, 18, 20, 0.07);
+  --shadow-color-raised: rgba(18, 18, 20, 0.11);
 
   /* Cuisine tints: near-neutral, enough hue to tell the dish illustrations apart and no more. */
   --cuisine-south-indian-bg: #F0EDE5;   --cuisine-south-indian-ink: #574B36;
@@ -102,31 +105,33 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #11140F;
-    --surface: #181C16;
-    --surface-raised: #1F241D;
-    --ink: #EDEFE9;
-    --ink-muted: #A3AA9F;
-    --line: #2E342B;
+    --bg: #121214;
+    --surface: #1A1A1D;
+    --surface-raised: #212125;
+    --ink: #EDEDEA;
+    --ink-muted: #A0A0A6;
+    --line: #303035;
 
-    --brand: #5FB487;
-    --brand-ink: #8ACFA6;
-    --focus-ring: #8ACFA6;
+    --brand: #D8D8D4;
+    --brand-ink: #F2F2EE;
+    --brand-hover: #FFFFFF;
+    --focus-ring: #F0A868;
 
-    --ok: #8ACFA6;
-    --ok-bg: #1A2A20;
-    --warn: #E8A857;
-    --warn-bg: #2E2317;
-    --danger: #F08A80;
-    --danger-bg: #2E1A18;
-    --protein: #8ACFA6;
-    --protein-bg: #1A2A20;
+    --ok: #6EC58F;
+    --ok-bg: #16281D;
+    --warn: #F0A868;
+    --warn-bg: #2B2016;
+    --danger: #F7879E;
+    --danger-hover: #FBA7B8;
+    --danger-bg: #2C171C;
+    --protein: #F0A868;
+    --protein-bg: #2B2016;
 
-    --spice: #E59A5A;
-    --spice-bg: #2E2317;
-    --spice-ink: #F0BC88;
+    --spice: #F0A868;
+    --spice-bg: #2B2016;
+    --spice-ink: #F6C79B;
 
-    --overlay: rgba(0, 0, 0, 0.62);
+    --overlay: rgba(0, 0, 0, 0.64);
     --shadow-color: rgba(0, 0, 0, 0.4);
     --shadow-color-raised: rgba(0, 0, 0, 0.5);
 
@@ -143,31 +148,33 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #11140F;
-  --surface: #181C16;
-  --surface-raised: #1F241D;
-  --ink: #EDEFE9;
-  --ink-muted: #A3AA9F;
-  --line: #2E342B;
+  --bg: #121214;
+  --surface: #1A1A1D;
+  --surface-raised: #212125;
+  --ink: #EDEDEA;
+  --ink-muted: #A0A0A6;
+  --line: #303035;
 
-  --brand: #5FB487;
-  --brand-ink: #8ACFA6;
-  --focus-ring: #8ACFA6;
+  --brand: #D8D8D4;
+  --brand-ink: #F2F2EE;
+  --brand-hover: #FFFFFF;
+  --focus-ring: #F0A868;
 
-  --ok: #8ACFA6;
-  --ok-bg: #1A2A20;
-  --warn: #E8A857;
-  --warn-bg: #2E2317;
-  --danger: #F08A80;
-  --danger-bg: #2E1A18;
-  --protein: #8ACFA6;
-  --protein-bg: #1A2A20;
+  --ok: #6EC58F;
+  --ok-bg: #16281D;
+  --warn: #F0A868;
+  --warn-bg: #2B2016;
+  --danger: #F7879E;
+  --danger-hover: #FBA7B8;
+  --danger-bg: #2C171C;
+  --protein: #F0A868;
+  --protein-bg: #2B2016;
 
-  --spice: #E59A5A;
-  --spice-bg: #2E2317;
-  --spice-ink: #F0BC88;
+  --spice: #F0A868;
+  --spice-bg: #2B2016;
+  --spice-ink: #F6C79B;
 
-  --overlay: rgba(0, 0, 0, 0.62);
+  --overlay: rgba(0, 0, 0, 0.64);
   --shadow-color: rgba(0, 0, 0, 0.4);
   --shadow-color-raised: rgba(0, 0, 0, 0.5);
 

@@ -41,6 +41,15 @@ const ICONS = {
   check: ['regular', 'check'],
   'arrow-left': ['regular', 'caret-left'],
   'arrow-right': ['regular', 'caret-right'],
+  sparkle: ['regular', 'sparkle'],
+  shuffle: ['regular', 'shuffle'],
+  pin: ['regular', 'push-pin'],
+  leftovers: ['regular', 'bowl-food'],
+  warning: ['regular', 'warning'],
+  square: ['regular', 'square'],
+  'square-check': ['fill', 'check-square'],
+  image: ['regular', 'image'],
+  camera: ['regular', 'camera'],
 };
 
 /** Pulls the drawing out of a Phosphor file and re-wraps it as a <symbol>. */

@@ -1,12 +1,19 @@
 /* Page-specific layout only — components live in components.css. */
 
-.page-shell { display: grid; gap: var(--sp-5); }
+.page-shell { display: grid; gap: var(--sp-6); }
+
+/* Several pages keep an always-present slot that JS fills later (the fridge results banner, the
+   active-filter chips). In a grid, an empty child still takes a row and two gaps, so each unused
+   slot was costing 48px of blank page on a normal load. An empty grid child is never wanted; this
+   reverses itself the moment JS writes into it. */
+.page-shell > :empty, .dashboard-main > :empty, .dashboard-side > :empty { display: none; }
+@media (max-width: 760px) { .page-shell { gap: var(--sp-5); } }
 
 .metric-card, .planner-card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-1);
   padding: var(--sp-4);
 }
 
@@ -25,8 +32,8 @@
   /* Two independent columns, not a 2x2 grid. The grid put "this week" and "Ask" in one row, so
      the shorter card stretched to the taller one and the next row began below both — a band of
      dead space across the page. Columns that flow on their own cannot leave one. */
-  .dashboard-grid { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
-  .dashboard-main, .dashboard-side { display: grid; gap: var(--sp-5); align-content: start; min-width: 0; }
+  .dashboard-grid { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; gap: var(--sp-6); }
+  .dashboard-main, .dashboard-side { display: grid; gap: var(--sp-6); align-content: start; min-width: 0; }
 }
 
 @media (min-width: 761px) and (max-width: 1099px) {
@@ -41,12 +48,22 @@
 }
 
 .ask-inline-card {
-  background: linear-gradient(135deg, var(--surface), var(--ok-bg));
-  border-color: var(--brand);
+  background: var(--surface-raised);
+  border-left: 3px solid var(--brand);
   display: flex;
   flex-direction: column;
+  gap: var(--sp-3);
 }
-.ask-inline-lede { color: var(--ink-muted); font-size: var(--fs-2); margin-bottom: var(--sp-3); }
+.ask-inline-card .content-head { margin-bottom: 0; }
+.ask-inline-card .content-head h2 { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* The collection's size, as one line of text rather than four tiles saying "Recipes saved: 47".
+   Each number is a link to the view that number came from, so the row does some work. */
+.collection-strip { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); font-size: var(--fs-2); color: var(--ink-muted); }
+.collection-strip a { color: var(--ink-muted); text-decoration: none; display: inline-flex; align-items: baseline; gap: var(--sp-2); border-radius: var(--radius-control); }
+.collection-strip a:hover, .collection-strip a:focus-visible { color: var(--brand-ink); text-decoration: underline; }
+.collection-strip b { font-family: 'Fraunces', serif; font-weight: 600; font-size: var(--fs-5); color: var(--ink); line-height: 1; }
+.collection-strip .is-error { color: var(--danger); }
 .ask-suggestion-chips { margin-bottom: var(--sp-3); }
 .ask-inline-form { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .ask-inline-form input { flex: 1; min-width: 220px; }
@@ -85,7 +102,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-1);
   padding: var(--sp-4);
   display: grid;
   gap: var(--sp-4);
@@ -161,7 +178,7 @@
   height: 64px;
   border: none;
   border-radius: 50%;
-  background: var(--danger);
+  background: var(--brand-ink);
   color: var(--surface);
   font-size: var(--fs-7);
   line-height: 1;
@@ -201,7 +218,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-1);
   padding: var(--sp-4);
 }
 
@@ -368,7 +385,8 @@
 }
 
 /* ---------- Planner week header (Appendix K.3/K.6) ---------- */
-.week-header-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); align-items: start; }
+/* Week-level numbers sit under today's meals, separated by a rule rather than by another card. */
+.week-footer-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); align-items: start; margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: 1px solid var(--line); }
 .protein-share p { margin-top: var(--sp-2); font-weight: 600; color: var(--ink); }
 .progress-bar { position: relative; display: block; height: 10px; border-radius: var(--radius-pill); background: var(--line); width: 100%; overflow: visible; }
 .progress-bar-fill { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--brand); overflow: hidden; }
