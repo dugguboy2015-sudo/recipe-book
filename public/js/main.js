@@ -1,4 +1,5 @@
 import { wireThemeToggle } from './components/theme-toggle.js';
+import { mountIcons } from './lib/icons.js';
 
 const pageType = document.body.dataset.page || 'dashboard';
 
@@ -10,6 +11,7 @@ const pageModules = {
 };
 
 async function initApp() {
+  mountIcons(); // not awaited: every icon sits beside a label, so a slow sprite must not hold a render
   wireThemeToggle(document.getElementById('themeToggleButton'));
 
   if (!window.supabase) {

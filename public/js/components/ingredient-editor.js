@@ -67,7 +67,7 @@ function rowHtml(row) {
       ${isNew ? `<select class="ingredient-category" aria-label="New ingredient category">${categoryOptionsHtml(row.category)}</select>` : '<span></span>'}
       <label class="checkbox-field"><input type="checkbox" class="ingredient-optional" ${row.isOptional ? 'checked' : ''} /> Optional</label>
       <label class="checkbox-field"><input type="checkbox" class="ingredient-no-scale" ${!row.scales ? 'checked' : ''} /> Doesn't scale</label>
-      <button type="button" class="icon-button remove-row" aria-label="Remove ingredient">✕</button>
+      <button type="button" class="icon-button remove-row" aria-label="Remove ingredient"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
     </div>
   `;
 }
@@ -80,7 +80,7 @@ function groupHtml(group, index, total) {
         <div class="ingredient-group-actions">
           <button type="button" class="icon-button move-group-up" ${index === 0 ? 'disabled' : ''} aria-label="Move group up">↑</button>
           <button type="button" class="icon-button move-group-down" ${index === total - 1 ? 'disabled' : ''} aria-label="Move group down">↓</button>
-          <button type="button" class="icon-button remove-group" aria-label="Remove group">✕</button>
+          <button type="button" class="icon-button remove-group" aria-label="Remove group"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
         </div>
       </div>
       <div class="ingredient-rows">${group.rows.map(rowHtml).join('')}</div>

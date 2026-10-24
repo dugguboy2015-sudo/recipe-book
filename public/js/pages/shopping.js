@@ -131,7 +131,7 @@ function render() {
       ? `
         <section class="panel shopping-aisle shopping-pantry">
           <h2>Check you have these</h2>
-          <p class="hint">Store-cupboard things the week's recipes need — no need to buy them if you already have them.</p>
+          <p class="hint">Store-cupboard things the week's recipes need. No need to buy them if you already have them.</p>
           <ul class="shopping-items">${pantry.map(itemRow).join('')}</ul>
         </section>`
       : '',

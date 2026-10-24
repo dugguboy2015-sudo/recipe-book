@@ -39,7 +39,7 @@ const MODAL_HTML = `
         <h3 id="modalTitle" tabindex="-1" autofocus>Recipe</h3>
         <div class="detail-header-controls">
           <div class="overflow-menu">
-            <button type="button" class="icon-button" id="modalMoreActions" aria-haspopup="true" aria-expanded="false" aria-label="More actions" data-tooltip="More actions">⋯</button>
+            <button type="button" class="icon-button" id="modalMoreActions" aria-haspopup="true" aria-expanded="false" aria-label="More actions" data-tooltip="More actions"><svg class="icon" aria-hidden="true"><use href="#i-more"></use></svg></button>
             <div class="overflow-menu-list" id="modalMoreMenu" role="menu" hidden>
               <button type="button" role="menuitem" id="modalShareRecipe">Share</button>
               <button type="button" role="menuitem" id="modalPrintRecipe">Print</button>
@@ -48,7 +48,7 @@ const MODAL_HTML = `
               <button type="button" role="menuitem" class="is-danger" id="modalDeleteRecipe" hidden>Delete</button>
             </div>
           </div>
-          <button type="button" class="icon-button" id="closeModal" aria-label="Close recipe" data-tooltip="Close">✕</button>
+          <button type="button" class="icon-button" id="closeModal" aria-label="Close recipe" data-tooltip="Close"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
         </div>
       </div>
       <div class="recipe-hero">
@@ -62,9 +62,9 @@ const MODAL_HTML = `
 
       <div class="detail-meta">
         <div class="servings-stepper">
-          <button type="button" id="modalServingsMinus" aria-label="Fewer servings">−</button>
+          <button type="button" id="modalServingsMinus" aria-label="Fewer servings"><svg class="icon" aria-hidden="true"><use href="#i-minus"></use></svg></button>
           <output id="modalServingsValue">4</output>
-          <button type="button" id="modalServingsPlus" aria-label="More servings">+</button>
+          <button type="button" id="modalServingsPlus" aria-label="More servings"><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg></button>
         </div>
         <button type="button" class="chip" id="modalFamilyServingsChip"></button>
       </div>
@@ -85,7 +85,7 @@ const MODAL_HTML = `
         <details class="detail-panel detail-collapsible" id="modalNutritionPanel" open>
           <summary><span class="detail-panel-title">Nutrition</span> <span class="hint">(per serving, estimate)</span></summary>
           <table class="nutrition-panel">
-            <caption>Per serving. The last column compares each amount with an average adult’s recommended daily intake — children and teenagers need different amounts, so read it as a rough guide.</caption>
+            <caption>Per serving. The last column compares each amount with an average adult’s recommended daily intake. Children and teenagers need different amounts, so read it as a rough guide.</caption>
             <thead><tr><th>Nutrient</th><th>Amount</th><th>Share of an adult’s day</th></tr></thead>
             <tbody id="modalNutrition"></tbody>
           </table>
@@ -158,19 +158,19 @@ function renderServings(targetServings) {
 }
 
 function renderTimeBreakdown(recipe) {
-  const parts = [];
-  if (recipe.prep_time_minutes) parts.push(`Prep ${recipe.prep_time_minutes} min`);
-  if (recipe.cook_time_minutes) parts.push(`Cook ${recipe.cook_time_minutes} min`);
-  parts.push(`Total ${recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : 'TBD'}`);
+  const stages = [];
+  if (recipe.prep_time_minutes) stages.push(`prep ${recipe.prep_time_minutes} min`);
+  if (recipe.cook_time_minutes) stages.push(`cook ${recipe.cook_time_minutes} min`);
+  const total = `Total ${recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : 'TBD'}`;
   const node = document.getElementById('modalTimeBreakdown');
-  node.textContent = parts.join(' · ');
+  node.textContent = stages.length ? `${total} · ${stages.join(', ')}` : total;
 
   // On 9 of these recipes the total is larger than prep + cook, which reads like an arithmetic
   // mistake but isn't: it's hands-off time — soaking, marinating, resting, proving. Name it, rather
   // than "fixing" the numbers into something that would under-state how long the dish really takes.
   const waiting = handsOffMinutes(recipe);
   const note = [
-    waiting ? `${waiting} min of that is hands-off — soaking, marinating, resting or proving.` : '',
+    waiting ? `${waiting} min of that is hands-off: soaking, marinating, resting or proving.` : '',
     recipe.time_note ? String(recipe.time_note).trim() : '',
   ].filter(Boolean).join(' ');
   const noteNode = document.getElementById('modalTimeNote');
@@ -187,11 +187,11 @@ function renderNutrition(recipe) {
     const percent = percentRI(field, value);
     const trafficLight = trafficLightClass(field, percent);
     const percentCell = percent === null
-      ? '—'
+      ? '-'
       : trafficLight
         ? `<span class="ri-bar"><span class="ri-bar-fill ${trafficLight} ${nearestWidthClass(percent)}"></span></span>`
         : `${Math.round(percent)}%`;
-    return `<tr><td>${label}</td><td>${value ?? '—'}${value !== null && value !== undefined ? ` ${unit}` : ''}</td><td>${percentCell}</td></tr>`;
+    return `<tr><td>${label}</td><td>${value ?? '-'}${value !== null && value !== undefined ? ` ${unit}` : ''}</td><td>${percentCell}</td></tr>`;
   }).join('');
 }
 
@@ -443,12 +443,12 @@ export function mountRecipeModal(client = null, options = {}) {
     if (!current) return;
     const url = shareUrlForCurrent();
     if (typeof navigator.share === 'function') {
-      navigator.share({ title: current.recipe.name, text: `${current.recipe.name} — from our recipe book`, url }).catch(() => {});
+      navigator.share({ title: current.recipe.name, text: `${current.recipe.name}, from our recipe book`, url }).catch(() => {});
       return;
     }
     try {
       await navigator.clipboard.writeText(url);
-      showSnackbar('Link copied — paste it to share this recipe.', 'success');
+      showSnackbar('Link copied. Paste it to share this recipe.', 'success');
     } catch {
       showSnackbar("Couldn't copy the link. You can copy it from the address bar after opening the recipe.", 'error');
     }

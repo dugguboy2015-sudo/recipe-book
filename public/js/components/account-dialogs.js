@@ -62,7 +62,7 @@ function friendlyAuthError(error) {
   const message = String(error?.message || '');
   if (/captcha/i.test(message)) return "We couldn't confirm you're not a bot. Please try again.";
   if (error?.status === 429 || /rate limit|too many/i.test(message)) {
-    return 'Too many sign-in emails have gone out in the last hour. Please try again later — or use a link we already sent.';
+    return 'Too many sign-in emails have gone out in the last hour. Please try again later, or use a link we already sent.';
   }
   return 'Something went wrong. Please try again.';
 }
@@ -92,7 +92,7 @@ function renderSignIn() {
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Sign in</h3></div>
     ${invited ? '<p class="notice">Sign in first, then you can join the household that invited you.</p>' : reasonNotice('Sign in')}
-    <p class="delete-confirm-copy">We'll email you a sign-in link — no password needed.</p>
+    <p class="delete-confirm-copy">We'll email you a sign-in link. No password needed.</p>
     <p class="hint">Your email address <strong>is</strong> your account. A different address is a
       different household, with its own recipes and meal plan.</p>
     <form id="signInEmailForm" class="account-form" novalidate>
@@ -177,7 +177,7 @@ function renderCheckEmail() {
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Check your email</h3></div>
     <p class="delete-confirm-copy">We sent a sign-in link to <strong>${escapeHtml(signInEmail)}</strong>.
-      Tap it to sign in — on this device or any other. It works once and expires in an hour.</p>
+      Tap it to sign in, on this device or any other. It works once and expires in an hour.</p>
     <p class="hint">Can't see it? Check your spam folder. It can take a minute or two to arrive.</p>
     <small class="field-error" data-error-for="email" role="alert"></small>
     <div class="form-actions">
@@ -202,7 +202,7 @@ async function afterSignIn() {
   ctx.state = next;
   if (next.household) {
     close();
-    showSnackbar(`Signed in${next.household.displayName ? ` — welcome back, ${next.household.displayName}` : ''}.`, 'success');
+    showSnackbar(`Signed in${next.household.displayName ? `, welcome back ${next.household.displayName}` : ''}.`, 'success');
     return;
   }
   show(getPendingInvite() ? 'join' : 'create');
@@ -223,7 +223,7 @@ function renderCreate() {
   body().innerHTML = `
     <div class="detail-header"><h3 id="accountDialogTitle">Set up your household</h3></div>
     ${otherAccount ? `<p class="notice warn-notice">You're signed in as <strong class="masked-email">${escapeHtml(maskEmail(current))}</strong>,
-      but this browser was last used by <strong class="masked-email">${escapeHtml(maskEmail(owner))}</strong> — and that account has the
+      but this browser was last used by <strong class="masked-email">${escapeHtml(maskEmail(owner))}</strong>, and that account has the
       household, with its recipes and meal plan. Setting one up here makes a <strong>second, separate</strong> household.
       <button type="button" class="link-button" id="switchAccount">Sign in as <span class="masked-email">${escapeHtml(maskEmail(owner))}</span> instead</button></p>` : ''}
     ${reasonNotice('Set up or join a household')}
@@ -242,7 +242,7 @@ function renderCreate() {
       <fieldset class="choice-list compact"><legend>Which meals do you plan?</legend>
         ${ALL_SLOTS.map((slot) => `<label class="checkbox-field"><input type="checkbox" name="setupSlot" value="${escapeHtml(slot)}" checked /><span>${escapeHtml(slot)}</span></label>`).join('')}
       </fieldset>
-      <p class="hint">Untick anything you don't plan — the planner, the dashboard and auto-fill all
+      <p class="hint">Untick anything you don't plan. The planner, the dashboard and auto-fill all
         follow this. You can change it later in Settings.</p>
       <small class="field-error" data-error-for="mealSlots" role="alert"></small>
       <div class="form-actions">
@@ -487,11 +487,11 @@ function settingsSummary(settings) {
   if (!settings) return 'Settings unavailable right now.';
   const diet = DIET_PRESETS[dietPresetKey(settings)]?.label || 'Custom diet';
   const slots = enabledSlots(settings);
-  const parts = [diet, `serves ${settings.default_servings || 4}`, `spice ${settings.spice?.default_level ?? 3} of 5`];
+  const parts = [`serves ${settings.default_servings || 4}`, `spice ${settings.spice?.default_level ?? 3} of 5`];
   if (slots.length < ALL_SLOTS.length) parts.push(`plans ${slots.join(', ').toLowerCase()}`);
   const lunch = settings.packed_lunch;
   if (lunch?.days?.length) parts.push(`packed lunches ${lunch.days.map((d) => d.slice(0, 3)).join(', ')}`);
-  return parts.join(' · ');
+  return `${diet} · ${parts.join('; ')}`;
 }
 
 function checkboxes(name, options, selected) {
@@ -535,7 +535,7 @@ async function renderSettings() {
       </label>
       <small class="field-error" data-error-for="defaultServings" role="alert"></small>
       <label class="field"><span>Spice level</span>
-        <select id="settingsSpice">${[1, 2, 3, 4, 5].map((n) => `<option value="${n}"${n === spiceLevel ? ' selected' : ''}>${n} — ${SPICE_WORDS[n - 1]}</option>`).join('')}</select>
+        <select id="settingsSpice">${[1, 2, 3, 4, 5].map((n) => `<option value="${n}"${n === spiceLevel ? ' selected' : ''}>${n} (${SPICE_WORDS[n - 1]})</option>`).join('')}</select>
       </label>
       <small class="field-error" data-error-for="spiceLevel" role="alert"></small>
       <fieldset class="choice-list compact"><legend>Which meals do you plan?</legend>${checkboxes('mealSlot', ALL_SLOTS, enabledSlots(settings))}</fieldset>

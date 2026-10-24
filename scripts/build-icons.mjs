@@ -11,9 +11,9 @@ import { deflateSync } from 'node:zlib';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 // The brand, taken from css/tokens.css — the icon should look like the app, not near it.
-const BRAND_INK = [26, 61, 47];   // --brand-ink, the deep green
-const CREAM = [250, 246, 238];    // --surface in light theme
-const SPICE = [214, 106, 58];     // --spice, the warm accent
+const BRAND_INK = [22, 22, 26];    // --brand-ink, near-black
+const CREAM = [247, 246, 244];     // --bg in light theme, the paper canvas
+const SPICE = [194, 65, 12];       // --spice, the one accent
 
 function crc32(buffer) {
   let crc = 0xffffffff;

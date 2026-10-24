@@ -106,7 +106,7 @@ describe('shoppingListText', () => {
       manualItems: [{ key: 'manual:1', text: 'Kitchen roll' }],
       checked: { [onionKey]: true },
     });
-    expect(text.split('\n')[0]).toBe('Shopping list — week of 21 Sept');
+    expect(text.split('\n')[0]).toBe('Shopping list: week of 21 Sept');
     expect(text).toContain('- Red onion: 1 ✓');
     expect(text).toContain('Also needed\n- Kitchen roll');
     expect(text).toContain('Check you have these');

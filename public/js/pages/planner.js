@@ -365,7 +365,7 @@ export async function initPlannerPage() {
     if (cookedText) {
       cookedText.textContent = cooked.planned === 0
         ? ''
-        : `Cooked ${cooked.cooked} of ${cooked.planned} planned${cooked.cooked === cooked.planned ? ' — the whole week' : ''}`;
+        : `Cooked ${cooked.cooked} of ${cooked.planned} planned${cooked.cooked === cooked.planned ? ', the whole week' : ''}`;
     }
 
     // Always real tomorrow (not "the day after whatever's selected") — correctly resolves across
@@ -470,7 +470,7 @@ export async function initPlannerPage() {
 
   function renderSlotCard(weekOf, day, entry) {
     const recipe = state.resolvedById.get(entry.recipeId);
-    const removeButton = `<button type="button" class="icon-button delete-button" data-tooltip="Remove" aria-label="Remove" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}">🗑</button>`;
+    const removeButton = `<button type="button" class="icon-button delete-button" data-tooltip="Remove" aria-label="Remove" data-remove-day="${day}" data-remove-slot="${entry.slot}" data-remove-id="${entry.recipeId}" data-week-of="${weekOf}"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg></button>`;
     if (!recipe) {
       return `
         <div class="slot-card">
@@ -483,16 +483,16 @@ export async function initPlannerPage() {
     // them as chips on every card was more clutter than signal, so they're no longer rendered.
     const cookedButton = `<button type="button" class="icon-button cooked-button${entry.cooked ? ' is-cooked' : ''}" data-tooltip="${entry.cooked ? 'Not cooked after all' : 'We cooked this'}"
         aria-pressed="${Boolean(entry.cooked)}" aria-label="${entry.cooked ? 'Unmark' : 'Mark'} ${escapeHtml(recipe.name)} as cooked"
-        data-cooked-day="${day}" data-cooked-slot="${entry.slot}" data-cooked-id="${entry.recipeId}" data-week-of="${weekOf}">${entry.cooked ? '✅' : '☑'}</button>`;
+        data-cooked-day="${day}" data-cooked-slot="${entry.slot}" data-cooked-id="${entry.recipeId}" data-week-of="${weekOf}">${entry.cooked ? '<svg class="icon" aria-hidden="true"><use href="#i-square-check"></use></svg>' : '<svg class="icon" aria-hidden="true"><use href="#i-square"></use></svg>'}</button>`;
     // Leftovers are offered only on the meal actually cooked, never on a leftover of a leftover.
     const leftoverButton = entry.leftover
       ? ''
       : `<button type="button" class="icon-button" data-tooltip="Plan leftovers tomorrow" aria-label="Plan leftovers of ${escapeHtml(recipe.name)} for tomorrow"
-        data-leftover-day="${day}" data-leftover-slot="${entry.slot}" data-leftover-id="${entry.recipeId}" data-week-of="${weekOf}">🍱</button>`;
+        data-leftover-day="${day}" data-leftover-slot="${entry.slot}" data-leftover-id="${entry.recipeId}" data-week-of="${weekOf}"><svg class="icon" aria-hidden="true"><use href="#i-leftovers"></use></svg></button>`;
     const autoActions = entry.source === 'auto'
       ? `
-        <button type="button" class="icon-button" data-tooltip="Shuffle" aria-label="Shuffle" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}" data-week-of="${weekOf}">🔀</button>
-        <button type="button" class="icon-button" data-tooltip="Keep" aria-label="Keep" data-keep-day="${day}" data-keep-slot="${entry.slot}" data-keep-id="${entry.recipeId}" data-week-of="${weekOf}">📌</button>
+        <button type="button" class="icon-button" data-tooltip="Shuffle" aria-label="Shuffle" data-shuffle-day="${day}" data-shuffle-slot="${entry.slot}" data-shuffle-id="${entry.recipeId}" data-week-of="${weekOf}"><svg class="icon" aria-hidden="true"><use href="#i-shuffle"></use></svg></button>
+        <button type="button" class="icon-button" data-tooltip="Keep" aria-label="Keep" data-keep-day="${day}" data-keep-slot="${entry.slot}" data-keep-id="${entry.recipeId}" data-week-of="${weekOf}"><svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg></button>
       `
       : '';
     return `
@@ -506,7 +506,7 @@ export async function initPlannerPage() {
           <output>${entry.servings}</output>
           <button type="button" data-servings="plus" data-day="${day}" data-slot="${entry.slot}" data-id="${entry.recipeId}" data-week-of="${weekOf}" aria-label="More servings">+</button>
         </div>
-        ${entry.leftover ? '<p class="slot-card-leftover">Leftovers — already bought for</p>' : ''}
+        ${entry.leftover ? '<p class="slot-card-leftover">Leftovers, already bought for</p>' : ''}
         ${addedByLine(entry)}
         <div class="slot-card-actions">
           ${cookedButton}
@@ -730,7 +730,7 @@ export async function initPlannerPage() {
         const weekOf = button.dataset.weekOf;
         mutateWeek(weekOf, keepEntry(getWeekDays(state.store, weekOf), day, slot, recipeId));
         renderView();
-        showSnackbar('Kept — auto-fill will leave this alone.', 'success');
+        showSnackbar('Kept. Auto-fill will leave this alone.', 'success');
       });
     });
 
@@ -878,11 +878,11 @@ export async function initPlannerPage() {
       const pct = Math.round(result.proteinSmartShare * 100);
       // L.4's celebration toast: a gentle nod when the week clears the 60% protein-smart target.
       showSnackbar(
-        result.proteinSmartShare >= 0.6 ? `🎉 Week auto-filled — ${pct}% protein-smart!` : `Week auto-filled — ${pct}% protein-smart.`,
+        result.proteinSmartShare >= 0.6 ? `Week auto-filled. ${pct}% protein-smart.` : `Week auto-filled. ${pct}% protein-smart.`,
         'success',
       );
     } else {
-      showSnackbar('Nothing to fill — every enabled slot already has a plan.', 'success');
+      showSnackbar('Nothing to fill. Every enabled slot already has a plan.', 'success');
     }
   }
 
@@ -904,7 +904,7 @@ export async function initPlannerPage() {
     // that could reference a slot on a different day, which would be a confusing thing to surface
     // from a single-day action.
     const added = dayPlan.some((entry) => !beforeKeys.has(`${entry.slot}|${entry.recipeId}`));
-    showSnackbar(added ? `${dayName} auto-filled.` : 'Nothing to fill — every enabled slot already has a plan.', 'success');
+    showSnackbar(added ? `${dayName} auto-filled.` : 'Nothing to fill. Every enabled slot already has a plan.', 'success');
   }
 
   // Fills every week that *starts* in the displayed month (see weeksStartingInMonth) — one
@@ -923,7 +923,7 @@ export async function initPlannerPage() {
     renderView();
 
     showSnackbar(
-      addedTotal ? `This month auto-filled — ${addedTotal} meal${addedTotal === 1 ? '' : 's'} added.` : 'Nothing to fill — every enabled slot already has a plan.',
+      addedTotal ? `This month auto-filled. ${addedTotal} meal${addedTotal === 1 ? '' : 's'} added.` : 'Nothing to fill. Every enabled slot already has a plan.',
       'success',
     );
   }

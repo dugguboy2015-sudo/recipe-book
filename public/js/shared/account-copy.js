@@ -5,7 +5,7 @@
 //
 // Pure and DOM-free so it can be unit tested; the pages pass their own account state in.
 
-export const DEVICE_ONLY_NOTE = 'Saved on this device only — sign in to share with your household.';
+export const DEVICE_ONLY_NOTE = 'Saved on this device only. Sign in to share with your household.';
 
 /**
  * @param {{session?: object|null, ready?: boolean}|null} account - from components/account.js

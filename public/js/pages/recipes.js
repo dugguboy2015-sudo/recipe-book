@@ -328,7 +328,7 @@ export async function initRecipesPage() {
         } else if (button.dataset.action === 'favourite') {
           const now = await toggleFavourite(id);
           button.classList.toggle('is-favourite', now);
-          button.textContent = now ? '♥' : '♡';
+          button.innerHTML = now ? `<svg class="icon" aria-hidden="true"><use href="#i-heart-fill"></use></svg>` : `<svg class="icon" aria-hidden="true"><use href="#i-heart"></use></svg>`;
           button.setAttribute('aria-pressed', String(now));
           button.dataset.tooltip = now ? 'Remove from favourites' : 'Add to favourites';
         }
@@ -367,7 +367,7 @@ export async function initRecipesPage() {
     if (f.dairyFree) chips.push(['dairyFree', 'Dairy-free']);
     if (f.proteinSmart) chips.push(['proteinSmart', 'Protein-smart']);
     if (f.nutFree) chips.push(['nutFree', 'Nut-free']);
-    if (f.favouritesOnly) chips.push(['favouritesOnly', '♥ Favourites']);
+    if (f.favouritesOnly) chips.push(['favouritesOnly', 'Favourites']);
     if (f.spiceMax) chips.push(['spiceMax', `Spice up to ${f.spiceMax}`]);
     if (f.pendingOnly) chips.push(['pendingOnly', 'Awaiting approval']);
     if (m5.fridge) chips.push(['fridge', "What's in the fridge"]);

@@ -34,7 +34,7 @@ function render() {
   if (!state.session) {
     slot.innerHTML = `
       <button type="button" class="ghost-button account-sign-in" data-account-open aria-label="Sign in">
-        <span aria-hidden="true">👤</span><span class="account-label">Sign in</span>
+        <svg class="icon" aria-hidden="true"><use href="#i-account"></use></svg><span class="account-label">Sign in</span>
       </button>`;
   } else {
     const name = state.household?.displayName || state.session.user.email || 'You';
